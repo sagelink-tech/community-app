@@ -9,28 +9,32 @@ const String data = '''
         "description": "Sells stuff.",
         "logoUrl": "http://logo.url",
         "website": "http://google.com",
-        "relationship": "Following"
+        "relationship": "Following",
+        "mainColor": "#35654e"
     },
     {
         "name": "Haus Liquor",
         "description": "Sells some stuff.",
         "logoUrl": "http://logo.url",
         "website": "http://google.com",
-        "relationship": "VIP Tier"
+        "relationship": "VIP Tier",
+        "mainColor": "#000000"
     },
     {
         "name": "Acapella",
         "description": "Sells different stuff.",
         "logoUrl": "http://logo.url",
         "website": "http://google.com",
-        "relationship": "Loyalist"
+        "relationship": "Loyalist",
+        "mainColor": "#38383b"
     },
     {
         "name": "Pricklee",
         "description": "Sells drink stuff.",
         "logoUrl": "http://logo.url",
         "website": "http://google.com",
-        "relationship": "Newcomer"
+        "relationship": "Newcomer",
+        "mainColor": "#192862"
     },
     {
         "name": "Brand 5",

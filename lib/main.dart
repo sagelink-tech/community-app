@@ -41,7 +41,7 @@ class AppScaffold extends StatelessWidget {
 
     // Return the current view, based on the currentUser value:
     return Scaffold(
-      body: currentUser != null ? HomePage() : const LoginPage(),
+      body: currentUser != null ? const HomePage() : const LoginPage(),
     );
   }
 }

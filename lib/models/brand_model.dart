@@ -1,5 +1,7 @@
 import 'package:community_app/models/user_model.dart';
+import 'package:community_app/utils/color_utils.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class BrandModel extends ChangeNotifier {
   String name = "";
@@ -7,6 +9,7 @@ class BrandModel extends ChangeNotifier {
   String logoUrl = "";
   String website = "";
   String relationship = "";
+  Color mainColor = Colors.blueGrey;
 
   List<UserModel> _owners = [];
 
@@ -32,6 +35,9 @@ class BrandModel extends ChangeNotifier {
     logoUrl = json['logoUrl'];
     website = json['website'];
     relationship = json['relationship'];
+    mainColor = json.containsKey('mainColor')
+        ? ColorUtils.parseHex((json['mainColor']))
+        : Colors.blueGrey;
   }
   // Eventually other stuff would go here, notifications, friends, draft posts, etc
 }

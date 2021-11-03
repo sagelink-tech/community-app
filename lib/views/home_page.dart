@@ -49,6 +49,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         appBar: AppBar(
           title: const Text('Sagelink'),
+          backgroundColor: Colors.blueGrey,
           actions: [
             TextButton.icon(
               style: TextButton.styleFrom(primary: Colors.white),
@@ -76,7 +77,9 @@ class BrandTile extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: ListTile(
         leading: CircleAvatar(
-            backgroundColor: Colors.blue, child: Text(brand.name[0])),
+            backgroundColor: brand.mainColor,
+            foregroundColor: Colors.white,
+            child: Text(brand.name[0])),
         title: Text(
           brand.name,
           key: Key('title_$itemNo'),
