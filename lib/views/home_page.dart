@@ -1,3 +1,5 @@
+import 'package:community_app/commands/get_brands_command.dart';
+import 'package:community_app/models/brand_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +24,7 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isLoading = true);
     // Run command
 
-    await RefreshPostsCommand().run(currentUser);
+    await GetBrandsCommand().run(currentUser);
 
     // Re-enable refresh btn when command is done
     setState(() => _isLoading = false);
@@ -31,21 +33,58 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     // Bind to UserModel.userPosts
-    var users =
-        context.select<UserModel, List<String>>((value) => value.userPosts);
+    var brands =
+        context.select<UserModel, List<BrandModel>>((value) => value.brands);
 
     // Render list of widgets
-    var listWidgets = users.map((post) => Text(post)).toList();
+    var listWidgets = brands.map((brand) => Text(brand.name)).toList();
+    var listBuilder = ListView.builder(
+        itemCount: brands.length,
+        cacheExtent: 20,
+        controller: ScrollController(),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        itemBuilder: (context, index) => BrandTile(index));
 
     return Scaffold(
-      body: Column(
-        children: [
-          Flexible(child: ListView(children: listWidgets)),
-          TextButton(
-            child: const Text("REFRESH"),
-            onPressed: _isLoading ? null : _handleRefreshPressed,
-          ),
-        ],
+        appBar: AppBar(
+          title: const Text('Sagelink'),
+          actions: [
+            TextButton.icon(
+              style: TextButton.styleFrom(primary: Colors.white),
+              onPressed: _isLoading ? null : _handleRefreshPressed,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Refresh'),
+            ),
+          ],
+        ),
+        body: listBuilder);
+  }
+}
+
+class BrandTile extends StatelessWidget {
+  final int itemNo;
+
+  const BrandTile(this.itemNo, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var user = Provider.of<UserModel>(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListTile(
+        leading: CircleAvatar(
+            backgroundColor: Colors.blue,
+            child: Text(user.brands[itemNo].name[0])),
+        title: Text(
+          user.brands[itemNo].name,
+          key: Key('text_$itemNo'),
+        ),
+        trailing: IconButton(
+          key: Key('icon_$itemNo'),
+          icon: const Icon(Icons.arrow_forward),
+          onPressed: () {},
+        ),
       ),
     );
   }
