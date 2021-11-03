@@ -8,6 +8,8 @@ import '../models/app_model.dart';
 import '../models/user_model.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -37,12 +39,11 @@ class _HomePageState extends State<HomePage> {
         context.select<UserModel, List<BrandModel>>((value) => value.brands);
 
     // Render list of widgets
-    var listWidgets = brands.map((brand) => Text(brand.name)).toList();
     var listBuilder = ListView.builder(
         itemCount: brands.length,
         cacheExtent: 20,
         controller: ScrollController(),
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 5),
         itemBuilder: (context, index) => BrandTile(index));
 
     return Scaffold(
@@ -69,17 +70,18 @@ class BrandTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<UserModel>(context);
+    var brand = user.brands[itemNo];
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ListTile(
         leading: CircleAvatar(
-            backgroundColor: Colors.blue,
-            child: Text(user.brands[itemNo].name[0])),
+            backgroundColor: Colors.blue, child: Text(brand.name[0])),
         title: Text(
-          user.brands[itemNo].name,
-          key: Key('text_$itemNo'),
+          brand.name,
+          key: Key('title_$itemNo'),
         ),
+        subtitle: Text(brand.relationship, key: Key('subtitle_$itemNo')),
         trailing: IconButton(
           key: Key('icon_$itemNo'),
           icon: const Icon(Icons.arrow_forward),

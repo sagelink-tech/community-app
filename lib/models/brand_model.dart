@@ -6,6 +6,7 @@ class BrandModel extends ChangeNotifier {
   String description = "";
   String logoUrl = "";
   String website = "";
+  String relationship = "";
 
   List<UserModel> _owners = [];
 
@@ -30,6 +31,7 @@ class BrandModel extends ChangeNotifier {
     description = json['description'];
     logoUrl = json['logoUrl'];
     website = json['website'];
+    relationship = json['relationship'];
   }
   // Eventually other stuff would go here, notifications, friends, draft posts, etc
 }
