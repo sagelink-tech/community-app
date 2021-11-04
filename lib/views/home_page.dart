@@ -1,11 +1,10 @@
 import 'package:community_app/commands/get_brands_command.dart';
-import 'package:community_app/commands/get_brand_command.dart';
 import 'package:community_app/models/brand_model.dart';
+import 'package:community_app/views/brand_list/brand_list.dart';
 import 'package:community_app/views/brand_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../commands/refresh_posts_command.dart';
 import '../models/app_model.dart';
 import '../models/user_model.dart';
 
@@ -34,19 +33,19 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isLoading = false);
   }
 
+  void _handleBrandSelection(BuildContext context, String brandId) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => BrandHomepage(brandId: brandId)));
+    return;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Bind to UserModel.userPosts
     var brands =
         context.select<UserModel, List<BrandModel>>((value) => value.brands);
-
-    // Render list of widgets
-    var listBuilder = ListView.builder(
-        itemCount: brands.length,
-        cacheExtent: 20,
-        controller: ScrollController(),
-        padding: const EdgeInsets.symmetric(vertical: 5),
-        itemBuilder: (context, index) => BrandTile(index));
 
     return Scaffold(
         appBar: AppBar(
@@ -61,48 +60,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        body: listBuilder);
-  }
-}
-
-class BrandTile extends StatelessWidget {
-  final int itemNo;
-
-  const BrandTile(this.itemNo, {Key? key}) : super(key: key);
-
-  void _handleBrandSelection(context, String brandId) async {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => BrandHomepage(brandId: brandId)));
-    return;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var user = Provider.of<UserModel>(context);
-    var brand = user.brands[itemNo];
-
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ListTile(
-        leading: CircleAvatar(
-            backgroundColor: brand.mainColor,
-            foregroundColor: Colors.white,
-            child: Text(brand.name[0])),
-        title: Text(
-          brand.name,
-          key: Key('title_$itemNo'),
-        ),
-        subtitle: Text(brand.relationship, key: Key('subtitle_$itemNo')),
-        trailing: IconButton(
-          key: Key('icon_$itemNo'),
-          icon: const Icon(Icons.arrow_forward),
-          onPressed: () {
-            _handleBrandSelection(context, brand.id);
-          },
-        ),
-      ),
-    );
+        body: BrandListView(brands, _handleBrandSelection));
   }
 }
