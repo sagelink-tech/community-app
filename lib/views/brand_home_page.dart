@@ -40,7 +40,7 @@ class _BrandHomepageState extends State<BrandHomepage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _isLoading ? const Text('Loading') : Text(brand!.name),
+        title: _isLoading ? const Text('Loading') : Text(brand.name),
         backgroundColor: brand.mainColor,
         actions: [
           TextButton.icon(
