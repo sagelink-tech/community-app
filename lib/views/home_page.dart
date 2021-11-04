@@ -52,14 +52,14 @@ class _HomePageState extends State<HomePage> {
           title: const Text('Sagelink'),
           backgroundColor: Colors.blueGrey,
           actions: [
-            TextButton.icon(
-              style: TextButton.styleFrom(primary: Colors.white),
+            IconButton(
               onPressed: _isLoading ? null : _handleRefreshPressed,
               icon: const Icon(Icons.refresh),
-              label: const Text('Refresh'),
             ),
           ],
         ),
-        body: BrandListView(brands, _handleBrandSelection));
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : BrandListView(brands, _handleBrandSelection));
   }
 }

@@ -43,11 +43,9 @@ class _BrandHomepageState extends State<BrandHomepage> {
         title: _isLoading ? const Text('Loading') : Text(brand.name),
         backgroundColor: brand.mainColor,
         actions: [
-          TextButton.icon(
-            style: TextButton.styleFrom(primary: Colors.white),
+          IconButton(
             onPressed: _isLoading ? null : _loadBrand,
             icon: const Icon(Icons.refresh),
-            label: const Text('Refresh'),
           ),
         ],
       ),
