@@ -13,29 +13,35 @@ class BrandHomepage extends StatefulWidget {
 }
 
 class _BrandHomepageState extends State<BrandHomepage> {
-  bool _isLoading = false;
-  BrandModel? brand;
+  bool _isLoading = true;
+  BrandModel brand = BrandModel();
 
   void _loadBrand() async {
-    if (_isLoading) {
-      return;
-    }
     // Disable the RefreshBtn while the Command is running
     setState(() => _isLoading = true);
     // Run command
 
-    brand = await GetBrandCommand().run(widget.brandId);
+    var updated = await GetBrandCommand().run(widget.brandId);
+    if (updated != null) {
+      brand = updated;
+    }
 
     // Re-enable refresh btn when command is done
     setState(() => _isLoading = false);
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadBrand();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: brand == null ? const Text('Loading') : Text(brand!.name),
-        backgroundColor: brand == null ? Colors.blueGrey : brand!.mainColor,
+        title: _isLoading ? const Text('Loading') : Text(brand!.name),
+        backgroundColor: brand.mainColor,
         actions: [
           TextButton.icon(
             style: TextButton.styleFrom(primary: Colors.white),
@@ -46,9 +52,9 @@ class _BrandHomepageState extends State<BrandHomepage> {
         ],
       ),
       body: Center(
-          child: (brand == null
+          child: (_isLoading
               ? const CircularProgressIndicator()
-              : Text(brand!.description))),
+              : Text(brand.description))),
     );
   }
 }
