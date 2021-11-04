@@ -1,5 +1,5 @@
 import 'base_command.dart';
-import 'refresh_posts_command.dart';
+import 'get_brands_command.dart';
 
 class LoginCommand extends BaseCommand {
   Future<bool> run(String user, String pass) async {
@@ -8,7 +8,7 @@ class LoginCommand extends BaseCommand {
 
     // Run a 2nd command if service call was successful
     if (loginSuccess) {
-      await RefreshPostsCommand().run(user);
+      await GetBrandsCommand().run(user);
     }
     // Update appModel with current user. Any views bound to this will rebuild
     appModel.currentUser = loginSuccess ? user : null;
