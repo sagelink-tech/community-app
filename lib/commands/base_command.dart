@@ -13,6 +13,7 @@ class BaseCommand {
   // Models
   UserModel userModel = _mainContext!.read();
   AppModel appModel = _mainContext!.read();
+
   // Services
   UserService userService = _mainContext!.read();
 }

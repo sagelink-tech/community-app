@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'commands/base_command.dart' as Commands;
 import 'models/app_model.dart';
 import 'models/user_model.dart';
+import 'models/brand_model.dart';
 import 'services/user_service.dart';
 import 'views/home_page.dart';
 import 'views/login_page.dart';
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (c) => AppModel()),
         ChangeNotifierProvider(create: (c) => UserModel()),
+        ChangeNotifierProvider(create: (c) => BrandModel()),
         Provider(create: (c) => UserService()),
       ],
       child: Builder(builder: (context) {

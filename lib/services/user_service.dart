@@ -5,99 +5,112 @@ import 'package:community_app/models/brand_model.dart';
 const String data = '''
 [
     {
-        "name": "Sakara Life",
-        "description": "Sells stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following",
-        "mainColor": "#35654e"
+      "id": "100",
+      "name": "Sakara Life",
+      "description": "Sells stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following",
+      "mainColor": "#35654e"
     },
     {
-        "name": "Haus Liquor",
-        "description": "Sells some stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "VIP Tier",
-        "mainColor": "#000000"
+      "id": "101",
+      "name": "Haus Liquor",
+      "description": "Sells some stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "VIP Tier",
+      "mainColor": "#000000"
     },
     {
-        "name": "Acapella",
-        "description": "Sells different stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Loyalist",
-        "mainColor": "#38383b"
+      "id": "102",
+      "name": "Acapella",
+      "description": "Sells different stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Loyalist",
+      "mainColor": "#38383b"
     },
     {
-        "name": "Pricklee",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Newcomer",
-        "mainColor": "#192862"
+      "id": "103",
+      "name": "Pricklee",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Newcomer",
+      "mainColor": "#192862"
     },
     {
-        "name": "Brand 5",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following"
+      "id": "104",
+      "name": "Brand 5",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following"
     },
     {
-        "name": "Brand 6",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following"
+      "id": "105",
+      "name": "Brand 6",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following"
     },
     {
-        "name": "Brand 7",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following"
+      "id": "106",
+      "name": "Brand 7",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following"
     },
     {
-        "name": "Brand 8",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following"
+      "id": "107",
+      "name": "Brand 8",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following"
     },
     {
-        "name": "Brand 9",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following"
+      "id": "108",
+      "name": "Brand 9",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following"
     },
     {
-        "name": "Brand 10",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following"
+      "id": "109",
+      "name": "Brand 10",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following"
     },
     {
-        "name": "Brand 11",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following"
+      "id": "110",
+      "name": "Brand 11",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following"
     },
     {
-        "name": "Brand 12",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following"
+      "id": "111",
+      "name": "Brand 12",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following"
     },
     {
-        "name": "Brand 13",
-        "description": "Sells drink stuff.",
-        "logoUrl": "http://logo.url",
-        "website": "http://google.com",
-        "relationship": "Following"
+      "id": "112",
+      "name": "Brand 13",
+      "description": "Sells drink stuff.",
+      "logoUrl": "http://logo.url",
+      "website": "http://google.com",
+      "relationship": "Following"
     }
 ]
 ''';
@@ -123,5 +136,16 @@ class UserService {
       brandModels.add(BrandModel.fromJson(brand));
     }
     return brandModels;
+  }
+
+  Future<BrandModel?> getBrand(String brandId) async {
+    await Future.delayed(const Duration(seconds: 1));
+    var brands = json.decode(data);
+    for (var b in brands) {
+      if (b['id'] == brandId) {
+        return BrandModel.fromJson(b);
+      }
+    }
+    return null;
   }
 }

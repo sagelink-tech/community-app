@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class BrandModel extends ChangeNotifier {
+  String id = "";
   String name = "";
   String description = "";
   String logoUrl = "";
@@ -29,7 +30,10 @@ class BrandModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  BrandModel() {}
+
   BrandModel.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
     name = json['name'];
     description = json['description'];
     logoUrl = json['logoUrl'];

@@ -1,5 +1,7 @@
 import 'package:community_app/commands/get_brands_command.dart';
+import 'package:community_app/commands/get_brand_command.dart';
 import 'package:community_app/models/brand_model.dart';
+import 'package:community_app/views/brand_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -68,6 +70,14 @@ class BrandTile extends StatelessWidget {
 
   const BrandTile(this.itemNo, {Key? key}) : super(key: key);
 
+  void _handleBrandSelection(context, String brandId) async {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => BrandHomepage(brandId: brandId)));
+    return;
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<UserModel>(context);
@@ -88,7 +98,9 @@ class BrandTile extends StatelessWidget {
         trailing: IconButton(
           key: Key('icon_$itemNo'),
           icon: const Icon(Icons.arrow_forward),
-          onPressed: () {},
+          onPressed: () {
+            _handleBrandSelection(context, brand.id);
+          },
         ),
       ),
     );
