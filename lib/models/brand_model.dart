@@ -30,7 +30,7 @@ class BrandModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  BrandModel() {}
+  BrandModel();
 
   BrandModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];

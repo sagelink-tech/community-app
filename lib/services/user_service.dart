@@ -1,8 +1,9 @@
 import 'dart:math';
 import 'dart:convert';
 import 'package:community_app/models/brand_model.dart';
+import 'package:community_app/models/user_model.dart';
 
-const String data = '''
+const String brandData = '''
 [
     {
       "id": "100",
@@ -115,11 +116,26 @@ const String data = '''
 ]
 ''';
 
+const userData = '''
+{
+  "id": "001",
+  "username": "TestAccount",
+  "name": "Test User",
+  "email": "test@test.com",
+  "accountPictureUrl": "http://logo.url"
+}
+''';
+
 class UserService {
   Future<bool> login(String user, String pass) async {
     // Fake a network service call, and return true
     await Future.delayed(const Duration(seconds: 1));
     return true;
+  }
+
+  Future<UserModel> getUserAccount(String userId) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return UserModel.fromJson(json.decode(userData));
   }
 
   Future<List<String>> getPosts(String user) async {
@@ -130,7 +146,7 @@ class UserService {
 
   Future<List<BrandModel>> getBrands(String user) async {
     await Future.delayed(const Duration(seconds: 1));
-    var brands = json.decode(data);
+    var brands = json.decode(brandData);
     List<BrandModel> brandModels = [];
     for (var brand in brands) {
       brandModels.add(BrandModel.fromJson(brand));
@@ -140,7 +156,7 @@ class UserService {
 
   Future<BrandModel?> getBrand(String brandId) async {
     await Future.delayed(const Duration(seconds: 1));
-    var brands = json.decode(data);
+    var brands = json.decode(brandData);
     for (var b in brands) {
       if (b['id'] == brandId) {
         return BrandModel.fromJson(b);
