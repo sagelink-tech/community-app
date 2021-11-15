@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:community_app/commands/get_brand_command.dart';
+import 'package:community_app/commands/get_posts_command.dart';
 import 'package:community_app/models/brand_model.dart';
 
 class BrandHomepage extends StatefulWidget {
@@ -22,6 +23,8 @@ class _BrandHomepageState extends State<BrandHomepage> {
     // Run command
 
     var updated = await GetBrandCommand().run(widget.brandId);
+    // var brandPosts = await GetPostsCommand().run(widget.brandId);
+    // print(brandPosts);
     if (updated != null) {
       brand = updated;
     }

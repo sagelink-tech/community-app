@@ -31,6 +31,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.3
   provider:
+  graphql_flutter: ^5.0.0
 
 
 dev_dependencies:

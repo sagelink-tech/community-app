@@ -1,4 +1,5 @@
 import 'package:community_app/commands/get_brands_command.dart';
+import 'package:community_app/commands/get_posts_command.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/views/brand_list/brand_list.dart';
 import 'package:community_app/views/brand_home_page.dart';
@@ -34,6 +35,13 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isLoading = false);
   }
 
+  void _goToAccount() async {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const AccountPage(userId: "001")));
+  }
+
   void _handleBrandSelection(BuildContext context, String brandId) {
     Navigator.push(
         context,
@@ -42,10 +50,13 @@ class _HomePageState extends State<HomePage> {
     return;
   }
 
+  void _handlePostSelection(BuildContext context, String postId) {
+    return;
+  }
+
   @override
   void initState() {
     super.initState();
-    var currentUser = context.read<AppModel>().currentUser;
   }
 
   @override
@@ -60,8 +71,8 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.blueGrey,
         actions: [
           IconButton(
-            onPressed: _isLoading ? null : _handleRefreshPressed,
-            icon: const Icon(Icons.refresh),
+            onPressed: _isLoading ? null : _goToAccount,
+            icon: const Icon(Icons.account_circle),
           ),
         ],
       ),
@@ -105,15 +116,6 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             title: const Text('Shop'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            title: const Text('Account'),
             onTap: () {
               // Update the state of the app
               // ...
