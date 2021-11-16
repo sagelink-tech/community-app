@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:community_app/commands/get_brand_command.dart';
-import 'package:community_app/commands/get_posts_command.dart';
 import 'package:community_app/models/brand_model.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+
+String getBrandQuery = """
+query Brands(\$where: BrandWhere) {
+  brands(where: \$where) {
+    id
+    name
+    description
+    mainColor
+  }
+}
+""";
 
 class BrandHomepage extends StatefulWidget {
   const BrandHomepage({Key? key, required this.brandId}) : super(key: key);
@@ -14,48 +25,42 @@ class BrandHomepage extends StatefulWidget {
 }
 
 class _BrandHomepageState extends State<BrandHomepage> {
-  bool _isLoading = true;
-  BrandModel brand = BrandModel();
-
-  void _loadBrand() async {
-    // Disable the RefreshBtn while the Command is running
-    setState(() => _isLoading = true);
-    // Run command
-
-    var updated = await GetBrandCommand().run(widget.brandId);
-    // var brandPosts = await GetPostsCommand().run(widget.brandId);
-    // print(brandPosts);
-    if (updated != null) {
-      brand = updated;
-    }
-
-    // Re-enable refresh btn when command is done
-    setState(() => _isLoading = false);
-  }
+  BrandModel _brand = BrandModel();
 
   @override
   void initState() {
     super.initState();
-    _loadBrand();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: _isLoading ? const Text('Loading') : Text(brand.name),
-        backgroundColor: brand.mainColor,
-        actions: [
-          IconButton(
-            onPressed: _isLoading ? null : _loadBrand,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-      body: Center(
-          child: (_isLoading
-              ? const CircularProgressIndicator()
-              : Text(brand.description))),
-    );
+    return Query(
+        options: QueryOptions(
+          document: gql(getBrandQuery),
+          variables: {
+            "where": {"id": widget.brandId},
+            "options": {"limit": 1}
+          },
+        ),
+        builder: (QueryResult result,
+            {VoidCallback? refetch, FetchMore? fetchMore}) {
+          if (result.data != null) {
+            _brand = BrandModel.fromJson(result.data?['brands'][0]);
+          }
+          return Scaffold(
+            appBar: AppBar(
+              title: result.isLoading || result.hasException
+                  ? const Text('')
+                  : Text(_brand.name),
+              backgroundColor: _brand.mainColor,
+            ),
+            body: Center(
+                child: (result.hasException
+                    ? Text(result.exception.toString())
+                    : result.isLoading
+                        ? const CircularProgressIndicator()
+                        : Text(_brand.description))),
+          );
+        });
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import "package:graphql_flutter/graphql_flutter.dart";
 
 import 'commands/base_command.dart' as Commands;
 import 'models/app_model.dart';
@@ -9,25 +10,35 @@ import 'services/user_service.dart';
 import 'views/home_page.dart';
 import 'views/login_page.dart';
 
-void main() => runApp(const MyApp());
+void main() async {
+  await initHiveForFlutter();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext _) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (c) => AppModel()),
-        ChangeNotifierProvider(create: (c) => UserModel()),
-        ChangeNotifierProvider(create: (c) => BrandModel()),
-        Provider(create: (c) => UserService()),
-      ],
-      child: Builder(builder: (context) {
-        // Save a context our Commands can use to access provided Models and Services
-        Commands.init(context);
-        return const MaterialApp(home: AppScaffold());
-      }),
+    final HttpLink link = HttpLink("http://localhost:4000/");
+
+    ValueNotifier<GraphQLClient> client = ValueNotifier(
+        GraphQLClient(cache: GraphQLCache(store: HiveStore()), link: link));
+
+    return GraphQLProvider(
+      client: client,
+      child: MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (c) => AppModel()),
+            ChangeNotifierProvider(create: (c) => UserModel()),
+            ChangeNotifierProvider(create: (c) => BrandModel()),
+            Provider(create: (c) => UserService()),
+          ],
+          child: Builder(builder: (context) {
+            // Save a context our Commands can use to access provided Models and Services
+            Commands.init(context);
+            return const MaterialApp(home: AppScaffold());
+          })),
     );
   }
 }

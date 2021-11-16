@@ -13,7 +13,9 @@ const String brandData = '''
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
       "relationship": "Following",
-      "mainColor": "#35654e"
+      "mainColor": "#35654e",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "101",
@@ -22,7 +24,9 @@ const String brandData = '''
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
       "relationship": "VIP Tier",
-      "mainColor": "#000000"
+      "mainColor": "#000000",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "102",
@@ -31,7 +35,9 @@ const String brandData = '''
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
       "relationship": "Loyalist",
-      "mainColor": "#38383b"
+      "mainColor": "#38383b",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "103",
@@ -40,7 +46,9 @@ const String brandData = '''
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
       "relationship": "Newcomer",
-      "mainColor": "#192862"
+      "mainColor": "#192862",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "104",
@@ -48,7 +56,9 @@ const String brandData = '''
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following"
+      "relationship": "Following",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "105",
@@ -56,7 +66,9 @@ const String brandData = '''
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following"
+      "relationship": "Following",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "106",
@@ -64,7 +76,9 @@ const String brandData = '''
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following"
+      "relationship": "Following",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "107",
@@ -72,7 +86,9 @@ const String brandData = '''
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following"
+      "relationship": "Following",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "108",
@@ -80,7 +96,9 @@ const String brandData = '''
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following"
+      "relationship": "Following",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "109",
@@ -88,7 +106,9 @@ const String brandData = '''
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following"
+      "relationship": "Following",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "110",
@@ -96,7 +116,9 @@ const String brandData = '''
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following"
+      "relationship": "Following",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "111",
@@ -104,7 +126,9 @@ const String brandData = '''
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following"
+      "relationship": "Following",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
       "id": "112",
@@ -112,7 +136,9 @@ const String brandData = '''
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following"
+      "relationship": "Following",
+      "shopifyToken": "123",
+      "domain": "test.com"
     }
 ]
 ''';

@@ -1,14 +1,20 @@
-import 'package:community_app/commands/get_brands_command.dart';
-import 'package:community_app/commands/get_posts_command.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/views/brand_list/brand_list.dart';
 import 'package:community_app/views/brand_home_page.dart';
 import 'package:community_app/views/account_page.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
-import '../models/app_model.dart';
-import '../models/user_model.dart';
+String getBrandsQuery = '''
+query Brands {
+  brands {
+    name
+    shopifyToken
+    mainColor
+    id
+  }
+}
+''';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -19,21 +25,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool _isLoading = false;
-
-  void _handleRefreshPressed() async {
-    var currentUser = context.read<AppModel>().currentUser;
-    if (_isLoading || currentUser == null) {
-      return;
-    }
-    // Disable the RefreshBtn while the Command is running
-    setState(() => _isLoading = true);
-    // Run command
-
-    await GetBrandsCommand().run(currentUser);
-
-    // Re-enable refresh btn when command is done
-    setState(() => _isLoading = false);
-  }
 
   void _goToAccount() async {
     Navigator.push(
@@ -50,10 +41,6 @@ class _HomePageState extends State<HomePage> {
     return;
   }
 
-  void _handlePostSelection(BuildContext context, String postId) {
-    return;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -61,9 +48,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Bind to UserModel.userPosts
-    var brands =
-        context.select<UserModel, List<BrandModel>>((value) => value.brands);
+    List<BrandModel> brands = [];
 
     return Scaffold(
       appBar: AppBar(
@@ -76,12 +61,22 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              const Text("My Brands"),
-              Expanded(child: BrandListView(brands, _handleBrandSelection))
-            ]),
+      body: Query(
+          options: QueryOptions(document: gql(getBrandsQuery)),
+          builder: (QueryResult result,
+              {VoidCallback? refetch, FetchMore? fetchMore}) {
+            if (result.hasException) {
+              return Text(result.exception.toString());
+            }
+            if (result.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            brands = [];
+            for (var b in result.data?['brands']) {
+              brands.add(BrandModel.fromJson(b));
+            }
+            return BrandListView(brands, _handleBrandSelection);
+          }),
       drawer: Drawer(
         child: ListView(padding: EdgeInsets.zero, children: [
           UserAccountsDrawerHeader(

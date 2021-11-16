@@ -35,11 +35,11 @@ class BrandModel extends ChangeNotifier {
   BrandModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    description = json['description'];
-    logoUrl = json['logoUrl'];
-    website = json['website'];
-    relationship = json['relationship'];
-    mainColor = json.containsKey('mainColor')
+    description = json.containsKey('description') ? json['description'] : "";
+    logoUrl = json.containsKey('logoUrl') ? json['logoUrl'] : "";
+    website = json.containsKey('website') ? json['website'] : "";
+    relationship = json.containsKey('relationship') ? json['relationship'] : "";
+    mainColor = json.containsKey('mainColor') && json['mainColor'] != null
         ? ColorUtils.parseHex((json['mainColor']))
         : Colors.blueGrey;
   }
