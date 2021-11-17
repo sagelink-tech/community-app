@@ -17,13 +17,11 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   LoggedInUserStateNotifier(state) : super(state ?? LoggedInUser());
 
   void loginWithUserId(String userId) {
-    print('logging in');
     final user = LoggedInUser(userId: userId, status: LoginState.isLoggedIn);
     state = user;
   }
 
   void logout() {
-    print('logging out');
     final user = LoggedInUser();
     state = user;
   }
