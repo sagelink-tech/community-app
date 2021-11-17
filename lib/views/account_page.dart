@@ -1,6 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:community_app/models/user_model.dart';
-import 'package:community_app/commands/get_user_account.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+
+String getUserQuery = """
+query Users(\$where: UserWhere) {
+  users(where: \$where) {
+    id
+    username
+    email
+    name
+  }
+}
+""";
 
 class AccountPage extends StatefulWidget {
   const AccountPage({Key? key, required this.userId}) : super(key: key);
@@ -13,51 +24,48 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  bool _isLoading = true;
-  UserModel user = UserModel();
-
-  void _loadUser() async {
-    // Disable the RefreshBtn while the Command is running
-    setState(() => _isLoading = true);
-    // Run command
-
-    var updated = await GetUserAccount().run(widget.userId);
-    if (updated != null) {
-      user = updated;
-    }
-
-    // Re-enable refresh btn when command is done
-    setState(() => _isLoading = false);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUser();
-  }
+  UserModel _user = UserModel();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: _isLoading ? const Text('Loading') : Text(user.username),
-        actions: [
-          IconButton(
-            onPressed: _isLoading ? null : _loadUser,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-      body: Center(
-        child: (_isLoading
-            ? const CircularProgressIndicator()
-            : Column(
-                children: [
-                  Text(user.name),
-                  Text(user.email),
-                ],
-              )),
-      ),
-    );
+    return Query(
+        options: QueryOptions(
+          document: gql(getUserQuery),
+          variables: {
+            "where": {"id": widget.userId},
+            "options": {"limit": 1}
+          },
+        ),
+        builder: (QueryResult result,
+            {VoidCallback? refetch, FetchMore? fetchMore}) {
+          if (result.data != null) {
+            _user = UserModel.fromJson(result.data?['users'][0]);
+          }
+          return Scaffold(
+            appBar: AppBar(
+              title: result.isLoading || result.hasException
+                  ? const Text('')
+                  : Text(_user.username),
+              actions: [
+                IconButton(
+                  onPressed: result.isLoading ? null : refetch,
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
+            ),
+            body: Center(
+              child: (result.hasException
+                  ? Text(result.exception.toString())
+                  : result.isLoading
+                      ? const CircularProgressIndicator()
+                      : Column(
+                          children: [
+                            Text(_user.name),
+                            Text(_user.email),
+                          ],
+                        )),
+            ),
+          );
+        });
   }
 }

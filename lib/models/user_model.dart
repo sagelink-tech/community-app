@@ -32,7 +32,7 @@ class UserModel extends ChangeNotifier {
     username = json['username'];
     name = json['name'];
     email = json['email'];
-    accountPictureUrl = json['accountPictureUrl'];
+    //accountPictureUrl = json['accountPictureUrl'];
   }
 
   // Eventually other stuff would go here, notifications, friends, draft posts, etc

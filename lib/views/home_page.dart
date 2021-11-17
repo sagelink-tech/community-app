@@ -3,7 +3,9 @@ import 'package:community_app/views/brand_list/brand_list.dart';
 import 'package:community_app/views/brand_home_page.dart';
 import 'package:community_app/views/account_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import '../providers.dart';
 
 String getBrandsQuery = '''
 query Brands {
@@ -16,21 +18,13 @@ query Brands {
 }
 ''';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
 
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  bool _isLoading = false;
-
-  void _goToAccount() async {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const AccountPage(userId: "001")));
+  void _goToAccount(BuildContext context, String userId) async {
+    print(userId);
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
   }
 
   void _handleBrandSelection(BuildContext context, String brandId) {
@@ -42,13 +36,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     List<BrandModel> brands = [];
+
+    final loggedInUser = ref.watch(loggedInUserProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +47,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.blueGrey,
         actions: [
           IconButton(
-            onPressed: _isLoading ? null : _goToAccount,
+            onPressed: () => _goToAccount(context, loggedInUser.userId),
             icon: const Icon(Icons.account_circle),
           ),
         ],
@@ -85,10 +76,7 @@ class _HomePageState extends State<HomePage> {
             decoration: const BoxDecoration(color: Colors.blueGrey),
             onDetailsPressed: () {
               Navigator.pop(context);
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const AccountPage(userId: "001")));
+              _goToAccount(context, loggedInUser.userId);
             },
           ),
           ListTile(
@@ -116,6 +104,15 @@ class _HomePageState extends State<HomePage> {
               // ...
               // Then close the drawer
               Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            title: const Text('Logout'),
+            onTap: () {
+              // Update the state of the app
+              // ...
+              // Then close the drawer
+              ref.read(loggedInUserProvider.notifier).logout();
             },
           ),
         ]),

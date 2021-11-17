@@ -7,5 +7,13 @@ class AppModel extends ChangeNotifier {
     _currentUser = currentUser;
     notifyListeners();
   }
+
+  List<String> _activeCommunityIDs = [];
+  List<String> get activeCommunityIDs => _activeCommunityIDs;
+  set activeCommunityIDs(List<String> activeCommunityIDs) {
+    _activeCommunityIDs = activeCommunityIDs;
+    notifyListeners();
+  }
+
   // Eventually other stuff would go here, appSettings, premiumUser flags, currentTheme, etc...
 }

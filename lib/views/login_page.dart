@@ -1,33 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers.dart';
 
-import '../commands/login_command.dart';
-
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({Key? key}) : super(key: key);
 
-  @override
-  _LoginPageState createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  bool _isLoading = false;
-
-  void _handleLoginPressed() async {
-    setState(() => _isLoading = true);
-    bool success = await LoginCommand().run("someuser", "somepass");
-    if (!success) setState(() => _isLoading = false);
-  }
+  final userId = "30172a8c-c407-4852-b5b4-d0dedb39bde9";
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loggedInUser = ref.watch(loggedInUserProvider.notifier);
+
     return Scaffold(
       body: Center(
-        child: _isLoading
-            ? const CircularProgressIndicator()
-            : TextButton(
-                child: const Text("Login"),
-                onPressed: _handleLoginPressed,
-              ),
+        child: TextButton(
+          child: const Text("Login"),
+          onPressed: () => {loggedInUser.loginWithUserId(userId)},
+        ),
       ),
     );
   }

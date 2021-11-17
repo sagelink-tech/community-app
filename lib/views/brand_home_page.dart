@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:community_app/commands/get_brand_command.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -26,11 +25,6 @@ class BrandHomepage extends StatefulWidget {
 
 class _BrandHomepageState extends State<BrandHomepage> {
   BrandModel _brand = BrandModel();
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
