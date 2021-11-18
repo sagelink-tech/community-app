@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:community_app/views/posts/new_post_view.dart';
 
 String getBrandQuery = """
 query Brands(\$where: BrandWhere) {
@@ -42,19 +43,31 @@ class _BrandHomepageState extends State<BrandHomepage> {
             _brand = BrandModel.fromJson(result.data?['brands'][0]);
           }
           return Scaffold(
-            appBar: AppBar(
-              title: result.isLoading || result.hasException
-                  ? const Text('')
-                  : Text(_brand.name),
-              backgroundColor: _brand.mainColor,
-            ),
-            body: Center(
+              appBar: AppBar(
+                title: result.isLoading || result.hasException
+                    ? const Text('')
+                    : Text(_brand.name),
+                backgroundColor: _brand.mainColor,
+              ),
+              body: Center(
                 child: (result.hasException
                     ? Text(result.exception.toString())
                     : result.isLoading
                         ? const CircularProgressIndicator()
-                        : Text(_brand.description))),
-          );
+                        : ListView(children: [
+                            Text(_brand.description),
+                            buildNewPostButton()
+                          ])),
+              ));
         });
   }
+
+  Widget buildNewPostButton() => TextButton(
+      child: const Text("New Post"),
+      onPressed: () => {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => NewPostPage(brandId: widget.brandId)))
+          });
 }
