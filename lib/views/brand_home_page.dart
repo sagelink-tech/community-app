@@ -3,6 +3,7 @@ import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:community_app/views/posts/new_post_view.dart';
+import 'package:community_app/views/posts/post_view.dart';
 import 'package:community_app/views/posts/post_list.dart';
 
 String getBrandQuery = """
@@ -92,7 +93,19 @@ class _BrandHomepageState extends State<BrandHomepage> {
                                 buildNewPostButton(refetch!),
                                 Expanded(
                                     child: PostListView(
-                                        _posts, (context, postId) => {}))
+                                        _posts,
+                                        (context, postId) => {
+                                              if (postId != null)
+                                                {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              PostView(
+                                                                  postId:
+                                                                      postId)))
+                                                }
+                                            }))
                               ])),
               ));
         });
