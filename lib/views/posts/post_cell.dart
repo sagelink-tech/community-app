@@ -31,7 +31,13 @@ class PostCell extends StatelessWidget {
           post.title,
           key: Key('title_$itemNo'),
         ),
-        subtitle: Text(post.body, key: Key('subtitle_$itemNo')),
+        subtitle: Column(
+            children: [
+              Text(post.body),
+              Text(post.commentCount.toString() + " comments")
+            ],
+            crossAxisAlignment: CrossAxisAlignment.start,
+            key: Key('subtitle_$itemNo')),
         trailing: IconButton(
           key: Key('icon_$itemNo'),
           icon: const Icon(Icons.arrow_forward),

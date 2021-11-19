@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:community_app/models/user_model.dart';
 import 'package:community_app/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
