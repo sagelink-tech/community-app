@@ -3,7 +3,7 @@ import 'package:community_app/views/posts/post_cell.dart';
 import 'package:flutter/material.dart';
 
 typedef OnSelectionCallback = void Function(
-    BuildContext context, String? brandId);
+    BuildContext context, String? postId);
 
 class PostListView extends StatelessWidget {
   final List<PostModel> posts;

@@ -13,9 +13,14 @@ mutation CreatePosts(\$input: [PostCreateInput!]!) {
 }
 """;
 
+typedef OnCompletionCallback = void Function();
+
 class NewPostPage extends ConsumerStatefulWidget {
-  const NewPostPage({Key? key, required this.brandId}) : super(key: key);
+  const NewPostPage(
+      {Key? key, required this.brandId, required this.onCompleted})
+      : super(key: key);
   final String brandId;
+  final OnCompletionCallback onCompleted;
 
   static const routeName = '/posts';
 
@@ -24,7 +29,6 @@ class NewPostPage extends ConsumerStatefulWidget {
 }
 
 class _NewPostPageState extends ConsumerState<NewPostPage> {
-  bool _isSubmitting = false;
   final formKey = GlobalKey<FormState>();
   String? title;
   String? body;
@@ -106,7 +110,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
           options: MutationOptions(
               document: gql(createPostMutation),
               onCompleted: (dynamic resultData) {
-                print(resultData);
+                widget.onCompleted();
                 Navigator.pop(context);
               }),
           builder: (RunMutation runMutation, result) => IconButton(

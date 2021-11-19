@@ -9,9 +9,7 @@ class PostModel extends ChangeNotifier {
   String id = "";
   String title = "";
   String body = "";
-  String embeddedUrl = "";
-  String description = "";
-  String imageUrl = "";
+  int commentCount = 0;
   PostType type = PostType.undefined;
 
   BrandModel _brand = BrandModel();
@@ -37,10 +35,10 @@ class PostModel extends ChangeNotifier {
   PostModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
-    description = json['description'];
     body = json['body'];
-    embeddedUrl = json['embeddedUrl'];
-    imageUrl = json['imageUrl'];
+    commentCount = json['commentsAggregate']['count'];
+    creator = UserModel.fromJson(json['createdBy']);
+
     //Need to serialize/deserialize properly
     type = PostType.text;
   }

@@ -1,15 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:community_app/models/brand_model.dart';
+import 'package:community_app/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:community_app/views/posts/new_post_view.dart';
+import 'package:community_app/views/posts/post_list.dart';
 
 String getBrandQuery = """
-query Brands(\$where: BrandWhere) {
-  brands(where: \$where) {
+query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions) {
+  brands(where: \$where, options: \$options) {
     id
     name
     description
+    website
     mainColor
+    posts(options: \$postsOptions) {
+      commentsAggregate {
+        count
+      }
+      createdBy {
+        name
+        id
+        username
+      }
+      title
+      body
+      id
+    }
   }
 }
 """;
@@ -26,6 +42,7 @@ class BrandHomepage extends StatefulWidget {
 
 class _BrandHomepageState extends State<BrandHomepage> {
   BrandModel _brand = BrandModel();
+  List<PostModel> _posts = [];
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +51,26 @@ class _BrandHomepageState extends State<BrandHomepage> {
           document: gql(getBrandQuery),
           variables: {
             "where": {"id": widget.brandId},
-            "options": {"limit": 1}
+            "options": {"limit": 1},
+            "postsOptions": {
+              "limit": 10,
+              "sort": [
+                {"createdAt": "DESC"}
+              ]
+            }
           },
         ),
         builder: (QueryResult result,
             {VoidCallback? refetch, FetchMore? fetchMore}) {
-          if (result.data != null) {
+          if (result.isNotLoading &&
+              result.hasException == false &&
+              result.data != null) {
             _brand = BrandModel.fromJson(result.data?['brands'][0]);
+            List<PostModel> posts = [];
+            for (var p in result.data?['brands'][0]['posts']) {
+              posts.add(PostModel.fromJson(p));
+            }
+            _posts = posts;
           }
           return Scaffold(
               appBar: AppBar(
@@ -54,20 +84,27 @@ class _BrandHomepageState extends State<BrandHomepage> {
                     ? Text(result.exception.toString())
                     : result.isLoading
                         ? const CircularProgressIndicator()
-                        : ListView(children: [
-                            Text(_brand.description),
-                            buildNewPostButton()
-                          ])),
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                                Text(_brand.description),
+                                buildNewPostButton(refetch!),
+                                Expanded(
+                                    child: PostListView(
+                                        _posts, (context, postId) => {}))
+                              ])),
               ));
         });
   }
 
-  Widget buildNewPostButton() => TextButton(
+  Widget buildNewPostButton(OnCompletionCallback onCompleted) => TextButton(
       child: const Text("New Post"),
       onPressed: () => {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => NewPostPage(brandId: widget.brandId)))
+                    builder: (context) => NewPostPage(
+                        brandId: widget.brandId, onCompleted: onCompleted)))
           });
 }
