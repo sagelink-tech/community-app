@@ -1,5 +1,6 @@
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/user_model.dart';
+import 'package:community_app/models/comment_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -30,6 +31,13 @@ class PostModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<CommentModel> _comments = [];
+  List<CommentModel> get comments => _comments;
+  set comments(List<CommentModel> comments) {
+    _comments = comments;
+    notifyListeners();
+  }
+
   PostModel();
 
   PostModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +46,14 @@ class PostModel extends ChangeNotifier {
     body = json['body'];
     commentCount = json['commentsAggregate']['count'];
     creator = UserModel.fromJson(json['createdBy']);
+
+    List<CommentModel> commentList = [];
+    if (json.containsKey('comments')) {
+      for (var c in json['comments']) {
+        commentList.add(CommentModel.fromJson(c));
+      }
+    }
+    comments = commentList;
 
     //Need to serialize/deserialize properly
     type = PostType.text;

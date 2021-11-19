@@ -1,6 +1,8 @@
+import 'package:community_app/views/posts/new_comment.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:community_app/views/posts/comment_list.dart';
 
 String getPostQuery = """
 query Posts(\$where: PostWhere, \$options: CommentOptions) {
@@ -61,7 +63,6 @@ class _PostViewState extends State<PostView> {
         builder: (QueryResult result,
             {VoidCallback? refetch, FetchMore? fetchMore}) {
           if (result.isNotLoading && result.data != null) {
-            print(result.data);
             _post = PostModel.fromJson(result.data?['posts'][0]);
           }
           return Scaffold(
@@ -81,13 +82,25 @@ class _PostViewState extends State<PostView> {
                   ? Text(result.exception.toString())
                   : result.isLoading
                       ? const CircularProgressIndicator()
-                      : Column(
-                          children: [
-                            Text(_post.body),
-                            Text(_post.creator.name),
-                            Text(_post.commentCount.toString()),
-                          ],
-                        )),
+                      : Stack(children: <Widget>[
+                          Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Text(_post.body),
+                              Text(_post.creator.name),
+                              Text(_post.commentCount.toString()),
+                              Expanded(child: CommentListView(_post.comments)),
+                            ],
+                          ),
+                          Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20),
+                                  child: NewComment(
+                                      postId: widget.postId,
+                                      onCompleted: refetch!))),
+                        ])),
             ),
           );
         });
