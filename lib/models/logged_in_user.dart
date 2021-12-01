@@ -9,6 +9,7 @@ enum LoginState {
 class LoggedInUser {
   String userId = "";
   LoginState status = LoginState.isLoggedOut;
+  bool isAdmin = true;
 
   LoggedInUser({this.userId = "", this.status = LoginState.isLoggedOut});
 }

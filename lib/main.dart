@@ -1,10 +1,11 @@
+import 'package:community_app/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import "package:graphql_flutter/graphql_flutter.dart";
 
 import 'providers.dart';
 import 'models/logged_in_user.dart';
-import 'views/home_page.dart';
+import 'views/pages/home_page.dart';
 import 'views/login_page.dart';
 
 void main() async {
@@ -39,11 +40,15 @@ class AppScaffold extends ConsumerWidget {
     // Riverpod setup
     final loggedInUser = ref.watch(loggedInUserProvider);
 
+    if (loggedInUser.status == LoginState.isLoggedIn) {
+      return const MainScaffold();
+    }
+
     // Return the current view, based on the currentUser value:
-    return Scaffold(
-      body: loggedInUser.status == LoginState.isLoggedIn
-          ? const HomePage()
-          : const LoginPage(),
-    );
+    else {
+      return const Scaffold(
+        body: LoginPage(),
+      );
+    }
   }
 }

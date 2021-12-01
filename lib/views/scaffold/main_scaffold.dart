@@ -1,0 +1,90 @@
+import 'package:community_app/views/account_page.dart';
+import 'package:community_app/views/pages/brands_page.dart';
+import 'package:community_app/views/pages/home_page.dart';
+import 'package:community_app/views/pages/perks_page.dart';
+import 'package:community_app/views/pages/settings_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:community_app/providers.dart';
+import 'package:community_app/views/scaffold/nav_bar.dart';
+import 'package:community_app/views/scaffold/nav_bar_mobile.dart';
+
+class MainScaffold extends ConsumerStatefulWidget {
+  const MainScaffold({Key? key}) : super(key: key);
+
+  @override
+  _MainScaffoldState createState() => _MainScaffoldState();
+}
+
+class _MainScaffoldState extends ConsumerState<MainScaffold> {
+  int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final loggedInUser = ref.read(loggedInUserProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Check for device size
+    MediaQueryData queryData;
+    queryData = MediaQuery.of(context);
+    bool showSmallScreenView = queryData.size.width < 600;
+
+    final loggedInUser = ref.watch(loggedInUserProvider);
+
+    // Navigation Options
+    final pageOptions = [
+      {
+        "title": "Home",
+        "icon": Icons.home_outlined,
+        "widget": const HomePage(),
+      },
+      {
+        "title": "Perks",
+        "icon": Icons.shopping_cart_outlined,
+        "widget": const PerksPage(),
+      },
+      {
+        "title": "Brands",
+        "icon": Icons.casino_outlined,
+        "widget": const BrandsPage(),
+      },
+      {
+        "title": "Settings",
+        "icon": Icons.casino_outlined,
+        "widget": const SettingsPage(),
+      }
+    ];
+
+    void _handlePageSelection(int index) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+
+    void _goToAccount(String userId) async {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(pageOptions[_selectedIndex]["title"] as String),
+        backgroundColor: Colors.blueGrey,
+        actions: [
+          IconButton(
+            onPressed: () => _goToAccount(loggedInUser.userId),
+            icon: const Icon(Icons.account_circle),
+          ),
+        ],
+      ),
+      body: pageOptions[_selectedIndex]["widget"] as Widget,
+      drawer: showSmallScreenView ? null : const HomeNavDrawerMenu(),
+      bottomNavigationBar: !showSmallScreenView
+          ? null
+          : HomeNavTabMenu(onSelect: _handlePageSelection),
+    );
+  }
+}
