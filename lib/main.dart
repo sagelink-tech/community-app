@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // GraphQL Setup
-    final HttpLink link = HttpLink("http://localhost:4000/");
+    final HttpLink link = HttpLink("http://localhost:8000/api/sl/graphql");
 
     ValueNotifier<GraphQLClient> client = ValueNotifier(
         GraphQLClient(cache: GraphQLCache(store: HiveStore()), link: link));

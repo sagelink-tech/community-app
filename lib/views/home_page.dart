@@ -56,6 +56,7 @@ class HomePage extends ConsumerWidget {
           options: QueryOptions(document: gql(getBrandsQuery)),
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
+            print(result.exception);
             if (result.hasException) {
               return Text(result.exception.toString());
             }
