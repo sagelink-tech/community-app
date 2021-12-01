@@ -4,7 +4,12 @@ import 'package:community_app/providers.dart';
 import 'package:community_app/views/account_page.dart';
 
 class HomeNavDrawerMenu extends ConsumerStatefulWidget {
-  const HomeNavDrawerMenu({Key? key}) : super(key: key);
+  const HomeNavDrawerMenu(
+      {Key? key, required this.onSelect, required this.selectedIndex})
+      : super(key: key);
+
+  final void Function(int index) onSelect;
+  final int selectedIndex;
 
   @override
   _HomeNavDrawerMenuState createState() => _HomeNavDrawerMenuState();
@@ -12,8 +17,6 @@ class HomeNavDrawerMenu extends ConsumerStatefulWidget {
 
 /// This is the private State class that goes with MyStatefulWidget.
 class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
-  int _selectedIndex = 0;
-
   @override
   void initState() {
     super.initState();
@@ -21,9 +24,7 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
   }
 
   void _onItemTapped(int index, BuildContext context) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    widget.onSelect(index);
     Navigator.pop(context);
   }
 
@@ -51,7 +52,7 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
           leading: const Icon(Icons.home_outlined),
           selectedTileColor: Colors.grey,
           selectedColor: Colors.black,
-          selected: (_selectedIndex == 0),
+          selected: (widget.selectedIndex == 0),
           onTap: () => {_onItemTapped(0, context)},
         ),
         ListTile(
@@ -59,7 +60,7 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
           leading: const Icon(Icons.shopping_cart_outlined),
           selectedTileColor: Colors.grey,
           selectedColor: Colors.black,
-          selected: (_selectedIndex == 1),
+          selected: (widget.selectedIndex == 1),
           onTap: () => {_onItemTapped(1, context)},
         ),
         ListTile(
@@ -67,7 +68,7 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
           leading: const Icon(Icons.casino_outlined),
           selectedTileColor: Colors.grey,
           selectedColor: Colors.black,
-          selected: (_selectedIndex == 2),
+          selected: (widget.selectedIndex == 2),
           onTap: () => {_onItemTapped(2, context)},
         ),
         ListTile(
@@ -75,7 +76,7 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
           leading: const Icon(Icons.settings_outlined),
           selectedTileColor: Colors.grey,
           selectedColor: Colors.black,
-          selected: (_selectedIndex == 3),
+          selected: (widget.selectedIndex == 3),
           onTap: () => {_onItemTapped(3, context)},
         ),
         ListTile(

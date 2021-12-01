@@ -81,7 +81,10 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         ],
       ),
       body: pageOptions[_selectedIndex]["widget"] as Widget,
-      drawer: showSmallScreenView ? null : const HomeNavDrawerMenu(),
+      drawer: showSmallScreenView
+          ? null
+          : HomeNavDrawerMenu(
+              onSelect: _handlePageSelection, selectedIndex: _selectedIndex),
       bottomNavigationBar: !showSmallScreenView
           ? null
           : HomeNavTabMenu(onSelect: _handlePageSelection),
