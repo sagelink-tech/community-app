@@ -1,3 +1,4 @@
+import 'package:community_app/models/app_model.dart';
 import 'package:community_app/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +6,7 @@ import "package:graphql_flutter/graphql_flutter.dart";
 
 import 'providers.dart';
 import 'models/logged_in_user.dart';
-import 'views/pages/home_page.dart';
+import 'theme.dart';
 import 'views/login_page.dart';
 
 void main() async {
@@ -24,10 +25,14 @@ class MyApp extends StatelessWidget {
     ValueNotifier<GraphQLClient> client = ValueNotifier(
         GraphQLClient(cache: GraphQLCache(store: HiveStore()), link: link));
 
+    // Theme setup
+    ThemeType themeType = ThemeType.LightMode;
+    AppTheme theme = AppTheme.fromType(themeType);
+
     // Wrapper around scaffold
     return GraphQLProvider(
       client: client,
-      child: const MaterialApp(home: AppScaffold()),
+      child: MaterialApp(theme: theme.themeData, home: const AppScaffold()),
     );
   }
 }

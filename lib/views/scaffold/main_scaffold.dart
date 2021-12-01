@@ -66,7 +66,8 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     return Scaffold(
       appBar: AppBar(
         title: Text(pageOptions[_selectedIndex].title),
-        backgroundColor: Colors.blueGrey,
+        elevation: 1,
+        backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
           IconButton(
             onPressed: () => _goToAccount(loggedInUser.userId),
@@ -75,6 +76,13 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         ],
       ),
       body: pageOptions[_selectedIndex].body,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Add your onPressed code here!
+        },
+        child: Icon(Icons.add, color: Theme.of(context).colorScheme.background),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+      ),
       drawer: showSmallScreenView
           ? null
           : HomeNavDrawerMenu(

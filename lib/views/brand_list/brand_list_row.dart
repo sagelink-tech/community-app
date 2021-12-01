@@ -32,13 +32,7 @@ class BrandListRow extends StatelessWidget {
           key: Key('title_$itemNo'),
         ),
         subtitle: Text(brand.relationship, key: Key('subtitle_$itemNo')),
-        trailing: IconButton(
-          key: Key('icon_$itemNo'),
-          icon: const Icon(Icons.arrow_forward),
-          onPressed: () {
-            _handleSelection(context, brand.id);
-          },
-        ),
+        onTap: () => {_handleSelection(context, brand.id)},
       ),
     );
   }
