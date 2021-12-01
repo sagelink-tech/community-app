@@ -9,6 +9,14 @@ import 'package:community_app/providers.dart';
 import 'package:community_app/views/scaffold/nav_bar.dart';
 import 'package:community_app/views/scaffold/nav_bar_mobile.dart';
 
+class TabItem {
+  String title;
+  Icon icon;
+  Widget body;
+
+  TabItem(this.title, this.icon, this.body);
+}
+
 class MainScaffold extends ConsumerStatefulWidget {
   const MainScaffold({Key? key}) : super(key: key);
 
@@ -35,27 +43,13 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     final loggedInUser = ref.watch(loggedInUserProvider);
 
     // Navigation Options
-    final pageOptions = [
-      {
-        "title": "Home",
-        "icon": Icons.home_outlined,
-        "widget": const HomePage(),
-      },
-      {
-        "title": "Perks",
-        "icon": Icons.shopping_cart_outlined,
-        "widget": const PerksPage(),
-      },
-      {
-        "title": "Brands",
-        "icon": Icons.casino_outlined,
-        "widget": const BrandsPage(),
-      },
-      {
-        "title": "Settings",
-        "icon": Icons.casino_outlined,
-        "widget": const SettingsPage(),
-      }
+    final List<TabItem> pageOptions = [
+      TabItem("Home", const Icon(Icons.home_outlined), const HomePage()),
+      TabItem(
+          "Perks", const Icon(Icons.shopping_cart_outlined), const PerksPage()),
+      TabItem("Brands", const Icon(Icons.casino_outlined), const BrandsPage()),
+      TabItem(
+          "Settings", const Icon(Icons.settings_outlined), const SettingsPage())
     ];
 
     void _handlePageSelection(int index) {
@@ -71,7 +65,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(pageOptions[_selectedIndex]["title"] as String),
+        title: Text(pageOptions[_selectedIndex].title),
         backgroundColor: Colors.blueGrey,
         actions: [
           IconButton(
@@ -80,14 +74,17 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           ),
         ],
       ),
-      body: pageOptions[_selectedIndex]["widget"] as Widget,
+      body: pageOptions[_selectedIndex].body,
       drawer: showSmallScreenView
           ? null
           : HomeNavDrawerMenu(
-              onSelect: _handlePageSelection, selectedIndex: _selectedIndex),
+              onSelect: _handlePageSelection,
+              tabItems: pageOptions,
+              selectedIndex: _selectedIndex),
       bottomNavigationBar: !showSmallScreenView
           ? null
-          : HomeNavTabMenu(onSelect: _handlePageSelection),
+          : HomeNavTabMenu(
+              onSelect: _handlePageSelection, tabItems: pageOptions),
     );
   }
 }

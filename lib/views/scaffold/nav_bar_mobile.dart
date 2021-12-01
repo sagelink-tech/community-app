@@ -1,12 +1,16 @@
 import 'package:community_app/models/logged_in_user.dart';
+import 'package:community_app/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:community_app/providers.dart';
 
 class HomeNavTabMenu extends ConsumerStatefulWidget {
-  const HomeNavTabMenu({Key? key, required this.onSelect}) : super(key: key);
+  const HomeNavTabMenu(
+      {Key? key, required this.onSelect, required this.tabItems})
+      : super(key: key);
 
   final void Function(int index) onSelect;
+  final List<TabItem> tabItems;
 
   @override
   _HomeNavTabMenuState createState() => _HomeNavTabMenuState();
@@ -29,20 +33,20 @@ class _HomeNavTabMenuState extends ConsumerState<HomeNavTabMenu> {
     widget.onSelect(index);
   }
 
+  List<BottomNavigationBarItem> _getItems() {
+    List<BottomNavigationBarItem> items = [];
+    for (var item in widget.tabItems) {
+      items.add(BottomNavigationBarItem(icon: item.icon, label: item.title));
+    }
+    return items;
+  }
+
   @override
   Widget build(BuildContext context) {
     final loggedInUser = ref.watch(loggedInUserProvider);
 
     return (BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart_outlined), label: 'Perks'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.casino_outlined), label: 'Brands'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined), label: "Settings")
-      ],
+      items: _getItems(),
       currentIndex: _selectedIndex,
       selectedItemColor: Colors.black,
       unselectedItemColor: Colors.grey,
