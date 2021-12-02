@@ -1,3 +1,4 @@
+import 'package:community_app/components/brand_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/post_model.dart';
@@ -94,14 +95,7 @@ class _BrandHomepageState extends State<BrandHomepage> {
                                         ? "http://contrapoderweb.com/wp-content/uploads/2014/10/default-img-400x240.gif"
                                         : _brand.backgroundImageUrl,
                                     fit: BoxFit.cover)),
-                            CircleAvatar(
-                                child: (_brand.logoUrl.isEmpty
-                                    ? Text(_brand.name[0])
-                                    : Container(
-                                        decoration: const BoxDecoration(
-                                            shape: BoxShape.circle),
-                                        child: Image.network(_brand.logoUrl,
-                                            fit: BoxFit.cover)))),
+                            BrandAvatar(brand: _brand, radius: 50),
                             (result.isLoading || result.hasException
                                 ? const Text('')
                                 : const Text("VIP Community")),

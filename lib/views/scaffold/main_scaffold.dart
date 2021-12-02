@@ -46,7 +46,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     // Navigation Options
     final List<TabItem> pageOptions = [
       TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
-      TabItem("Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
+      TabItem("My Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
           const PerksPage()),
       TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
           const BrandsPage()),
@@ -68,10 +68,12 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     return Scaffold(
       appBar: AppBar(
         title: Text(pageOptions[_selectedIndex].title),
-        centerTitle: false,
-        leadingWidth: 0,
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
+        leading: IconButton(
+          icon: Icon(Icons.search),
+          onPressed: () {},
+        ),
         actions: [
           IconButton(
             onPressed: () => _goToAccount(loggedInUser.userId),
