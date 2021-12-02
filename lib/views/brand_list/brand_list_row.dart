@@ -22,18 +22,25 @@ class BrandListRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(5.0),
-      child: ListTile(
-        leading: CircleAvatar(
-            backgroundColor: brand.mainColor,
-            foregroundColor: Colors.white,
-            child: Text(brand.name[0])),
-        title: Text(
-          brand.name,
-          key: Key('title_$itemNo'),
-        ),
-        subtitle: Text(brand.relationship, key: Key('subtitle_$itemNo')),
-        onTap: () => {_handleSelection(context, brand.id)},
-      ),
+      child: Column(children: <Widget>[
+        ListTile(
+            leading: CircleAvatar(
+                backgroundColor: brand.mainColor,
+                foregroundColor: Colors.white,
+                child: Text(brand.name[0])),
+            title: Text(
+              brand.name,
+              key: Key('title_$itemNo'),
+            ),
+            subtitle: Text(brand.followers.length.toString() + ' members',
+                key: Key('subtitle_$itemNo')),
+            onTap: () => {_handleSelection(context, brand.id)},
+            trailing: IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () => {},
+            )),
+        const Divider()
+      ]),
     );
   }
 }
