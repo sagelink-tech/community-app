@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 enum ThemeType {
-  LightMode,
-  DarkMode,
+  lightMode,
+  darkMode,
 }
 
 class ColorUtils {
@@ -28,7 +28,7 @@ class ColorUtils {
 }
 
 class AppTheme {
-  static ThemeType defaultTheme = ThemeType.LightMode;
+  static ThemeType defaultTheme = ThemeType.lightMode;
 
   bool isDark;
   Color bg1; //
@@ -71,43 +71,43 @@ class AppTheme {
   /// fromType factory constructor
   factory AppTheme.fromType(ThemeType t) {
     switch (t) {
-      case ThemeType.LightMode:
+      case ThemeType.lightMode:
         return AppTheme(
           isDark: false,
           txt: Colors.black,
           accentTxt: Colors.black,
           bg1: Colors.white,
-          bg2: Color(0xfffbfbfb),
+          bg2: const Color(0xfffbfbfb),
           surface: Colors.white,
-          accent1: Colors.blueGrey.shade400,
-          accent1Dark: Colors.blueGrey,
-          accent1Darker: Colors.blueGrey.shade900,
+          accent1: const Color(0xff888888),
+          accent1Dark: const Color(0xff9e9e9e),
+          accent1Darker: const Color(0xff888888),
           accent2: Colors.black,
-          accent3: Colors.redAccent.shade100,
-          greyWeak: Colors.grey.shade300,
-          grey: Colors.grey.shade500,
-          greyStrong: Colors.grey.shade900,
-          error: Colors.red.shade900,
+          accent3: Colors.blueGrey,
+          greyWeak: const Color(0xff777777),
+          grey: const Color(0xff333333),
+          greyStrong: const Color(0xff252525),
+          error: const Color(0xfff63344),
           focus: Colors.blueGrey,
         );
 
-      case ThemeType.DarkMode:
+      case ThemeType.darkMode:
         return AppTheme(
           isDark: true,
           txt: Colors.white,
-          accentTxt: Colors.blueGrey.shade100,
-          bg1: Colors.black54,
-          bg2: Colors.black38,
-          surface: Colors.black12,
-          accent1: Colors.blueGrey.shade50,
-          accent1Dark: Colors.blueGrey,
-          accent1Darker: Colors.blueGrey.shade900,
-          accent2: Colors.black,
-          accent3: Colors.redAccent.shade100,
-          greyWeak: Colors.grey.shade300,
-          grey: Colors.grey.shade500,
-          greyStrong: Colors.grey.shade900,
-          error: Colors.red.shade900,
+          accentTxt: const Color(0xff888888),
+          bg1: const Color(0xff222222),
+          bg2: const Color(0xff353535),
+          surface: const Color(0xff222222),
+          accent1: const Color(0xfffbfbfb),
+          accent1Dark: const Color(0xffababab),
+          accent1Darker: const Color(0xff8a8a8a),
+          accent2: Colors.white,
+          accent3: Colors.grey,
+          greyWeak: const Color(0xff777777),
+          grey: const Color(0xffaaaaaa),
+          greyStrong: const Color(0xffcccccc),
+          error: const Color(0xffc65344),
           focus: Colors.blueGrey,
         );
     }

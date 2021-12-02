@@ -36,7 +36,7 @@ class _HomeNavTabMenuState extends ConsumerState<HomeNavTabMenu> {
   List<BottomNavigationBarItem> _getItems() {
     List<BottomNavigationBarItem> items = [];
     for (var item in widget.tabItems) {
-      items.add(BottomNavigationBarItem(icon: item.icon, label: item.title));
+      items.add(BottomNavigationBarItem(icon: item.icon, label: item.tabText));
     }
     return items;
   }
@@ -48,8 +48,8 @@ class _HomeNavTabMenuState extends ConsumerState<HomeNavTabMenu> {
     return (BottomNavigationBar(
       items: _getItems(),
       currentIndex: _selectedIndex,
-      selectedItemColor: Colors.black,
-      unselectedItemColor: Colors.grey,
+      selectedItemColor: Theme.of(context).colorScheme.secondary,
+      unselectedItemColor: Theme.of(context).colorScheme.onSecondary,
       onTap: _onItemTapped,
     ));
   }

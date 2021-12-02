@@ -75,11 +75,11 @@ class _BrandHomepageState extends State<BrandHomepage> {
           }
           return Scaffold(
               appBar: AppBar(
-                title: result.isLoading || result.hasException
-                    ? const Text('')
-                    : Text(_brand.name),
-                backgroundColor: _brand.mainColor,
-              ),
+                  title: result.isLoading || result.hasException
+                      ? const Text('')
+                      : Text(_brand.name),
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  elevation: 0),
               body: Center(
                 child: (result.hasException
                     ? Text(result.exception.toString())

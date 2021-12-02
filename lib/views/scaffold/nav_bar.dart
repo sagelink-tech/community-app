@@ -43,7 +43,7 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
 
     widget.tabItems.asMap().forEach((idx, item) {
       items.add(ListTile(
-        title: Text(item.title),
+        title: Text(item.tabText),
         leading: item.icon,
         selectedTileColor: Colors.grey,
         selectedColor: Colors.black,

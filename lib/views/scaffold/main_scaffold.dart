@@ -11,10 +11,11 @@ import 'package:community_app/views/scaffold/nav_bar_mobile.dart';
 
 class TabItem {
   String title;
+  String tabText;
   Icon icon;
   Widget body;
 
-  TabItem(this.title, this.icon, this.body);
+  TabItem(this.title, this.tabText, this.icon, this.body);
 }
 
 class MainScaffold extends ConsumerStatefulWidget {
@@ -44,12 +45,13 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
     // Navigation Options
     final List<TabItem> pageOptions = [
-      TabItem("Home", const Icon(Icons.home_outlined), const HomePage()),
-      TabItem(
-          "Perks", const Icon(Icons.shopping_cart_outlined), const PerksPage()),
-      TabItem("Brands", const Icon(Icons.casino_outlined), const BrandsPage()),
-      TabItem(
-          "Settings", const Icon(Icons.settings_outlined), const SettingsPage())
+      TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
+      TabItem("Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
+          const PerksPage()),
+      TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
+          const BrandsPage()),
+      TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
+          const SettingsPage())
     ];
 
     void _handlePageSelection(int index) {
@@ -66,7 +68,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     return Scaffold(
       appBar: AppBar(
         title: Text(pageOptions[_selectedIndex].title),
-        elevation: 1,
+        centerTitle: false,
+        leadingWidth: 0,
+        elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
           IconButton(

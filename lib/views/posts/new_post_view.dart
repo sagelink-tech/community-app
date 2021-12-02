@@ -37,15 +37,16 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Create Post"),
-        actions: [
-          buildSubmit(
-              enabled: (title != null &&
-                  title!.isNotEmpty &&
-                  body != null &&
-                  body!.isNotEmpty)),
-        ],
-      ),
+          title: const Text("Create Post"),
+          actions: [
+            buildSubmit(
+                enabled: (title != null &&
+                    title!.isNotEmpty &&
+                    body != null &&
+                    body!.isNotEmpty)),
+          ],
+          backgroundColor: Theme.of(context).backgroundColor,
+          elevation: 0),
       body: Form(
           key: formKey,
           //autovalidateMode: AutovalidateMode.onUserInteraction,

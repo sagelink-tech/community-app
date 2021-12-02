@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         GraphQLClient(cache: GraphQLCache(store: HiveStore()), link: link));
 
     // Theme setup
-    ThemeType themeType = ThemeType.LightMode;
+    ThemeType themeType = ThemeType.lightMode;
     AppTheme theme = AppTheme.fromType(themeType);
 
     // Wrapper around scaffold
