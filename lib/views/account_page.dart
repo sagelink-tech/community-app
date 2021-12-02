@@ -43,16 +43,17 @@ class _AccountPageState extends State<AccountPage> {
           }
           return Scaffold(
             appBar: AppBar(
-              title: result.isLoading || result.hasException
-                  ? const Text('')
-                  : Text(_user.username),
-              actions: [
-                IconButton(
-                  onPressed: result.isLoading ? null : refetch,
-                  icon: const Icon(Icons.refresh),
-                ),
-              ],
-            ),
+                title: result.isLoading || result.hasException
+                    ? const Text('')
+                    : Text(_user.username),
+                actions: [
+                  IconButton(
+                    onPressed: result.isLoading ? null : refetch,
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ],
+                backgroundColor: Theme.of(context).backgroundColor,
+                elevation: 0),
             body: Center(
               child: (result.hasException
                   ? Text(result.exception.toString())

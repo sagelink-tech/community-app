@@ -77,7 +77,7 @@ class _PostViewState extends State<PostView> {
                   ),
                 ],
                 backgroundColor: Theme.of(context).backgroundColor,
-                elevation: 0),
+                elevation: 1),
             body: Center(
               child: (result.hasException
                   ? Text(result.exception.toString())
