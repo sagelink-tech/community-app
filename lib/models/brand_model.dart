@@ -8,6 +8,7 @@ class BrandModel extends ChangeNotifier {
   String name = "";
   String description = "";
   String logoUrl = "";
+  String backgroundImageUrl = "";
   String website = "";
   String relationship = "";
   Color mainColor = Colors.blueGrey;
@@ -37,6 +38,9 @@ class BrandModel extends ChangeNotifier {
     name = json['name'];
     description = json.containsKey('description') ? json['description'] : "";
     logoUrl = json.containsKey('logoUrl') ? json['logoUrl'] : "";
+    backgroundImageUrl = json.containsKey('backgroundImageUrl')
+        ? json['backgroundImageUrl']
+        : "";
     website = json.containsKey('website') ? json['website'] : "";
     relationship = json.containsKey('relationship') ? json['relationship'] : "";
     mainColor = json.containsKey('mainColor') && json['mainColor'] != null
