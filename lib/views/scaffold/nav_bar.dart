@@ -44,8 +44,7 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
       items.add(ListTile(
         title: Text(item.tabText),
         leading: item.icon,
-        selectedTileColor: Colors.grey,
-        selectedColor: Colors.black,
+        selectedColor: Theme.of(context).colorScheme.secondary,
         selected: (widget.selectedIndex == idx),
         onTap: () => {_onItemTapped(idx, context)},
       ));
@@ -61,7 +60,6 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
         UserAccountsDrawerHeader(
           accountName: const Text("Test"),
           accountEmail: const Text("test@test.com"),
-          decoration: const BoxDecoration(color: Colors.blueGrey),
           onDetailsPressed: () {
             Navigator.pop(context);
             _goToAccount(context, loggedInUser.userId);

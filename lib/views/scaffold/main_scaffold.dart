@@ -70,11 +70,11 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         title: Text(pageOptions[_selectedIndex].title),
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
-        leading: IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {},
-        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {},
+          ),
           IconButton(
             onPressed: () => _goToAccount(loggedInUser.userId),
             icon: const Icon(Icons.account_circle),
