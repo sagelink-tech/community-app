@@ -1,3 +1,4 @@
+import 'package:community_app/components/activity_badge.dart';
 import 'package:community_app/components/brand_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/brand_model.dart';
@@ -39,7 +40,8 @@ class BrandListCell extends StatelessWidget {
                 BrandAvatar(brand: brand, radius: 25),
                 Text(brand.name, style: Theme.of(context).textTheme.bodyText1),
                 Text(brand.followers.length.toString() + ' members',
-                    style: Theme.of(context).textTheme.subtitle2)
+                    style: Theme.of(context).textTheme.subtitle2),
+                const ActivityChip(activityCount: 0),
               ],
             )
           ])),

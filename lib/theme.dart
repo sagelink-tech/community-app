@@ -47,6 +47,7 @@ class AppTheme {
 
   Color txt;
   Color accentTxt;
+  Color errorTxt;
 
   /// Default constructor
   AppTheme({
@@ -66,6 +67,7 @@ class AppTheme {
     required this.focus,
     required this.txt,
     required this.accentTxt,
+    required this.errorTxt,
   });
 
   /// fromType factory constructor
@@ -76,6 +78,7 @@ class AppTheme {
           isDark: false,
           txt: Colors.black,
           accentTxt: Colors.black,
+          errorTxt: Colors.white,
           bg1: Colors.white,
           bg2: const Color(0xfffbfbfb),
           surface: Colors.white,
@@ -87,7 +90,7 @@ class AppTheme {
           greyWeak: const Color(0xff777777),
           grey: const Color(0xff333333),
           greyStrong: const Color(0xff252525),
-          error: const Color(0xfff63344),
+          error: const Color(0xffE57777),
           focus: Colors.blueGrey,
         );
 
@@ -96,6 +99,7 @@ class AppTheme {
           isDark: true,
           txt: Colors.white,
           accentTxt: const Color(0xff888888),
+          errorTxt: Colors.white,
           bg1: const Color(0xff222222),
           bg2: const Color(0xff353535),
           surface: const Color(0xff222222),
@@ -107,7 +111,7 @@ class AppTheme {
           greyWeak: const Color(0xff777777),
           grey: const Color(0xffaaaaaa),
           greyStrong: const Color(0xffcccccc),
-          error: const Color(0xffc65344),
+          error: const Color(0xffE57777),
           focus: Colors.blueGrey,
         );
     }
@@ -126,7 +130,7 @@ class AppTheme {
           surface: surface,
           onBackground: txt,
           onSurface: txt,
-          onError: txt,
+          onError: errorTxt,
           onPrimary: accentTxt,
           onSecondary: accentTxt,
           error: error),
