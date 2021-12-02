@@ -31,7 +31,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   @override
   void initState() {
     super.initState();
-    final loggedInUser = ref.read(loggedInUserProvider);
+    //final loggedInUser = ref.read(loggedInUserProvider);
   }
 
   @override
@@ -71,7 +71,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
         leading: IconButton(
-          icon: Icon(Icons.search),
+          icon: const Icon(Icons.search),
           onPressed: () {},
         ),
         actions: [

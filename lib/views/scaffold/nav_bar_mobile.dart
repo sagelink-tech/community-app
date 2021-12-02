@@ -1,8 +1,6 @@
-import 'package:community_app/models/logged_in_user.dart';
 import 'package:community_app/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:community_app/providers.dart';
 
 class HomeNavTabMenu extends ConsumerStatefulWidget {
   const HomeNavTabMenu(
@@ -23,7 +21,6 @@ class _HomeNavTabMenuState extends ConsumerState<HomeNavTabMenu> {
   @override
   void initState() {
     super.initState();
-    final loggedInUser = ref.read(loggedInUserProvider);
   }
 
   void _onItemTapped(int index) {
@@ -43,8 +40,6 @@ class _HomeNavTabMenuState extends ConsumerState<HomeNavTabMenu> {
 
   @override
   Widget build(BuildContext context) {
-    final loggedInUser = ref.watch(loggedInUserProvider);
-
     return (BottomNavigationBar(
       items: _getItems(),
       currentIndex: _selectedIndex,

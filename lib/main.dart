@@ -1,4 +1,3 @@
-import 'package:community_app/models/app_model.dart';
 import 'package:community_app/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

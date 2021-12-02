@@ -25,7 +25,6 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
   @override
   void initState() {
     super.initState();
-    final loggedInUser = ref.read(loggedInUserProvider);
   }
 
   void _onItemTapped(int index, BuildContext context) {

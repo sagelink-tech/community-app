@@ -1,6 +1,5 @@
 import 'package:community_app/models/user_model.dart';
 import 'package:community_app/utils/color_utils.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class BrandModel extends ChangeNotifier {
