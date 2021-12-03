@@ -1,3 +1,4 @@
+import 'package:community_app/components/clickable_avatar.dart';
 import 'package:community_app/views/pages/account_page.dart';
 import 'package:community_app/views/pages/brands_page.dart';
 import 'package:community_app/views/pages/home_page.dart';
@@ -75,10 +76,12 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
             icon: const Icon(Icons.search),
             onPressed: () {},
           ),
-          IconButton(
-            onPressed: () => _goToAccount(loggedInUser.userId),
-            icon: const Icon(Icons.account_circle),
-          ),
+          ClickableAvatar(
+            avatarText: loggedInUser.getUser().name[0],
+            avatarURL: loggedInUser.getUser().accountPictureUrl,
+            radius: 15,
+            onTap: () => _goToAccount(loggedInUser.getUser().id),
+          )
         ],
       ),
       body: pageOptions[_selectedIndex].body,

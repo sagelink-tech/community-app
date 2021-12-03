@@ -90,7 +90,8 @@ class _NewCommentState extends ConsumerState<NewComment> {
                                       "node": {
                                         "id": ref
                                             .read(loggedInUserProvider)
-                                            .userId
+                                            .getUser()
+                                            .id
                                       }
                                     }
                                   }

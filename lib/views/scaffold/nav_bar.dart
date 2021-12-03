@@ -62,7 +62,7 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
           accountEmail: const Text("test@test.com"),
           onDetailsPressed: () {
             Navigator.pop(context);
-            _goToAccount(context, loggedInUser.userId);
+            _goToAccount(context, loggedInUser.getUser().id);
           },
         ),
         ..._getItems()

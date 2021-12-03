@@ -1,6 +1,6 @@
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/views/brand_list/brand_list.dart';
-import 'package:community_app/views/brand_home_page.dart';
+import 'package:community_app/views/pages/brand_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';

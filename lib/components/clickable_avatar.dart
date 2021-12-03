@@ -7,6 +7,7 @@ class ClickableAvatar extends StatelessWidget {
   final String avatarText;
   final String avatarURL;
   final double radius;
+  final EdgeInsets padding;
   final OnTapCallback? onTap;
   final Color? backgroundColor;
 
@@ -16,20 +17,24 @@ class ClickableAvatar extends StatelessWidget {
       this.avatarURL = "",
       this.radius = 20.0,
       this.onTap,
-      this.backgroundColor})
+      this.backgroundColor,
+      this.padding = const EdgeInsets.all(10)})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-        onTap: onTap,
-        child: CircleAvatar(
-            radius: radius,
-            backgroundColor: backgroundColor ?? Theme.of(context).splashColor,
-            child: (avatarURL.isEmpty
-                ? Text(avatarText.isNotEmpty ? avatarText : "SL")
-                : Container(
-                    decoration: const BoxDecoration(shape: BoxShape.circle),
-                    child: Image.network(avatarURL, fit: BoxFit.cover)))));
+    return Container(
+        padding: padding,
+        child: InkWell(
+            onTap: onTap,
+            child: CircleAvatar(
+                radius: radius,
+                backgroundColor:
+                    backgroundColor ?? Theme.of(context).splashColor,
+                child: (avatarURL.isEmpty
+                    ? Text(avatarText.isNotEmpty ? avatarText : "SL")
+                    : Container(
+                        decoration: const BoxDecoration(shape: BoxShape.circle),
+                        child: Image.network(avatarURL, fit: BoxFit.cover))))));
   }
 }

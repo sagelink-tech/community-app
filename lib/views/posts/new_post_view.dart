@@ -140,7 +140,8 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
                                       "node": {
                                         "id": ref
                                             .read(loggedInUserProvider)
-                                            .userId
+                                            .getUser()
+                                            .id
                                       }
                                     }
                                   }
