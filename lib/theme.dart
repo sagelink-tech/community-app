@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 enum ThemeType {
   lightMode,
@@ -135,7 +136,14 @@ class AppTheme {
           onSecondary: accentTxt,
           error: error),
     );
-    return t;
+    return t.copyWith(
+      textTheme: ThemeData.light()
+          .textTheme
+          .apply(fontFamily: GoogleFonts.poppins().fontFamily),
+      primaryTextTheme: ThemeData.light()
+          .textTheme
+          .apply(fontFamily: GoogleFonts.poppins().fontFamily),
+    );
   }
 
   Color shift(Color c, double d) =>
