@@ -1,3 +1,4 @@
+import 'package:community_app/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/user_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -61,6 +62,10 @@ class _AccountPageState extends State<AccountPage> {
                       ? const CircularProgressIndicator()
                       : Column(
                           children: [
+                            ClickableAvatar(
+                              avatarText: _user.name[0],
+                              avatarURL: _user.accountPictureUrl,
+                            ),
                             Text(_user.name),
                             Text(_user.email),
                           ],

@@ -1,4 +1,4 @@
-import 'package:community_app/components/brand_avatar.dart';
+import 'package:community_app/components/clickable_avatar.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:flutter/material.dart';
 
@@ -23,8 +23,10 @@ class BrandChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return FilterChip(
         avatar: brand != null
-            ? BrandAvatar(
-                brand: brand!,
+            ? ClickableAvatar(
+                avatarText: brand!.name[0],
+                avatarURL: brand!.logoUrl,
+                backgroundColor: brand!.mainColor,
                 radius: 10,
               )
             : null,

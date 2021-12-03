@@ -1,7 +1,5 @@
-import 'dart:math';
-
 import 'package:community_app/components/activity_badge.dart';
-import 'package:community_app/components/brand_avatar.dart';
+import 'package:community_app/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/brand_model.dart';
 
@@ -39,7 +37,12 @@ class BrandListCell extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                BrandAvatar(brand: brand, radius: 25),
+                ClickableAvatar(
+                  avatarText: brand.name[0],
+                  avatarURL: brand.logoUrl,
+                  backgroundColor: brand.mainColor,
+                  radius: 25,
+                ),
                 Text(brand.name, style: Theme.of(context).textTheme.bodyText1),
                 Text(brand.followers.length.toString() + ' members',
                     style: Theme.of(context).textTheme.subtitle2),

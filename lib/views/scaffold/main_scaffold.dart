@@ -1,4 +1,4 @@
-import 'package:community_app/views/account_page.dart';
+import 'package:community_app/views/pages/account_page.dart';
 import 'package:community_app/views/pages/brands_page.dart';
 import 'package:community_app/views/pages/home_page.dart';
 import 'package:community_app/views/pages/perks_page.dart';

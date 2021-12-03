@@ -2,7 +2,7 @@ import 'package:community_app/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:community_app/providers.dart';
-import 'package:community_app/views/account_page.dart';
+import 'package:community_app/views/pages/account_page.dart';
 
 class HomeNavDrawerMenu extends ConsumerStatefulWidget {
   const HomeNavDrawerMenu(
