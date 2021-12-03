@@ -6,7 +6,6 @@ typedef OnSelectionCallback = void Function(
     BuildContext context, String? brandId, bool selected);
 
 class BrandChip extends StatelessWidget {
-  final int activityCount;
   final BrandModel? brand;
   final bool selected;
   final OnSelectionCallback onSelection;
@@ -14,7 +13,6 @@ class BrandChip extends StatelessWidget {
   const BrandChip(
       {Key? key,
       required this.brand,
-      required this.activityCount,
       required this.onSelection,
       this.selected = false})
       : super(key: key);
@@ -32,6 +30,8 @@ class BrandChip extends StatelessWidget {
             : null,
         label: brand != null ? Text(brand!.name) : const Text("My brands"),
         selected: selected,
+        backgroundColor: Colors.transparent,
+        shape: const StadiumBorder(side: BorderSide()),
         onSelected: (bool value) =>
             {onSelection(context, brand != null ? brand!.id : null, value)});
   }

@@ -18,7 +18,7 @@ class ClickableAvatar extends StatelessWidget {
       this.radius = 20.0,
       this.onTap,
       this.backgroundColor,
-      this.padding = const EdgeInsets.all(10)})
+      this.padding = const EdgeInsets.all(0.0)})
       : super(key: key);
 
   @override

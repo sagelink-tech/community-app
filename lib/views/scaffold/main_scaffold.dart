@@ -79,7 +79,8 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           ClickableAvatar(
             avatarText: loggedInUser.getUser().name[0],
             avatarURL: loggedInUser.getUser().accountPictureUrl,
-            radius: 15,
+            radius: 20,
+            padding: const EdgeInsets.all(10),
             onTap: () => _goToAccount(loggedInUser.getUser().id),
           )
         ],
