@@ -38,13 +38,7 @@ class PostCell extends StatelessWidget {
             ],
             crossAxisAlignment: CrossAxisAlignment.start,
             key: Key('subtitle_$itemNo')),
-        trailing: IconButton(
-          key: Key('icon_$itemNo'),
-          icon: const Icon(Icons.arrow_forward),
-          onPressed: () {
-            _handleSelection(context, post.id);
-          },
-        ),
+        onTap: () => _handleSelection(context, post.id),
       ),
     );
   }

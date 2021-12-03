@@ -67,16 +67,17 @@ class _PostViewState extends State<PostView> {
           }
           return Scaffold(
             appBar: AppBar(
-              title: result.isLoading || result.hasException
-                  ? const Text('')
-                  : Text(_post.title),
-              actions: [
-                IconButton(
-                  onPressed: result.isLoading ? null : refetch,
-                  icon: const Icon(Icons.refresh),
-                ),
-              ],
-            ),
+                title: result.isLoading || result.hasException
+                    ? const Text('')
+                    : Text(_post.title),
+                actions: [
+                  IconButton(
+                    onPressed: result.isLoading ? null : refetch,
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ],
+                backgroundColor: Theme.of(context).backgroundColor,
+                elevation: 1),
             body: Center(
               child: (result.hasException
                   ? Text(result.exception.toString())

@@ -1,3 +1,4 @@
+import 'package:community_app/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/post_model.dart';
@@ -75,44 +76,62 @@ class _BrandHomepageState extends State<BrandHomepage> {
           }
           return Scaffold(
               appBar: AppBar(
-                title: result.isLoading || result.hasException
-                    ? const Text('')
-                    : Text(_brand.name),
-                backgroundColor: _brand.mainColor,
-              ),
+                  actions: [
+                    buildNewPostButton(refetch!),
+                  ],
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  elevation: 0),
               body: Center(
                 child: (result.hasException
                     ? Text(result.exception.toString())
                     : result.isLoading
                         ? const CircularProgressIndicator()
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                                Text(_brand.description),
-                                buildNewPostButton(refetch!),
-                                Expanded(
-                                    child: PostListView(
-                                        _posts,
-                                        (context, postId) => {
-                                              if (postId != null)
-                                                {
-                                                  Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              PostView(
-                                                                  postId:
-                                                                      postId)))
-                                                }
-                                            }))
-                              ])),
+                        : Column(children: [
+                            SizedBox(
+                                height: 200.0,
+                                width: double.infinity,
+                                child: Image.network(
+                                    _brand.backgroundImageUrl.isEmpty
+                                        ? "http://contrapoderweb.com/wp-content/uploads/2014/10/default-img-400x240.gif"
+                                        : _brand.backgroundImageUrl,
+                                    fit: BoxFit.cover)),
+                            ClickableAvatar(
+                              avatarText: _brand.name[0],
+                              avatarURL: _brand.logoUrl,
+                              backgroundColor: _brand.mainColor,
+                              radius: 50,
+                            ),
+                            (result.isLoading || result.hasException
+                                ? const Text('')
+                                : const Text("VIP Community")),
+                            (result.isLoading || result.hasException
+                                ? const Text('')
+                                : Text(_brand.followers.length.toString() +
+                                    " members")),
+                            (result.isLoading || result.hasException
+                                ? const Text('')
+                                : Text(_brand.name)),
+                            Expanded(
+                                child: PostListView(
+                                    _posts,
+                                    (context, postId) => {
+                                          if (postId != null)
+                                            {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          PostView(
+                                                              postId: postId)))
+                                            }
+                                        }))
+                          ])),
               ));
         });
   }
 
-  Widget buildNewPostButton(OnCompletionCallback onCompleted) => TextButton(
-      child: const Text("New Post"),
+  Widget buildNewPostButton(OnCompletionCallback onCompleted) => IconButton(
+      icon: const Icon(Icons.add),
       onPressed: () => {
             Navigator.push(
                 context,
