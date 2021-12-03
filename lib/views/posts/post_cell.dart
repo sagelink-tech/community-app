@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 
 import 'package:community_app/models/post_model.dart';
 
-typedef OnSelectionCallback = void Function(
-    BuildContext context, String postId);
+typedef OnDetailCallback = void Function(BuildContext context, String postId);
 
 class PostCell extends StatelessWidget {
   final int itemNo;
   final PostModel post;
-  final OnSelectionCallback onSelection;
+  final OnDetailCallback onDetailClick;
 
-  const PostCell(this.itemNo, this.post, this.onSelection, {Key? key})
+  const PostCell(this.itemNo, this.post, this.onDetailClick, {Key? key})
       : super(key: key);
 
-  void _handleSelection(context, String brandId) async {
-    onSelection(context, brandId);
+  void _handleClick(context, String brandId) async {
+    onDetailClick(context, brandId);
     return;
   }
 
@@ -38,7 +37,7 @@ class PostCell extends StatelessWidget {
             ],
             crossAxisAlignment: CrossAxisAlignment.start,
             key: Key('subtitle_$itemNo')),
-        onTap: () => _handleSelection(context, post.id),
+        onTap: () => _handleClick(context, post.id),
       ),
     );
   }

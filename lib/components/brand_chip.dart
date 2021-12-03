@@ -25,7 +25,7 @@ class BrandChip extends StatelessWidget {
                 avatarText: brand!.name[0],
                 avatarURL: brand!.logoUrl,
                 backgroundColor: brand!.mainColor,
-                radius: 10,
+                radius: 15,
               )
             : null,
         label: brand != null ? Text(brand!.name) : const Text("My brands"),
