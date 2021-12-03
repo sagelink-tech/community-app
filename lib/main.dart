@@ -6,7 +6,7 @@ import "package:graphql_flutter/graphql_flutter.dart";
 import 'providers.dart';
 import 'models/logged_in_user.dart';
 import 'theme.dart';
-import 'views/login_page.dart';
+import 'views/pages/login_page.dart';
 
 void main() async {
   await initHiveForFlutter();

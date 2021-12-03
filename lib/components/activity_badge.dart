@@ -6,10 +6,8 @@ class ActivityChip extends StatelessWidget {
   const ActivityChip({Key? key, required this.activityCount}) : super(key: key);
 
   TextStyle _getTextStyle(context) {
-    return (activityCount > 0
-        ? TextStyle(inherit: true, color: Theme.of(context).colorScheme.onError)
-        : TextStyle(
-            inherit: true, color: Theme.of(context).colorScheme.onPrimary));
+    return TextStyle(
+        inherit: true, color: Theme.of(context).colorScheme.onError);
   }
 
   @override

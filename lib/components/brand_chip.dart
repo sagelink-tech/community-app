@@ -3,11 +3,11 @@ import 'package:community_app/models/brand_model.dart';
 import 'package:flutter/material.dart';
 
 typedef OnSelectionCallback = void Function(
-    BuildContext context, String brandId, bool selected);
+    BuildContext context, String? brandId, bool selected);
 
 class BrandChip extends StatelessWidget {
   final int activityCount;
-  final BrandModel brand;
+  final BrandModel? brand;
   final bool selected;
   final OnSelectionCallback onSelection;
 
@@ -22,12 +22,15 @@ class BrandChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FilterChip(
-        avatar: BrandAvatar(
-          brand: brand,
-          radius: 10,
-        ),
-        label: Text(brand.name),
+        avatar: brand != null
+            ? BrandAvatar(
+                brand: brand!,
+                radius: 10,
+              )
+            : null,
+        label: brand != null ? Text(brand!.name) : const Text("My brands"),
         selected: selected,
-        onSelected: (bool value) => {onSelection(context, brand.id, value)});
+        onSelected: (bool value) =>
+            {onSelection(context, brand != null ? brand!.id : null, value)});
   }
 }

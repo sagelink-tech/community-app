@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:community_app/components/activity_badge.dart';
 import 'package:community_app/components/brand_avatar.dart';
 import 'package:flutter/material.dart';
