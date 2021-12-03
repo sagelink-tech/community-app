@@ -7,119 +7,46 @@ import 'package:community_app/models/user_model.dart';
 const String brandData = '''
 [
     {
-      "id": "100",
       "name": "Sakara Life",
       "description": "Sells stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Following",
-      "mainColor": "#35654e"
+      "mainColor": "#35654e",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
-      "id": "101",
       "name": "Haus Liquor",
       "description": "Sells some stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "VIP Tier",
-      "mainColor": "#000000"
+      "mainColor": "#000000",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
-      "id": "102",
       "name": "Acapella",
       "description": "Sells different stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Loyalist",
-      "mainColor": "#38383b"
+      "mainColor": "#38383b",
+      "shopifyToken": "123",
+      "domain": "test.com"
     },
     {
-      "id": "103",
       "name": "Pricklee",
       "description": "Sells drink stuff.",
       "logoUrl": "http://logo.url",
       "website": "http://google.com",
-      "relationship": "Newcomer",
-      "mainColor": "#192862"
-    },
-    {
-      "id": "104",
-      "name": "Brand 5",
-      "description": "Sells drink stuff.",
-      "logoUrl": "http://logo.url",
-      "website": "http://google.com",
-      "relationship": "Following"
-    },
-    {
-      "id": "105",
-      "name": "Brand 6",
-      "description": "Sells drink stuff.",
-      "logoUrl": "http://logo.url",
-      "website": "http://google.com",
-      "relationship": "Following"
-    },
-    {
-      "id": "106",
-      "name": "Brand 7",
-      "description": "Sells drink stuff.",
-      "logoUrl": "http://logo.url",
-      "website": "http://google.com",
-      "relationship": "Following"
-    },
-    {
-      "id": "107",
-      "name": "Brand 8",
-      "description": "Sells drink stuff.",
-      "logoUrl": "http://logo.url",
-      "website": "http://google.com",
-      "relationship": "Following"
-    },
-    {
-      "id": "108",
-      "name": "Brand 9",
-      "description": "Sells drink stuff.",
-      "logoUrl": "http://logo.url",
-      "website": "http://google.com",
-      "relationship": "Following"
-    },
-    {
-      "id": "109",
-      "name": "Brand 10",
-      "description": "Sells drink stuff.",
-      "logoUrl": "http://logo.url",
-      "website": "http://google.com",
-      "relationship": "Following"
-    },
-    {
-      "id": "110",
-      "name": "Brand 11",
-      "description": "Sells drink stuff.",
-      "logoUrl": "http://logo.url",
-      "website": "http://google.com",
-      "relationship": "Following"
-    },
-    {
-      "id": "111",
-      "name": "Brand 12",
-      "description": "Sells drink stuff.",
-      "logoUrl": "http://logo.url",
-      "website": "http://google.com",
-      "relationship": "Following"
-    },
-    {
-      "id": "112",
-      "name": "Brand 13",
-      "description": "Sells drink stuff.",
-      "logoUrl": "http://logo.url",
-      "website": "http://google.com",
-      "relationship": "Following"
+      "mainColor": "#192862",
+      "shopifyToken": "123",
+      "domain": "test.com"
     }
 ]
 ''';
 
 const userData = '''
 {
-  "id": "001",
   "username": "TestAccount",
   "name": "Test User",
   "email": "test@test.com",

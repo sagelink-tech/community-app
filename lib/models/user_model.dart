@@ -31,8 +31,9 @@ class UserModel extends ChangeNotifier {
     id = json['id'];
     username = json['username'];
     name = json['name'];
-    email = json['email'];
-    accountPictureUrl = json['accountPictureUrl'];
+    email = json.containsKey('email') ? json['email'] : "";
+    accountPictureUrl =
+        json.containsKey('accountPictureUrl') ? json['accountPictureUrl'] : "";
   }
 
   // Eventually other stuff would go here, notifications, friends, draft posts, etc

@@ -1,49 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import "package:graphql_flutter/graphql_flutter.dart";
 
-import 'commands/base_command.dart' as Commands;
-import 'models/app_model.dart';
-import 'models/user_model.dart';
-import 'models/brand_model.dart';
-import 'services/user_service.dart';
+import 'providers.dart';
+import 'models/logged_in_user.dart';
 import 'views/home_page.dart';
 import 'views/login_page.dart';
 
-void main() => runApp(const MyApp());
+void main() async {
+  await initHiveForFlutter();
+  runApp(const ProviderScope(child: MyApp()));
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext _) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (c) => AppModel()),
-        ChangeNotifierProvider(create: (c) => UserModel()),
-        ChangeNotifierProvider(create: (c) => BrandModel()),
-        Provider(create: (c) => UserService()),
-      ],
-      child: Builder(builder: (context) {
-        // Save a context our Commands can use to access provided Models and Services
-        Commands.init(context);
-        return const MaterialApp(home: AppScaffold());
-      }),
+  Widget build(BuildContext context) {
+    // GraphQL Setup
+    final HttpLink link = HttpLink("http://localhost:8000/api/sl/graphql");
+
+    ValueNotifier<GraphQLClient> client = ValueNotifier(
+        GraphQLClient(cache: GraphQLCache(store: HiveStore()), link: link));
+
+    // Wrapper around scaffold
+    return GraphQLProvider(
+      client: client,
+      child: const MaterialApp(home: AppScaffold()),
     );
   }
 }
 
-class AppScaffold extends StatelessWidget {
+class AppScaffold extends ConsumerWidget {
   const AppScaffold({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    // Bind to AppModel.currentUser
-    String? currentUser =
-        context.select<AppModel, String?>((value) => value.currentUser);
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Riverpod setup
+    final loggedInUser = ref.watch(loggedInUserProvider);
 
     // Return the current view, based on the currentUser value:
     return Scaffold(
-      body: currentUser != null ? const HomePage() : const LoginPage(),
+      body: loggedInUser.status == LoginState.isLoggedIn
+          ? const HomePage()
+          : const LoginPage(),
     );
   }
 }

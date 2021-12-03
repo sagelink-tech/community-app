@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:community_app/models/post_model.dart';
 
 typedef OnSelectionCallback = void Function(
-    BuildContext context, String brandId);
+    BuildContext context, String postId);
 
 class PostCell extends StatelessWidget {
   final int itemNo;
@@ -24,14 +24,20 @@ class PostCell extends StatelessWidget {
       padding: const EdgeInsets.all(5.0),
       child: ListTile(
         leading: CircleAvatar(
-            backgroundColor: post.brand.mainColor,
+            backgroundColor: Colors.blueGrey,
             foregroundColor: Colors.white,
-            child: Text(post.brand.name[0])),
+            child: Text(post.creator.name[0])),
         title: Text(
           post.title,
           key: Key('title_$itemNo'),
         ),
-        subtitle: Text(post.description, key: Key('subtitle_$itemNo')),
+        subtitle: Column(
+            children: [
+              Text(post.body),
+              Text(post.commentCount.toString() + " comments")
+            ],
+            crossAxisAlignment: CrossAxisAlignment.start,
+            key: Key('subtitle_$itemNo')),
         trailing: IconButton(
           key: Key('icon_$itemNo'),
           icon: const Icon(Icons.arrow_forward),

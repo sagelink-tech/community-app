@@ -1,7 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:community_app/commands/get_brand_command.dart';
-import 'package:community_app/commands/get_posts_command.dart';
 import 'package:community_app/models/brand_model.dart';
+import 'package:community_app/models/post_model.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:community_app/views/posts/new_post_view.dart';
+import 'package:community_app/views/posts/post_view.dart';
+import 'package:community_app/views/posts/post_list.dart';
+
+String getBrandQuery = """
+query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions) {
+  brands(where: \$where, options: \$options) {
+    id
+    name
+    description
+    website
+    mainColor
+    posts(options: \$postsOptions) {
+      commentsAggregate {
+        count
+      }
+      createdBy {
+        name
+        id
+        username
+      }
+      title
+      body
+      id
+    }
+  }
+}
+""";
 
 class BrandHomepage extends StatefulWidget {
   const BrandHomepage({Key? key, required this.brandId}) : super(key: key);
@@ -14,48 +42,82 @@ class BrandHomepage extends StatefulWidget {
 }
 
 class _BrandHomepageState extends State<BrandHomepage> {
-  bool _isLoading = true;
-  BrandModel brand = BrandModel();
-
-  void _loadBrand() async {
-    // Disable the RefreshBtn while the Command is running
-    setState(() => _isLoading = true);
-    // Run command
-
-    var updated = await GetBrandCommand().run(widget.brandId);
-    // var brandPosts = await GetPostsCommand().run(widget.brandId);
-    // print(brandPosts);
-    if (updated != null) {
-      brand = updated;
-    }
-
-    // Re-enable refresh btn when command is done
-    setState(() => _isLoading = false);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadBrand();
-  }
+  BrandModel _brand = BrandModel();
+  List<PostModel> _posts = [];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: _isLoading ? const Text('Loading') : Text(brand.name),
-        backgroundColor: brand.mainColor,
-        actions: [
-          IconButton(
-            onPressed: _isLoading ? null : _loadBrand,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-      body: Center(
-          child: (_isLoading
-              ? const CircularProgressIndicator()
-              : Text(brand.description))),
-    );
+    return Query(
+        options: QueryOptions(
+          document: gql(getBrandQuery),
+          variables: {
+            "where": {"id": widget.brandId},
+            "options": {"limit": 1},
+            "postsOptions": {
+              "limit": 10,
+              "sort": [
+                {"createdAt": "DESC"}
+              ]
+            }
+          },
+        ),
+        builder: (QueryResult result,
+            {VoidCallback? refetch, FetchMore? fetchMore}) {
+          if (result.isNotLoading &&
+              result.hasException == false &&
+              result.data != null) {
+            _brand = BrandModel.fromJson(result.data?['brands'][0]);
+            List<PostModel> posts = [];
+            for (var p in result.data?['brands'][0]['posts']) {
+              posts.add(PostModel.fromJson(p));
+            }
+            _posts = posts;
+          }
+          return Scaffold(
+              appBar: AppBar(
+                title: result.isLoading || result.hasException
+                    ? const Text('')
+                    : Text(_brand.name),
+                backgroundColor: _brand.mainColor,
+              ),
+              body: Center(
+                child: (result.hasException
+                    ? Text(result.exception.toString())
+                    : result.isLoading
+                        ? const CircularProgressIndicator()
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                                Text(_brand.description),
+                                buildNewPostButton(refetch!),
+                                Expanded(
+                                    child: PostListView(
+                                        _posts,
+                                        (context, postId) => {
+                                              if (postId != null)
+                                                {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              PostView(
+                                                                  postId:
+                                                                      postId)))
+                                                }
+                                            }))
+                              ])),
+              ));
+        });
   }
+
+  Widget buildNewPostButton(OnCompletionCallback onCompleted) => TextButton(
+      child: const Text("New Post"),
+      onPressed: () => {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => NewPostPage(
+                        brandId: widget.brandId, onCompleted: onCompleted)))
+          });
 }
