@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:community_app/models/user_model.dart';
 
 typedef OnTapCallback = void Function();
 
