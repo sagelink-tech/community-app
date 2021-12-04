@@ -1,8 +1,8 @@
 import 'package:community_app/components/brand_chip.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/post_model.dart';
-import 'package:community_app/views/pages/brand_home_page.dart';
 import 'package:community_app/views/posts/post_list.dart';
+import 'package:community_app/views/posts/post_view.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -31,9 +31,13 @@ query ExampleQuery(\$options: PostOptions, \$where: PostWhere) {
     commentsAggregate {
       count
     }
+    inBrandCommunity {
+      id
+      name
+      mainColor
+    }
   }
 }
-
 ''';
 
 class HomePage extends StatefulWidget {
@@ -46,34 +50,45 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<BrandModel> selectedBrands = [];
+  List<String> selectedBrandIds = [];
+  List<PostModel> posts = [];
+  List<BrandModel?> brands = [];
 
-  void _handleBrandSelection(
-      BuildContext context, String? brandId, bool selected) {
-    if (brandId != null) {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => BrandHomepage(brandId: brandId)));
+  void _handleBrandFilter(BrandModel? brand, bool selected) {
+    List<String> updatedIds = selectedBrandIds;
+
+    // if selecting "My Brands", default to []
+    if (brand == null) {
+      updatedIds = [];
+    } else {
+      // if selecting a different brand, add to list
+      if (selected && !selectedBrandIds.contains(brand.id)) {
+        updatedIds.add(brand.id);
+      }
+      // if deselecting a brand, remove from list
+      else if (!selected && selectedBrandIds.contains(brand.id)) {
+        updatedIds.remove(brand.id);
+      }
     }
-    return;
+
+    setState(() {
+      selectedBrandIds = updatedIds;
+    });
   }
 
-  Future<List<PostModel>> _getPosts(
-      GraphQLClient client, List<BrandModel> brands) async {
+  Future<List<PostModel>> _getPosts(GraphQLClient client) async {
     Map<String, dynamic> variables = {
       "options": {
         "sort": [
-          {"createdAt": "DESC"}
+          {"createdAt": "ASC"}
         ]
       }
     };
 
-    if (brands.isNotEmpty) {
-      List<String> brandIds = brands.map((e) => e.id).toList();
+    if (selectedBrandIds.isNotEmpty) {
       variables['where'] = {
         "inBrandCommunityConnection": {
-          "node": {"id_IN": brandIds}
+          "node": {"id_IN": selectedBrandIds}
         }
       };
     }
@@ -112,20 +127,23 @@ class _HomePageState extends State<HomePage> {
                 future: _getBrands(client),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.hasData) {
-                    return ListView.separated(
+                    brands = snapshot.data;
+                  }
+                  return ListView.separated(
                       padding: const EdgeInsets.all(5),
                       scrollDirection: Axis.horizontal,
                       separatorBuilder: (BuildContext context, int index) {
                         return const SizedBox(width: 5);
                       },
-                      itemCount: snapshot.data.length,
+                      itemCount: brands.length,
                       itemBuilder: (context, index) => BrandChip(
-                          brand: snapshot.data[index],
-                          onSelection: _handleBrandSelection),
-                    );
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
+                            brand: brands[index],
+                            selected: (index > 0
+                                ? selectedBrandIds
+                                    .contains((brands[index] as BrandModel).id)
+                                : selectedBrandIds.isEmpty),
+                            onSelection: _handleBrandFilter,
+                          ));
                 });
           }));
     }
@@ -133,20 +151,30 @@ class _HomePageState extends State<HomePage> {
     _buildPostCells() {
       return GraphQLConsumer(builder: (GraphQLClient client) {
         return FutureBuilder(
-            future: _getPosts(client, selectedBrands),
+            future: _getPosts(client),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.hasData) {
-                return PostListView(snapshot.data, (_, postId) => {});
-              } else {
-                return const CircularProgressIndicator();
+                posts = snapshot.data;
               }
+              return PostListView(
+                  posts,
+                  (context, postId) => {
+                        if (postId != null)
+                          {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        PostView(postId: postId)))
+                          }
+                      });
             });
       });
     }
 
     return Column(children: [
       _buildBrandChips(),
-      const Text('Homepage'),
+      const SizedBox(height: 10),
       Expanded(child: _buildPostCells())
     ]);
   }

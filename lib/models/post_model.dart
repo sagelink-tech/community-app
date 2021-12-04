@@ -45,7 +45,12 @@ class PostModel extends ChangeNotifier {
     title = json['title'];
     body = json['body'];
     commentCount = json['commentsAggregate']['count'];
-    creator = UserModel.fromJson(json['createdBy']);
+    if (json.containsKey('createdBy')) {
+      creator = UserModel.fromJson(json['createdBy']);
+    }
+    if (json.containsKey('inBrandCommunity')) {
+      brand = BrandModel.fromJson(json['inBrandCommunity']);
+    }
 
     List<CommentModel> commentList = [];
     if (json.containsKey('comments')) {

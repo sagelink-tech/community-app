@@ -1,3 +1,5 @@
+import 'package:community_app/components/activity_badge.dart';
+import 'package:community_app/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:community_app/models/post_model.dart';
@@ -12,33 +14,85 @@ class PostCell extends StatelessWidget {
   const PostCell(this.itemNo, this.post, this.onDetailClick, {Key? key})
       : super(key: key);
 
-  void _handleClick(context, String brandId) async {
-    onDetailClick(context, brandId);
+  void _handleClick(context, String postId) async {
+    onDetailClick(context, postId);
     return;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(5.0),
-      child: ListTile(
-        leading: CircleAvatar(
-            backgroundColor: Colors.blueGrey,
-            foregroundColor: Colors.white,
-            child: Text(post.creator.name[0])),
-        title: Text(
-          post.title,
-          key: Key('title_$itemNo'),
-        ),
-        subtitle: Column(
+    _buildTitle() {
+      return Container(
+          margin: const EdgeInsets.all(10),
+          child: Row(
             children: [
-              Text(post.body),
-              Text(post.commentCount.toString() + " comments")
+              ClickableAvatar(
+                avatarText: post.brand.name[0],
+                avatarURL: post.brand.logoUrl,
+                backgroundColor: post.brand.mainColor,
+              ),
+              const SizedBox(width: 10),
+              Text(post.brand.name)
             ],
-            crossAxisAlignment: CrossAxisAlignment.start,
-            key: Key('subtitle_$itemNo')),
-        onTap: () => _handleClick(context, post.id),
-      ),
-    );
+          ));
+    }
+
+    _buildBody() {
+      return Container(
+          margin: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              Text(post.title, style: Theme.of(context).textTheme.headline6),
+              Row(
+                children: [
+                  ClickableAvatar(
+                      avatarText: post.creator.name[0],
+                      avatarURL: post.creator.accountPictureUrl),
+                  const SizedBox(width: 10),
+                  Text(
+                    post.creator.name,
+                    style: Theme.of(context).textTheme.subtitle1,
+                  )
+                ],
+              ),
+              Text(post.body, style: Theme.of(context).textTheme.bodyText1),
+              const OutlinedButton(onPressed: null, child: Text("Comment"))
+            ],
+          ));
+    }
+
+    _buildDetail() {
+      return GestureDetector(
+          onTap: () => _handleClick(context, post.id),
+          child: Container(
+              margin: const EdgeInsets.all(10),
+              child: Row(children: const [
+                Text("Full conversation"),
+                Icon(Icons.navigate_next),
+                Spacer(),
+                ActivityChip(activityCount: 4),
+              ])));
+    }
+
+    return Container(
+        padding: const EdgeInsets.all(10.0),
+        child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10), // if you need this
+              side: BorderSide(
+                color: Colors.grey.withOpacity(0.4),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                _buildTitle(),
+                const Divider(),
+                _buildBody(),
+                const Divider(),
+                _buildDetail()
+              ],
+            )));
   }
 }
