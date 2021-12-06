@@ -30,9 +30,17 @@ class MyApp extends StatelessWidget {
 
     // Wrapper around scaffold
     return GraphQLProvider(
-      client: client,
-      child: MaterialApp(theme: theme.themeData, home: const AppScaffold()),
-    );
+        client: client,
+        child: GestureDetector(
+          onTap: () {
+            FocusScopeNode currentFocus = FocusScope.of(context);
+            if (!currentFocus.hasPrimaryFocus &&
+                currentFocus.focusedChild != null) {
+              currentFocus.focusedChild!.unfocus();
+            }
+          },
+          child: MaterialApp(theme: theme.themeData, home: const AppScaffold()),
+        ));
   }
 }
 

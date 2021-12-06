@@ -16,10 +16,15 @@ mutation CreateComments(\$input: [CommentCreateInput!]!) {
 typedef OnCompletionCallback = void Function();
 
 class NewComment extends ConsumerStatefulWidget {
-  const NewComment({Key? key, required this.postId, required this.onCompleted})
+  const NewComment(
+      {Key? key,
+      required this.postId,
+      required this.onCompleted,
+      this.focused = false})
       : super(key: key);
   final String postId;
   final OnCompletionCallback onCompleted;
+  final bool focused;
 
   static const routeName = '/comments';
 
@@ -38,32 +43,39 @@ class _NewCommentState extends ConsumerState<NewComment> {
         //autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Row(
           children: [
-            Expanded(child: buildBodyForm()),
+            Expanded(child: buildBodyForm(context)),
             buildSubmit(enabled: body != null && body!.isNotEmpty)
           ],
         ));
   }
 
-  Widget buildBodyForm({bool enabled = true}) => TextFormField(
-      decoration: const InputDecoration(
-        labelText: 'Comment',
-        border: OutlineInputBorder(),
-        errorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-        focusedErrorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-        errorStyle: TextStyle(color: Colors.purple),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter body text';
-        } else {
-          return null;
-        }
-      },
-      maxLength: 2000,
-      onChanged: (value) => setState(() => body = value),
-      enabled: enabled);
+  Widget buildBodyForm(BuildContext context, {bool enabled = true}) =>
+      Container(
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
+          color: Theme.of(context).canvasColor,
+          child: TextFormField(
+              autofocus: widget.focused,
+              decoration: InputDecoration(
+                labelText: 'Comment',
+                border: const OutlineInputBorder(),
+                errorBorder: OutlineInputBorder(
+                    borderSide:
+                        BorderSide(color: Theme.of(context).errorColor)),
+                focusedErrorBorder: OutlineInputBorder(
+                    borderSide:
+                        BorderSide(color: Theme.of(context).errorColor)),
+                errorStyle: TextStyle(color: Theme.of(context).errorColor),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter body text';
+                } else {
+                  return null;
+                }
+              },
+              maxLength: 2000,
+              onChanged: (value) => setState(() => body = value),
+              enabled: enabled));
 
   Widget buildSubmit({bool enabled = true}) => Builder(
       builder: (context) => Mutation(

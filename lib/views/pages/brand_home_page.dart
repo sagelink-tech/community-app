@@ -117,18 +117,7 @@ class _BrandHomepageState extends State<BrandHomepage> {
                                 : Text(_brand.name)),
                             Expanded(
                                 child: PostListView(
-                                    _posts,
-                                    (context, postId) => {
-                                          if (postId != null)
-                                            {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          PostView(
-                                                              postId: postId)))
-                                            }
-                                        }))
+                                    _posts, (context, postId) => {}))
                           ])),
               ));
         });

@@ -18,7 +18,7 @@ query Brands {
 ''';
 
 String getPostsQuery = '''
-query ExampleQuery(\$options: PostOptions, \$where: PostWhere) {
+query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
   posts(options: \$options, where: \$where) {
     id
     title
@@ -36,6 +36,7 @@ query ExampleQuery(\$options: PostOptions, \$where: PostWhere) {
       name
       mainColor
     }
+    createdAt
   }
 }
 ''';
@@ -80,7 +81,7 @@ class _HomePageState extends State<HomePage> {
     Map<String, dynamic> variables = {
       "options": {
         "sort": [
-          {"createdAt": "ASC"}
+          {"createdAt": "DESC"}
         ]
       }
     };
@@ -156,18 +157,7 @@ class _HomePageState extends State<HomePage> {
               if (snapshot.hasData) {
                 posts = snapshot.data;
               }
-              return PostListView(
-                  posts,
-                  (context, postId) => {
-                        if (postId != null)
-                          {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        PostView(postId: postId)))
-                          }
-                      });
+              return PostListView(posts, (context, postId) => {});
             });
       });
     }

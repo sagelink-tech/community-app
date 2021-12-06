@@ -1,5 +1,6 @@
 import 'package:community_app/components/activity_badge.dart';
 import 'package:community_app/components/clickable_avatar.dart';
+import 'package:community_app/views/posts/post_view.dart';
 import 'package:flutter/material.dart';
 
 import 'package:community_app/models/post_model.dart';
@@ -14,7 +15,13 @@ class PostCell extends StatelessWidget {
   const PostCell(this.itemNo, this.post, this.onDetailClick, {Key? key})
       : super(key: key);
 
-  void _handleClick(context, String postId) async {
+  void _handleClick(context, String postId,
+      {bool withTextFocus = false}) async {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => PostView(
+                postId: postId, autofocusCommentField: withTextFocus)));
     onDetailClick(context, postId);
     return;
   }
@@ -56,7 +63,10 @@ class PostCell extends StatelessWidget {
                 ],
               ),
               Text(post.body, style: Theme.of(context).textTheme.bodyText1),
-              const OutlinedButton(onPressed: null, child: Text("Comment"))
+              OutlinedButton(
+                  onPressed: () =>
+                      _handleClick(context, post.id, withTextFocus: true),
+                  child: const Text("Comment"))
             ],
           ));
     }
@@ -66,11 +76,11 @@ class PostCell extends StatelessWidget {
           onTap: () => _handleClick(context, post.id),
           child: Container(
               margin: const EdgeInsets.all(10),
-              child: Row(children: const [
-                Text("Full conversation"),
-                Icon(Icons.navigate_next),
-                Spacer(),
-                ActivityChip(activityCount: 4),
+              child: Row(children: [
+                const Text("Full conversation"),
+                const Icon(Icons.navigate_next),
+                const Spacer(),
+                ActivityChip(activityCount: post.commentCount),
               ])));
     }
 

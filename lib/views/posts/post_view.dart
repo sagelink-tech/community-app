@@ -34,8 +34,11 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
 """;
 
 class PostView extends StatefulWidget {
-  const PostView({Key? key, required this.postId}) : super(key: key);
+  const PostView(
+      {Key? key, required this.postId, this.autofocusCommentField = false})
+      : super(key: key);
   final String postId;
+  final bool autofocusCommentField;
 
   static const routeName = '/posts';
 
@@ -99,6 +102,7 @@ class _PostViewState extends State<PostView> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20),
                                   child: NewComment(
+                                      focused: widget.autofocusCommentField,
                                       postId: widget.postId,
                                       onCompleted: refetch!))),
                         ])),

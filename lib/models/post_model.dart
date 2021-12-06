@@ -10,6 +10,7 @@ class PostModel extends ChangeNotifier {
   String id = "";
   String title = "";
   String body = "";
+  DateTime createdAt = DateTime(2020, 1, 1, 0, 0, 1);
   int commentCount = 0;
   PostType type = PostType.undefined;
 
@@ -45,6 +46,10 @@ class PostModel extends ChangeNotifier {
     title = json['title'];
     body = json['body'];
     commentCount = json['commentsAggregate']['count'];
+    if (json.containsKey('createdAt')) {
+      createdAt =
+          DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
+    }
     if (json.containsKey('createdBy')) {
       creator = UserModel.fromJson(json['createdBy']);
     }
