@@ -72,10 +72,10 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.search),
+          //   onPressed: () {},
+          // ),
           ClickableAvatar(
             avatarText: loggedInUser.getUser().name[0],
             avatarURL: loggedInUser.getUser().accountPictureUrl,
