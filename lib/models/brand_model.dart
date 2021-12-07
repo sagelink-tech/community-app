@@ -3,13 +3,12 @@ import 'package:community_app/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 
 class BrandModel extends ChangeNotifier {
-  String id = "";
-  String name = "";
-  String description = "";
+  String id = "df487c75-7186-48ea-a507-25b80aa92c64";
+  String name = "brand name";
+  String description = "brand description";
   String logoUrl = "";
   String backgroundImageUrl = "";
-  String website = "";
-  String relationship = "";
+  String website = "www.brand.com";
   Color mainColor = Colors.blueGrey;
 
   List<UserModel> _owners = [];
@@ -41,10 +40,19 @@ class BrandModel extends ChangeNotifier {
         ? json['backgroundImageUrl']
         : "";
     website = json.containsKey('website') ? json['website'] : "";
-    relationship = json.containsKey('relationship') ? json['relationship'] : "";
     mainColor = json.containsKey('mainColor') && json['mainColor'] != null
         ? ColorUtils.parseHex((json['mainColor']))
         : Colors.blueGrey;
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'description': description,
+        'logoUrl': logoUrl,
+        'backgroundImageUrl': backgroundImageUrl,
+        'website': website,
+        'mainColor': ColorUtils.hexValue(mainColor),
+      };
   // Eventually other stuff would go here, notifications, friends, draft posts, etc
 }

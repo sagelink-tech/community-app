@@ -2,7 +2,6 @@ import 'package:community_app/components/brand_chip.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/post_model.dart';
 import 'package:community_app/views/posts/post_list.dart';
-import 'package:community_app/views/posts/post_view.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 

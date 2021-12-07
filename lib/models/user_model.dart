@@ -2,10 +2,10 @@ import 'package:community_app/models/brand_model.dart';
 import 'package:flutter/foundation.dart';
 
 class UserModel extends ChangeNotifier {
-  String id = "";
-  String username = "";
-  String name = "";
-  String email = "";
+  String id = "123";
+  String username = "username";
+  String name = "full name";
+  String email = "email@email.com";
   String accountPictureUrl = "";
 
   List<String> _userPosts = [];
@@ -36,5 +36,11 @@ class UserModel extends ChangeNotifier {
         json.containsKey('accountPictureUrl') ? json['accountPictureUrl'] : "";
   }
 
-  // Eventually other stuff would go here, notifications, friends, draft posts, etc
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'username': username,
+        'email': email,
+        'accountPictureUrl': accountPictureUrl
+      };
 }

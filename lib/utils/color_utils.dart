@@ -9,6 +9,9 @@ class ColorUtils {
   static Color parseHex(String value) =>
       Color(int.parse(value.substring(1, 7), radix: 16) + 0xFF000000);
 
+  static String hexValue(Color value) =>
+      '#${(value.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+
   static Color blend(Color dst, Color src, double opacity) {
     return Color.fromARGB(
       255,
