@@ -1,3 +1,4 @@
+import 'package:community_app/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:community_app/models/comment_model.dart';
@@ -10,18 +11,17 @@ class CommentCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(5.0),
-      child: ListTile(
-        leading: CircleAvatar(
-            backgroundColor: Colors.blueGrey,
-            foregroundColor: Colors.white,
-            child: Text(comment.creator.name[0])),
-        title: Text(
-          comment.body,
-          key: Key('title_$itemNo'),
-        ),
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        ClickableAvatar(
+            avatarText: comment.creator.name[0],
+            avatarURL: comment.creator.accountPictureUrl),
+        Text(comment.creator.name[0]),
+      ]),
+      Text(
+        comment.body,
+        key: Key('title_$itemNo'),
       ),
-    );
+    ]);
   }
 }

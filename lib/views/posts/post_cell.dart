@@ -49,7 +49,7 @@ class PostCell extends StatelessWidget {
           margin: const EdgeInsets.all(10),
           child: Column(
             children: [
-              Text(post.title, style: Theme.of(context).textTheme.headline6),
+              Text(post.title, style: Theme.of(context).textTheme.headline5),
               Row(
                 children: [
                   ClickableAvatar(
@@ -75,7 +75,7 @@ class PostCell extends StatelessWidget {
       return GestureDetector(
           onTap: () => _handleClick(context, post.id),
           child: Container(
-              margin: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               child: Row(children: [
                 const Text("Full conversation"),
                 const Icon(Icons.navigate_next),

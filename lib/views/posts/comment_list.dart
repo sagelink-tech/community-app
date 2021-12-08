@@ -11,10 +11,14 @@ class CommentListView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Render list of widgets
 
-    return ListView.builder(
-        itemCount: comments.length,
-        cacheExtent: 20,
-        controller: ScrollController(),
-        itemBuilder: (context, index) => CommentCell(index, comments[index]));
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const ClampingScrollPhysics(),
+      itemCount: comments.length,
+      cacheExtent: 20,
+      controller: ScrollController(),
+      itemBuilder: (context, index) => CommentCell(index, comments[index]),
+      separatorBuilder: (context, index) => const Divider(),
+    );
   }
 }

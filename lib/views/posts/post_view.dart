@@ -1,3 +1,4 @@
+import 'package:community_app/components/clickable_avatar.dart';
 import 'package:community_app/views/posts/new_comment.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/post_model.dart';
@@ -72,39 +73,48 @@ class _PostViewState extends State<PostView> {
             appBar: AppBar(
                 title: result.isLoading || result.hasException
                     ? const Text('')
-                    : Text(_post.title),
-                actions: [
-                  IconButton(
-                    onPressed: result.isLoading ? null : refetch,
-                    icon: const Icon(Icons.refresh),
-                  ),
-                ],
+                    : Text(_post.brand.name),
                 backgroundColor: Theme.of(context).backgroundColor,
                 elevation: 1),
-            body: Center(
+            body: Container(
+              alignment: AlignmentDirectional.topStart,
+              padding: const EdgeInsets.all(10),
               child: (result.hasException
                   ? Text(result.exception.toString())
                   : result.isLoading
-                      ? const CircularProgressIndicator()
-                      : Stack(children: <Widget>[
-                          Column(
-                            mainAxisSize: MainAxisSize.max,
+                      ? const Center(child: CircularProgressIndicator())
+                      : Column(children: <Widget>[
+                          Expanded(
+                              child: ListView(
                             children: [
-                              Text(_post.body),
-                              Text(_post.creator.name),
-                              Text(_post.commentCount.toString()),
-                              Expanded(child: CommentListView(_post.comments)),
+                              Text(
+                                _post.title,
+                                style: Theme.of(context).textTheme.headline5,
+                              ),
+                              Text(
+                                _post.body,
+                                style: Theme.of(context).textTheme.bodyText1,
+                              ),
+                              Row(
+                                children: [
+                                  ClickableAvatar(
+                                    avatarText: _post.creator.name[0],
+                                    avatarURL: _post.creator.accountPictureUrl,
+                                  ),
+                                  Text(_post.creator.name),
+                                ],
+                              ),
+                              Text('RESPONSES',
+                                  style: Theme.of(context).textTheme.headline6),
+                              CommentListView(_post.comments),
                             ],
-                          ),
+                          )),
                           Align(
                               alignment: Alignment.bottomCenter,
-                              child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20),
-                                  child: NewComment(
-                                      focused: widget.autofocusCommentField,
-                                      postId: widget.postId,
-                                      onCompleted: refetch!))),
+                              child: NewComment(
+                                  focused: widget.autofocusCommentField,
+                                  postId: widget.postId,
+                                  onCompleted: refetch!)),
                         ])),
             ),
           );
