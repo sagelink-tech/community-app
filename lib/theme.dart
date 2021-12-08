@@ -118,6 +118,45 @@ class AppTheme {
     }
   }
 
+  TextTheme _customTextTheme(TextTheme base) {
+    return base
+        .copyWith(
+          headline1: base.headline5!.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 28.0,
+          ),
+          headline2: base.headline5!.copyWith(
+            fontWeight: FontWeight.w500,
+            fontSize: 28.0,
+          ),
+          headline3: base.headline5!.copyWith(
+            fontWeight: FontWeight.normal,
+            fontSize: 24.0,
+          ),
+          headline4: base.headline5!.copyWith(
+            fontWeight: FontWeight.normal,
+            fontSize: 22.0,
+          ),
+          headline5: base.headline5!.copyWith(
+            fontWeight: FontWeight.normal,
+            fontSize: 20.0,
+          ),
+          headline6: base.headline6!.copyWith(
+            fontSize: 16.0,
+            fontWeight: FontWeight.bold,
+          ),
+          caption: base.caption!.copyWith(
+            fontWeight: FontWeight.w400,
+            fontSize: 20.0,
+          ),
+          bodyText1: base.bodyText1!.copyWith(
+            fontWeight: FontWeight.normal,
+            fontSize: 16.0,
+          ),
+        )
+        .apply(fontFamily: GoogleFonts.poppins().fontFamily);
+  }
+
   ThemeData get themeData {
     var t = ThemeData.from(
       textTheme: (isDark ? ThemeData.dark() : ThemeData.light()).textTheme,
@@ -137,13 +176,8 @@ class AppTheme {
           error: error),
     );
     return t.copyWith(
-      textTheme: ThemeData.light()
-          .textTheme
-          .apply(fontFamily: GoogleFonts.poppins().fontFamily),
-      primaryTextTheme: ThemeData.light()
-          .textTheme
-          .apply(fontFamily: GoogleFonts.poppins().fontFamily),
-    );
+        textTheme: _customTextTheme(
+            (isDark ? ThemeData.dark() : ThemeData.light()).textTheme));
   }
 
   Color shift(Color c, double d) =>
