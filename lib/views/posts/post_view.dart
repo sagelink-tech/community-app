@@ -1,4 +1,5 @@
 import 'package:community_app/components/clickable_avatar.dart';
+import 'package:community_app/components/list_spacer.dart';
 import 'package:community_app/views/posts/new_comment.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/post_model.dart';
@@ -78,37 +79,58 @@ class _PostViewState extends State<PostView> {
                 elevation: 1),
             body: Container(
               alignment: AlignmentDirectional.topStart,
-              padding: const EdgeInsets.all(10),
               child: (result.hasException
                   ? Text(result.exception.toString())
                   : result.isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : Column(children: <Widget>[
                           Expanded(
-                              child: ListView(
-                            children: [
-                              Text(
-                                _post.title,
-                                style: Theme.of(context).textTheme.headline5,
-                              ),
-                              Text(
-                                _post.body,
-                                style: Theme.of(context).textTheme.bodyText1,
-                              ),
-                              Row(
-                                children: [
-                                  ClickableAvatar(
-                                    avatarText: _post.creator.name[0],
-                                    avatarURL: _post.creator.accountPictureUrl,
-                                  ),
-                                  Text(_post.creator.name),
-                                ],
-                              ),
-                              Text('RESPONSES',
-                                  style: Theme.of(context).textTheme.headline6),
-                              CommentListView(_post.comments),
-                            ],
-                          )),
+                              child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 25),
+                                  child: ListView(
+                                    children: [
+                                      const ListSpacer(),
+                                      Text('ORIGINAL POST',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5),
+                                      const ListSpacer(),
+                                      Text(
+                                        _post.title,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headline4,
+                                      ),
+                                      const ListSpacer(),
+                                      Text(
+                                        _post.body,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyText1,
+                                      ),
+                                      const ListSpacer(),
+                                      Row(
+                                        children: [
+                                          ClickableAvatar(
+                                            radius: 30,
+                                            avatarText: _post.creator.name[0],
+                                            avatarURL:
+                                                _post.creator.accountPictureUrl,
+                                          ),
+                                          const ListSpacer(),
+                                          Text(_post.creator.name),
+                                        ],
+                                      ),
+                                      const ListSpacer(),
+                                      Text('RESPONSES',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5),
+                                      const ListSpacer(),
+                                      CommentListView(_post.comments),
+                                    ],
+                                  ))),
                           Align(
                               alignment: Alignment.bottomCenter,
                               child: NewComment(

@@ -138,12 +138,13 @@ class AppTheme {
             fontSize: 22.0,
           ),
           headline5: base.headline5!.copyWith(
-            fontWeight: FontWeight.normal,
-            fontSize: 20.0,
+            letterSpacing: 2.5,
+            fontWeight: FontWeight.bold,
+            fontSize: 14.0,
           ),
           headline6: base.headline6!.copyWith(
-            fontSize: 16.0,
-            fontWeight: FontWeight.bold,
+            fontSize: 20.0,
+            fontWeight: FontWeight.normal,
           ),
           caption: base.caption!.copyWith(
             fontWeight: FontWeight.w400,

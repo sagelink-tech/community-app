@@ -49,7 +49,7 @@ class PostCell extends StatelessWidget {
           margin: const EdgeInsets.all(10),
           child: Column(
             children: [
-              Text(post.title, style: Theme.of(context).textTheme.headline5),
+              Text(post.title, style: Theme.of(context).textTheme.headline4),
               Row(
                 children: [
                   ClickableAvatar(
