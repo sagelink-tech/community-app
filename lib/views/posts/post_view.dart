@@ -132,11 +132,14 @@ class _PostViewState extends State<PostView> {
                                     ],
                                   ))),
                           Align(
-                              alignment: Alignment.bottomCenter,
-                              child: NewComment(
-                                  focused: widget.autofocusCommentField,
-                                  postId: widget.postId,
-                                  onCompleted: refetch!)),
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                                padding: const EdgeInsets.all(20),
+                                child: NewComment(
+                                    focused: widget.autofocusCommentField,
+                                    postId: widget.postId,
+                                    onCompleted: refetch!)),
+                          )
                         ])),
             ),
           );

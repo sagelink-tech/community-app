@@ -73,7 +73,8 @@ class _NewCommentState extends ConsumerState<NewComment> {
                   return null;
                 }
               },
-              maxLength: 2000,
+              minLines: 1,
+              maxLines: 1,
               onChanged: (value) => setState(() => body = value),
               enabled: enabled));
 
