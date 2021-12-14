@@ -11,8 +11,10 @@ class PostCell extends StatelessWidget {
   final int itemNo;
   final PostModel post;
   final OnDetailCallback onDetailClick;
+  final bool showBrand;
 
-  const PostCell(this.itemNo, this.post, this.onDetailClick, {Key? key})
+  const PostCell(this.itemNo, this.post, this.onDetailClick,
+      {this.showBrand = true, Key? key})
       : super(key: key);
 
   void _handleClick(context, String postId,
@@ -84,6 +86,18 @@ class PostCell extends StatelessWidget {
               ])));
     }
 
+    List<Widget> _composeChildren() {
+      return showBrand
+          ? ([
+              _buildTitle(),
+              const Divider(),
+              _buildBody(),
+              const Divider(),
+              _buildDetail()
+            ])
+          : ([_buildBody(), const Divider(), _buildDetail()]);
+    }
+
     return Container(
         padding: const EdgeInsets.all(10.0),
         child: Card(
@@ -96,13 +110,7 @@ class PostCell extends StatelessWidget {
               ),
             ),
             child: Column(
-              children: [
-                _buildTitle(),
-                const Divider(),
-                _buildBody(),
-                const Divider(),
-                _buildDetail()
-              ],
+              children: _composeChildren(),
             )));
   }
 }
