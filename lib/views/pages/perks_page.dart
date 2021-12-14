@@ -70,11 +70,13 @@ class _PerksPageState extends State<PerksPage> {
     var perkJson = {
       "id": "123",
       "title": "Test Perk",
+      "description":
+          "This is a test perk for us to see what the visual aesthetic of the consumer application actually looks like. This is going to be a bit longer than necessary just so we can start testing around and whatever. Who knows what I'm actually going to end up writing - probably just some nonsense if I'm being honest. Ok I'm done.",
       "productId": "123",
       "productName": "Test Product",
-      "price": 350.0,
+      "price": 35.0,
       "imageUrls": <String>[
-        "https://slimages.macysassets.com/is/image/MCY/products/4/optimized/8278534_fpx.tif?op_sharpen=1&wid=700&hei=855&fit=fit,1"
+        "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118"
       ],
       "currency": Currencies.usd,
       "type": PerkType.productDrop,

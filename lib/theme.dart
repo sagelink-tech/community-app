@@ -99,7 +99,7 @@ class AppTheme {
         return AppTheme(
           isDark: true,
           txt: Colors.white,
-          accentTxt: const Color(0xff888888),
+          accentTxt: const Color(0xffffffff),
           errorTxt: Colors.white,
           bg1: const Color(0xff222222),
           bg2: const Color(0xff353535),

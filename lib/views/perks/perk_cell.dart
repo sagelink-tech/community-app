@@ -1,11 +1,12 @@
 import 'package:community_app/components/activity_badge.dart';
 import 'package:community_app/components/clickable_avatar.dart';
 import 'package:community_app/views/pages/brand_home_page.dart';
+import 'package:community_app/views/perks/perk_view.dart';
 import 'package:flutter/material.dart';
 
 import 'package:community_app/models/perk_model.dart';
 
-typedef OnDetailCallback = void Function(BuildContext context, String postId);
+typedef OnDetailCallback = void Function(BuildContext context, String perkId);
 
 class PerkCell extends StatelessWidget {
   final int itemNo;
@@ -15,13 +16,10 @@ class PerkCell extends StatelessWidget {
   const PerkCell(this.itemNo, this.perk, this.onDetailClick, {Key? key})
       : super(key: key);
 
-  void _handleClick(context, String postId, {bool withTextFocus = false}) {
-    // Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //         builder: (context) => PerkView(
-    //             postId: postId, autofocusCommentField: withTextFocus)));
-    onDetailClick(context, postId);
+  void _handleClick(context, String perkId) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => PerkView(perkId: perkId)));
+    onDetailClick(context, perkId);
     return;
   }
 
@@ -57,7 +55,8 @@ class PerkCell extends StatelessWidget {
                   ClickableAvatar(
                       avatarText: perk.brand.name[0],
                       backgroundColor: perk.brand.mainColor,
-                      avatarURL: perk.brand.logoUrl),
+                      avatarURL: perk.brand.logoUrl,
+                      radius: 15),
                   const SizedBox(width: 10),
                   Text(
                     perk.brand.name,
@@ -65,30 +64,28 @@ class PerkCell extends StatelessWidget {
                   )
                 ],
               )),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           Text(perk.typeToString(),
+              style: Theme.of(context).textTheme.subtitle2),
+          const SizedBox(height: 5),
+          Text(perk.title + " • " + perk.priceToString(),
               style: Theme.of(context).textTheme.headline6),
-          const SizedBox(height: 10),
-          Text(perk.title, style: Theme.of(context).textTheme.headline6),
         ],
       ));
     }
 
-    return Container(
-        padding: const EdgeInsets.all(10.0),
-        child: Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-              side: BorderSide(
-                color: Colors.grey.withOpacity(0.4),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              children: [
-                _buildBody(),
-              ],
-            )));
+    return GestureDetector(
+        onTap: () => _handleClick(context, perk.id),
+        child: Container(
+            padding: const EdgeInsets.all(10.0),
+            child: Card(
+                clipBehavior: Clip.antiAlias,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [_buildBody(), const Divider()],
+                ))));
   }
 }

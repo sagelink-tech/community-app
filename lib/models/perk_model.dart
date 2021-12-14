@@ -4,6 +4,7 @@ import 'package:community_app/models/comment_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 enum PerkType {
   undefined,
@@ -19,12 +20,15 @@ enum Currencies {
   euro,
 }
 
+final formatCurrency = NumberFormat.simpleCurrency();
+
 // Should there be a product model? Probably... can pull from Shopify for now
 // Should there be a product variant model? Probably... can pull from Shopify for now
 
 class PerkModel extends ChangeNotifier {
   String id = "";
   String title = "";
+  String description = "";
   String productId = "";
   String productName = "";
   double price = 0.0; // in cents
@@ -78,11 +82,20 @@ class PerkModel extends ChangeNotifier {
     }
   }
 
+  String priceToString() {
+    if (price == 0) {
+      return "Free";
+    } else {
+      return formatCurrency.format(price);
+    }
+  }
+
   PerkModel();
 
   PerkModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
+    description = json['description'];
     productId = json["productId"];
     imageUrls = json["imageUrls"];
     productName = json["productName"];
