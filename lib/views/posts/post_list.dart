@@ -8,8 +8,10 @@ typedef OnSelectionCallback = void Function(
 class PostListView extends StatelessWidget {
   final List<PostModel> posts;
   final OnSelectionCallback onSelection;
+  final bool showBrand;
 
-  const PostListView(this.posts, this.onSelection, {Key? key})
+  const PostListView(this.posts, this.onSelection,
+      {this.showBrand = true, Key? key})
       : super(key: key);
 
   @override
@@ -20,7 +22,7 @@ class PostListView extends StatelessWidget {
         itemCount: posts.length,
         cacheExtent: 20,
         controller: ScrollController(),
-        itemBuilder: (context, index) =>
-            PostCell(index, posts[index], onDetailClick: onSelection));
+        itemBuilder: (context, index) => PostCell(index, posts[index],
+            onDetailClick: onSelection, showBrand: showBrand));
   }
 }

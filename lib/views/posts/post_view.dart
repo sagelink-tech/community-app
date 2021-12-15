@@ -18,6 +18,12 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
       name
       username
     }
+    inBrandCommunity {
+      id
+      name
+      mainColor
+      logoUrl
+    }
     commentsAggregate {
       count
     }

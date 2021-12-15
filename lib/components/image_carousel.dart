@@ -60,7 +60,7 @@ class _EmbeddedImageCarouselState extends State<EmbeddedImageCarousel> {
             }),
       ),
       Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(10),
           child: ElevatedButton.icon(
             icon: const Icon(Icons.photo_camera),
             label: Text(widget.imageUrls.length.toString() + " Photos"),

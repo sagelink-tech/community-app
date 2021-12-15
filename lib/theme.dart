@@ -148,7 +148,7 @@ class AppTheme {
           ),
           caption: base.caption!.copyWith(
             fontWeight: FontWeight.w400,
-            fontSize: 20.0,
+            fontSize: 16.0,
           ),
           bodyText1: base.bodyText1!.copyWith(
             fontWeight: FontWeight.normal,
