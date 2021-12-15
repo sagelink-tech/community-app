@@ -76,6 +76,8 @@ class _PerksPageState extends State<PerksPage> {
       "productName": "Test Product",
       "price": 35.0,
       "imageUrls": <String>[
+        "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQeIJLT6aYwziw15ir4UcdBj_9jGZ9j3tTjgT_BugucHZht9POENS6JZ2VbKao&usqp=CAE",
+        "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118",
         "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118"
       ],
       "currency": Currencies.usd,

@@ -1,5 +1,4 @@
-import 'package:community_app/components/clickable_avatar.dart';
-import 'package:community_app/components/list_spacer.dart';
+import 'package:community_app/components/image_carousel.dart';
 import 'package:community_app/components/nested_tab_view.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/perk_model.dart';
@@ -35,26 +34,6 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
   }
 }
 """;
-
-var perkJson = {
-  "id": "123",
-  "title": "Test Perk",
-  "description":
-      "This is a test perk for us to see what the visual aesthetic of the consumer application actually looks like. This is going to be a bit longer than necessary just so we can start testing around and whatever. Who knows what I'm actually going to end up writing - probably just some nonsense if I'm being honest. Ok I'm done. This is a test perk for us to see what the visual aesthetic of the consumer application actually looks like. This is going to be a bit longer than necessary just so we can start testing around and whatever. Who knows what I'm actually going to end up writing - probably just some nonsense if I'm being honest. Ok I'm done.",
-  "productId": "123",
-  "productName": "Test Product",
-  "price": 35.0,
-  "imageUrls": <String>[
-    "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118"
-  ],
-  "currency": Currencies.usd,
-  "type": PerkType.productDrop,
-  "startDate": DateTime(2022, 1, 1, 0, 0, 0).toString(),
-  "endDate": DateTime(2022, 1, 2, 0, 0, 0).toString(),
-  "commentsAggregate": {"count": 0},
-  "inBrandCommunity": BrandModel().toJson(),
-  "createdBy": UserModel().toJson(),
-};
 
 class PerkView extends StatefulWidget {
   const PerkView({Key? key, required this.perkId}) : super(key: key);
@@ -125,6 +104,29 @@ class _PerkViewState extends State<PerkView> {
               result.hasException == false &&
               result.data != null) {
             //_perk = PerkModel.fromJson(result.data?['perks'][0]);
+
+            var perkJson = {
+              "id": "123",
+              "title": "Test Perk",
+              "description":
+                  "This is a test perk for us to see what the visual aesthetic of the consumer application actually looks like. This is going to be a bit longer than necessary just so we can start testing around and whatever. Who knows what I'm actually going to end up writing - probably just some nonsense if I'm being honest. Ok I'm done. This is a test perk for us to see what the visual aesthetic of the consumer application actually looks like. This is going to be a bit longer than necessary just so we can start testing around and whatever. Who knows what I'm actually going to end up writing - probably just some nonsense if I'm being honest. Ok I'm done.",
+              "productId": "123",
+              "productName": "Test Product",
+              "price": 35.0,
+              "imageUrls": <String>[
+                "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQeIJLT6aYwziw15ir4UcdBj_9jGZ9j3tTjgT_BugucHZht9POENS6JZ2VbKao&usqp=CAE",
+                "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118",
+                "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118"
+              ],
+              "currency": Currencies.usd,
+              "type": PerkType.productDrop,
+              "startDate": DateTime(2022, 1, 1, 0, 0, 0).toString(),
+              "endDate": DateTime(2022, 1, 2, 0, 0, 0).toString(),
+              "commentsAggregate": {"count": 0},
+              "inBrandCommunity": BrandModel().toJson(),
+              "createdBy": UserModel().toJson(),
+            };
+
             _perk = PerkModel.fromJson(perkJson);
           }
 
@@ -137,14 +139,7 @@ class _PerkViewState extends State<PerkView> {
                   : result.isLoading
                       ? const CircularProgressIndicator()
                       : ListView(shrinkWrap: true, children: [
-                          SizedBox(
-                              height: 192.0,
-                              width: double.infinity,
-                              child: Image.network(
-                                  _perk.imageUrls.isEmpty
-                                      ? "http://contrapoderweb.com/wp-content/uploads/2014/10/default-img-400x240.gif"
-                                      : _perk.imageUrls[0],
-                                  fit: BoxFit.cover)),
+                          EmbeddedImageCarousel(_perk.imageUrls, height: 192.0),
                           const SizedBox(height: 5),
                           _buildBody(context)
                         ])));
