@@ -4,6 +4,7 @@ import 'package:community_app/views/pages/brands_page.dart';
 import 'package:community_app/views/pages/home_page.dart';
 import 'package:community_app/views/pages/perks_page.dart';
 import 'package:community_app/views/pages/settings_page.dart';
+import 'package:community_app/views/posts/new_post_brand_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:community_app/providers.dart';
@@ -88,7 +89,10 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       body: pageOptions[_selectedIndex].body,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Add your onPressed code here!
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const NewPostBrandSelection()));
         },
         child: Icon(Icons.add, color: Theme.of(context).colorScheme.background),
         backgroundColor: Theme.of(context).colorScheme.secondary,
