@@ -1,5 +1,3 @@
-import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/post_model.dart';
@@ -54,7 +52,6 @@ class _BrandHomepageState extends State<BrandHomepage>
 
   _scrollListener() {
     if (_scrollController.offset >= _headerSize) {
-      print('Scrolled past header');
       setState(() {
         _isCollapsed = true;
       });
