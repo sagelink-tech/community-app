@@ -29,8 +29,14 @@ class BrandChip extends StatelessWidget {
             : null,
         label: brand != null ? Text(brand!.name) : const Text("My brands"),
         selected: selected,
+        side: BorderSide(
+            color: selected
+                ? Theme.of(context).colorScheme.secondary
+                : Theme.of(context).primaryColor,
+            width: selected ? 2.0 : 1.0),
         backgroundColor: Colors.transparent,
-        shape: const StadiumBorder(side: BorderSide()),
+        selectedColor: Colors.transparent,
+        //shape: const StadiumBorder(side: BorderSide()),
         onSelected: (bool value) => {onSelection(brand, value)});
   }
 }
