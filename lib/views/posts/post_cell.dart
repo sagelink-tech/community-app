@@ -1,20 +1,23 @@
 import 'package:community_app/components/activity_badge.dart';
 import 'package:community_app/components/clickable_avatar.dart';
+import 'package:community_app/views/pages/brand_home_page.dart';
 import 'package:community_app/views/posts/post_view.dart';
 import 'package:flutter/material.dart';
 
 import 'package:community_app/models/post_model.dart';
 
 typedef OnDetailCallback = void Function(BuildContext context, String postId);
+typedef OnBrandCallback = void Function(BuildContext context, String brandId);
 
 class PostCell extends StatelessWidget {
   final int itemNo;
   final PostModel post;
-  final OnDetailCallback onDetailClick;
+  final OnDetailCallback? onDetailClick;
+  final OnBrandCallback? onBrandClick;
   final bool showBrand;
 
-  const PostCell(this.itemNo, this.post, this.onDetailClick,
-      {this.showBrand = true, Key? key})
+  const PostCell(this.itemNo, this.post,
+      {this.showBrand = true, this.onDetailClick, this.onBrandClick, Key? key})
       : super(key: key);
 
   void _handleClick(context, String postId,
@@ -24,26 +27,41 @@ class PostCell extends StatelessWidget {
         MaterialPageRoute(
             builder: (context) => PostView(
                 postId: postId, autofocusCommentField: withTextFocus)));
-    onDetailClick(context, postId);
+    if (onDetailClick != null) {
+      onDetailClick!(context, postId);
+    }
+    return;
+  }
+
+  void _handleBrandClick(context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => BrandHomepage(brandId: post.brand.id)));
+    if (onBrandClick != null) {
+      onBrandClick!(context, post.brand.id);
+    }
     return;
   }
 
   @override
   Widget build(BuildContext context) {
     _buildTitle() {
-      return Container(
-          margin: const EdgeInsets.all(10),
-          child: Row(
-            children: [
-              ClickableAvatar(
-                avatarText: post.brand.name[0],
-                avatarURL: post.brand.logoUrl,
-                backgroundColor: post.brand.mainColor,
-              ),
-              const SizedBox(width: 10),
-              Text(post.brand.name)
-            ],
-          ));
+      return InkWell(
+          onTap: () => _handleBrandClick(context),
+          child: Container(
+              margin: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  ClickableAvatar(
+                    avatarText: post.brand.name[0],
+                    avatarURL: post.brand.logoUrl,
+                    backgroundColor: post.brand.mainColor,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(post.brand.name)
+                ],
+              )));
     }
 
     _buildBody() {
@@ -74,7 +92,7 @@ class PostCell extends StatelessWidget {
     }
 
     _buildDetail() {
-      return GestureDetector(
+      return InkWell(
           onTap: () => _handleClick(context, post.id),
           child: Container(
               padding: const EdgeInsets.all(10),

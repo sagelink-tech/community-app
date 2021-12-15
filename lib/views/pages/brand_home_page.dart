@@ -1,4 +1,5 @@
 import 'package:community_app/components/clickable_avatar.dart';
+import 'package:community_app/components/nested_tab_view.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/post_model.dart';
@@ -46,6 +47,33 @@ class _BrandHomepageState extends State<BrandHomepage> {
   BrandModel _brand = BrandModel();
   List<PostModel> _posts = [];
 
+  _buildHeader(BuildContext context) {
+    return Column(children: [
+      SizedBox(
+          height: 200.0,
+          width: double.infinity,
+          child: Image.network(
+              _brand.backgroundImageUrl.isEmpty
+                  ? "http://contrapoderweb.com/wp-content/uploads/2014/10/default-img-400x240.gif"
+                  : _brand.backgroundImageUrl,
+              fit: BoxFit.cover)),
+      Text(_brand.name, style: Theme.of(context).textTheme.headline3),
+      Text(_brand.followers.length.toString() + " members"),
+      const Text("VIP Community"),
+    ]);
+  }
+
+  _buildBody(BuildContext context) {
+    return NestedTabBar(
+      const ['Conversations', 'My Perks'],
+      [
+        PostListView(_posts, (context, postId) => {}),
+        const Text('perks go here'),
+      ],
+      crossAxisAlignment: CrossAxisAlignment.center,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Query(
@@ -89,35 +117,8 @@ class _BrandHomepageState extends State<BrandHomepage> {
                     : result.isLoading
                         ? const CircularProgressIndicator()
                         : Column(children: [
-                            Stack(alignment: Alignment.center, children: [
-                              SizedBox(
-                                  height: 200.0,
-                                  width: double.infinity,
-                                  child: Image.network(
-                                      _brand.backgroundImageUrl.isEmpty
-                                          ? "http://contrapoderweb.com/wp-content/uploads/2014/10/default-img-400x240.gif"
-                                          : _brand.backgroundImageUrl,
-                                      fit: BoxFit.cover)),
-                              ClickableAvatar(
-                                avatarText: _brand.name[0],
-                                avatarURL: _brand.logoUrl,
-                                backgroundColor: _brand.mainColor,
-                                radius: 50,
-                              )
-                            ]),
-                            (result.isLoading || result.hasException
-                                ? const Text('')
-                                : const Text("VIP Community")),
-                            (result.isLoading || result.hasException
-                                ? const Text('')
-                                : Text(_brand.followers.length.toString() +
-                                    " members")),
-                            (result.isLoading || result.hasException
-                                ? const Text('')
-                                : Text(_brand.name)),
-                            Expanded(
-                                child: PostListView(
-                                    _posts, (context, postId) => {}))
+                            _buildHeader(context),
+                            _buildBody(context)
                           ])),
               ));
         });

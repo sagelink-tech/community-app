@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 class NestedTabBar extends StatefulWidget {
   final List<String> labels;
   final List<Widget> tabBodies;
-  const NestedTabBar(this.labels, this.tabBodies, {Key? key}) : super(key: key);
+  final CrossAxisAlignment crossAxisAlignment;
+  final MainAxisAlignment mainAxisAlignment;
+  const NestedTabBar(this.labels, this.tabBodies,
+      {this.crossAxisAlignment = CrossAxisAlignment.start,
+      this.mainAxisAlignment = MainAxisAlignment.start,
+      Key? key})
+      : super(key: key);
 
   @override
   _NestedTabBarState createState() => _NestedTabBarState();
@@ -33,8 +39,8 @@ class _NestedTabBarState extends State<NestedTabBar>
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: widget.mainAxisAlignment,
+      crossAxisAlignment: widget.crossAxisAlignment,
       children: <Widget>[
         TabBar(
           controller: _nestedTabController,

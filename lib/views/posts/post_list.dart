@@ -21,6 +21,6 @@ class PostListView extends StatelessWidget {
         cacheExtent: 20,
         controller: ScrollController(),
         itemBuilder: (context, index) =>
-            PostCell(index, posts[index], onSelection));
+            PostCell(index, posts[index], onDetailClick: onSelection));
   }
 }
