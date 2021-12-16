@@ -1,3 +1,4 @@
+import 'package:community_app/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 
 typedef OnTapCallback = void Function();
@@ -22,18 +23,22 @@ class ClickableAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color bgColor = backgroundColor ?? Theme.of(context).splashColor;
+
     return Container(
         padding: padding,
         child: InkWell(
             onTap: onTap,
             child: CircleAvatar(
+                foregroundColor: ColorUtils.isColorLight(bgColor)
+                    ? Colors.black
+                    : Colors.white,
                 radius: radius,
-                backgroundColor:
-                    backgroundColor ?? Theme.of(context).splashColor,
+                backgroundColor: bgColor,
+                backgroundImage:
+                    avatarURL.isNotEmpty ? NetworkImage(avatarURL) : null,
                 child: (avatarURL.isEmpty
                     ? Text(avatarText.isNotEmpty ? avatarText : "SL")
-                    : Container(
-                        decoration: const BoxDecoration(shape: BoxShape.circle),
-                        child: Image.network(avatarURL, fit: BoxFit.cover))))));
+                    : null))));
   }
 }

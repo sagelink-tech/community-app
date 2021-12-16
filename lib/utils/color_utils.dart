@@ -12,6 +12,12 @@ class ColorUtils {
   static String hexValue(Color value) =>
       '#${(value.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
 
+  static bool isColorLight(Color value) {
+    double greyscale =
+        (0.299 * value.red) + (0.587 * value.green) + (0.114 * value.blue);
+    return greyscale > 128;
+  }
+
   static Color blend(Color dst, Color src, double opacity) {
     return Color.fromARGB(
       255,
