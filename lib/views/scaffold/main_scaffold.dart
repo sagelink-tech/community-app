@@ -87,16 +87,19 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         ],
       ),
       body: pageOptions[_selectedIndex].body,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const NewPostBrandSelection()));
-        },
-        child: Icon(Icons.add, color: Theme.of(context).colorScheme.background),
-        backgroundColor: Theme.of(context).colorScheme.secondary,
-      ),
+      floatingActionButton: _selectedIndex != 3
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const NewPostBrandSelection()));
+              },
+              child: Icon(Icons.add,
+                  color: Theme.of(context).colorScheme.background),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+            )
+          : null,
       drawer: showSmallScreenView
           ? null
           : HomeNavDrawerMenu(
