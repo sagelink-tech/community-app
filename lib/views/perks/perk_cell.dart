@@ -1,4 +1,5 @@
 import 'package:community_app/components/clickable_avatar.dart';
+import 'package:community_app/utils/asset_utils.dart';
 import 'package:community_app/views/pages/brand_home_page.dart';
 import 'package:community_app/views/perks/perk_view.dart';
 import 'package:flutter/material.dart';
@@ -40,11 +41,9 @@ class PerkCell extends StatelessWidget {
             SizedBox(
                 height: 181.0,
                 width: double.infinity,
-                child: Image.network(
-                    perk.imageUrls.isEmpty
-                        ? "http://contrapoderweb.com/wp-content/uploads/2014/10/default-img-400x240.gif"
-                        : perk.imageUrls[0],
-                    fit: BoxFit.cover))
+                child: perk.imageUrls.isEmpty
+                    ? AssetUtils.defaultImage()
+                    : Image.network(perk.imageUrls[0], fit: BoxFit.cover))
           ]),
           const SizedBox(height: 10),
           InkWell(

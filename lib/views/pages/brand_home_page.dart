@@ -1,3 +1,4 @@
+import 'package:community_app/utils/asset_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/post_model.dart';
@@ -84,11 +85,10 @@ class _BrandHomepageState extends State<BrandHomepage>
           SizedBox(
               height: 200.0,
               width: double.infinity,
-              child: Image.network(
-                  _brand.backgroundImageUrl.isEmpty
-                      ? "http://contrapoderweb.com/wp-content/uploads/2014/10/default-img-400x240.gif"
-                      : _brand.backgroundImageUrl,
-                  fit: BoxFit.cover)),
+              child: _brand.backgroundImageUrl.isEmpty
+                  ? AssetUtils.defaultImage()
+                  : Image.network(_brand.backgroundImageUrl,
+                      fit: BoxFit.cover)),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Column(children: [
