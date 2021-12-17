@@ -31,7 +31,7 @@ class PerkModel extends ChangeNotifier {
   String description = "";
   String productId = "";
   String productName = "";
-  double price = 0.0; // in cents
+  num price = 0.0; // in cents
   Currencies currency = Currencies.usd;
   List<String> imageUrls = [];
   DateTime startDate = DateTime(2020, 1, 1, 0, 0, 1);
@@ -97,17 +97,17 @@ class PerkModel extends ChangeNotifier {
     title = json['title'];
     description = json['description'];
     productId = json["productId"];
-    imageUrls = json["imageUrls"];
     productName = json["productName"];
+    imageUrls = List<String>.from(json["imageUrls"] ?? []);
     price = json['price'];
-    currency = json['currency'];
-    type = json['type'];
+    currency = json['currency'] ?? Currencies.usd;
+    type = json['type'] ?? PerkType.exclusiveProduct;
 
-    if (json.containsKey('startDate')) {
+    if (json.containsKey('startDate') && json['startDate'] != null) {
       startDate =
           DateTime.tryParse(json["startDate"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
     }
-    if (json.containsKey('endDate')) {
+    if (json.containsKey('endDate') && json['endDate'] != null) {
       endDate =
           DateTime.tryParse(json["endDate"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
     }

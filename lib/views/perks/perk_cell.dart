@@ -1,4 +1,3 @@
-import 'package:community_app/components/activity_badge.dart';
 import 'package:community_app/components/clickable_avatar.dart';
 import 'package:community_app/views/pages/brand_home_page.dart';
 import 'package:community_app/views/perks/perk_view.dart';

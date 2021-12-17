@@ -1,3 +1,4 @@
+import 'package:community_app/components/empty_result.dart';
 import 'package:community_app/models/perk_model.dart';
 import 'package:community_app/views/perks/perk_cell.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +17,13 @@ class PerkListView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Render list of widgets
 
-    return ListView.builder(
-        itemCount: perks.length,
-        cacheExtent: 20,
-        controller: ScrollController(),
-        itemBuilder: (context, index) =>
-            PerkCell(index, perks[index], onSelection));
+    return perks.isNotEmpty
+        ? ListView.builder(
+            itemCount: perks.length,
+            cacheExtent: 20,
+            controller: ScrollController(),
+            itemBuilder: (context, index) =>
+                PerkCell(index, perks[index], onSelection))
+        : const EmptyResult(text: "Looks like no perks just yet...");
   }
 }
