@@ -110,7 +110,7 @@ class _PerkViewState extends State<PerkView>
               tabs: const [
                 Tab(text: "Description"),
                 Tab(text: "Details"),
-                Tab(text: "Conversations")
+                Tab(text: "Conversation")
               ])),
     ];
   }

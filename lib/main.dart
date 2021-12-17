@@ -19,7 +19,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // GraphQL Setup
-    final HttpLink link = HttpLink("http://localhost:8000/api/sl/graphql");
+    final HttpLink link = HttpLink(
+        "https://sl-gql-server.herokuapp.com/graphql"); //"http://localhost/graphql");
 
     ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
         defaultPolicies: DefaultPolicies(
