@@ -21,8 +21,20 @@ class MyApp extends StatelessWidget {
     // GraphQL Setup
     final HttpLink link = HttpLink("http://localhost:8000/api/sl/graphql");
 
-    ValueNotifier<GraphQLClient> client = ValueNotifier(
-        GraphQLClient(cache: GraphQLCache(store: HiveStore()), link: link));
+    ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
+        defaultPolicies: DefaultPolicies(
+            watchQuery: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
+            watchMutation: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
+            query: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
+            mutate: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
+            subscribe: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all)),
+        cache: GraphQLCache(store: HiveStore()),
+        link: link));
 
     // Theme setup
     ThemeType themeType = ThemeType.lightMode;

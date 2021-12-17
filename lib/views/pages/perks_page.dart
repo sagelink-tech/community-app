@@ -1,4 +1,6 @@
 import 'package:community_app/components/brand_chip.dart';
+import 'package:community_app/components/error_view.dart';
+import 'package:community_app/components/loading.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/perk_model.dart';
 import 'package:community_app/views/perks/perk_list.dart';
@@ -114,7 +116,6 @@ class _PerksPageState extends State<PerksPage> {
     QueryResult result = await client.query(QueryOptions(
       document: gql(getPerksQuery),
       variables: variables,
-      fetchPolicy: FetchPolicy.noCache,
     ));
 
     if (result.data != null && (result.data!['perks'] as List).isNotEmpty) {
@@ -190,10 +191,14 @@ class _PerksPageState extends State<PerksPage> {
         return FutureBuilder(
             future: _getPerks(client),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasData) {
+              if (snapshot.hasError) {
+                return const ErrorView();
+              } else if (snapshot.hasData) {
                 perks = snapshot.data;
+                return PerkListView(perks, (context, perkId) => {});
+              } else {
+                return const Loading();
               }
-              return PerkListView(perks, (context, perkId) => {});
             });
       });
     }

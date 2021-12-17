@@ -1,3 +1,5 @@
+import 'package:community_app/components/error_view.dart';
+import 'package:community_app/components/loading.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/views/brand_list/brand_list.dart';
 import 'package:community_app/views/pages/brand_home_page.dart';
@@ -36,10 +38,10 @@ class BrandsPage extends ConsumerWidget {
         builder: (QueryResult result,
             {VoidCallback? refetch, FetchMore? fetchMore}) {
           if (result.hasException) {
-            return Text(result.exception.toString());
+            return const ErrorView();
           }
           if (result.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Loading();
           }
           brands = [];
           for (var b in result.data?['brands']) {

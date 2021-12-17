@@ -1,4 +1,6 @@
 import 'package:community_app/components/brand_chip.dart';
+import 'package:community_app/components/error_view.dart';
+import 'package:community_app/components/loading.dart';
 import 'package:community_app/models/brand_model.dart';
 import 'package:community_app/models/post_model.dart';
 import 'package:community_app/views/posts/post_list.dart';
@@ -153,10 +155,14 @@ class _HomePageState extends State<HomePage> {
         return FutureBuilder(
             future: _getPosts(client),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasData) {
+              if (snapshot.hasError) {
+                return const ErrorView();
+              } else if (snapshot.hasData) {
                 posts = snapshot.data;
+                return PostListView(posts, (context, postId) => {});
+              } else {
+                return const Loading();
               }
-              return PostListView(posts, (context, postId) => {});
             });
       });
     }
