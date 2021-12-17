@@ -1,4 +1,4 @@
-import 'package:community_app/models/user_model.dart';
+import 'package:sagelink_communities/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 

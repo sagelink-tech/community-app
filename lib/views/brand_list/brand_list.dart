@@ -1,5 +1,5 @@
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/views/brand_list/brand_list_cell.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
+import 'package:sagelink_communities/views/brand_list/brand_list_cell.dart';
 import 'package:flutter/material.dart';
 
 typedef OnSelectionCallback = void Function(

@@ -1,8 +1,8 @@
-import 'package:community_app/components/clickable_avatar.dart';
-import 'package:community_app/components/list_spacer.dart';
-import 'package:community_app/providers.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/list_spacer.dart';
+import 'package:sagelink_communities/providers.dart';
 import 'package:flutter/material.dart';
-import 'package:community_app/models/user_model.dart';
+import 'package:sagelink_communities/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 

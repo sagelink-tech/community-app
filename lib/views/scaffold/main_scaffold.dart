@@ -1,15 +1,15 @@
-import 'package:community_app/components/clickable_avatar.dart';
-import 'package:community_app/views/pages/account_page.dart';
-import 'package:community_app/views/pages/brands_page.dart';
-import 'package:community_app/views/pages/home_page.dart';
-import 'package:community_app/views/pages/perks_page.dart';
-import 'package:community_app/views/pages/settings_page.dart';
-import 'package:community_app/views/posts/new_post_brand_selection.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/views/pages/account_page.dart';
+import 'package:sagelink_communities/views/pages/brands_page.dart';
+import 'package:sagelink_communities/views/pages/home_page.dart';
+import 'package:sagelink_communities/views/pages/perks_page.dart';
+import 'package:sagelink_communities/views/pages/settings_page.dart';
+import 'package:sagelink_communities/views/posts/new_post_brand_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:community_app/providers.dart';
-import 'package:community_app/views/scaffold/nav_bar.dart';
-import 'package:community_app/views/scaffold/nav_bar_mobile.dart';
+import 'package:sagelink_communities/providers.dart';
+import 'package:sagelink_communities/views/scaffold/nav_bar.dart';
+import 'package:sagelink_communities/views/scaffold/nav_bar_mobile.dart';
 
 class TabItem {
   String title;

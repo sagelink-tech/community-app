@@ -1,10 +1,10 @@
-import 'package:community_app/utils/asset_utils.dart';
+import 'package:sagelink_communities/utils/asset_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/models/post_model.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
+import 'package:sagelink_communities/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:community_app/views/posts/new_post_view.dart';
-import 'package:community_app/views/posts/post_list.dart';
+import 'package:sagelink_communities/views/posts/new_post_view.dart';
+import 'package:sagelink_communities/views/posts/post_list.dart';
 
 String getBrandQuery = """
 query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions) {

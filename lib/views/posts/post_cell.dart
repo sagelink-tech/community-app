@@ -1,10 +1,10 @@
-import 'package:community_app/components/activity_badge.dart';
-import 'package:community_app/components/clickable_avatar.dart';
-import 'package:community_app/views/pages/brand_home_page.dart';
-import 'package:community_app/views/posts/post_view.dart';
+import 'package:sagelink_communities/components/activity_badge.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/views/pages/brand_home_page.dart';
+import 'package:sagelink_communities/views/posts/post_view.dart';
 import 'package:flutter/material.dart';
 
-import 'package:community_app/models/post_model.dart';
+import 'package:sagelink_communities/models/post_model.dart';
 
 typedef OnDetailCallback = void Function(BuildContext context, String postId);
 typedef OnBrandCallback = void Function(BuildContext context, String brandId);

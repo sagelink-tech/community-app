@@ -1,5 +1,5 @@
-import 'package:community_app/models/comment_model.dart';
-import 'package:community_app/views/posts/comment_cell.dart';
+import 'package:sagelink_communities/models/comment_model.dart';
+import 'package:sagelink_communities/views/posts/comment_cell.dart';
 import 'package:flutter/material.dart';
 
 class CommentListView extends StatelessWidget {

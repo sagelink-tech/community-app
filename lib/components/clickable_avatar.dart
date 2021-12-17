@@ -1,4 +1,4 @@
-import 'package:community_app/utils/color_utils.dart';
+import 'package:sagelink_communities/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 
 typedef OnTapCallback = void Function();

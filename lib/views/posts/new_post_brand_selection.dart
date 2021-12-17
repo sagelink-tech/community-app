@@ -1,6 +1,8 @@
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/views/brand_list/brand_list.dart';
-import 'package:community_app/views/posts/new_post_view.dart';
+import 'package:sagelink_communities/components/error_view.dart';
+import 'package:sagelink_communities/components/loading.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
+import 'package:sagelink_communities/views/brand_list/brand_list.dart';
+import 'package:sagelink_communities/views/posts/new_post_view.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -55,10 +57,14 @@ class _NewPostBrandSelectionState extends State<NewPostBrandSelection> {
       return FutureBuilder(
           future: _getBrands(client),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.hasData) {
+            if (snapshot.hasError) {
+              return const ErrorView();
+            } else if (snapshot.hasData) {
               brands = snapshot.data;
+              return BrandListView(brands, _handleBrandSelection);
+            } else {
+              return const Loading();
             }
-            return BrandListView(brands, _handleBrandSelection);
           });
     });
   }

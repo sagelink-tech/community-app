@@ -1,5 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:community_app/utils/asset_utils.dart';
+import 'package:sagelink_communities/utils/asset_utils.dart';
 import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
 

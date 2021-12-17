@@ -1,6 +1,6 @@
-import 'package:community_app/components/image_carousel.dart';
+import 'package:sagelink_communities/components/image_carousel.dart';
 import 'package:flutter/material.dart';
-import 'package:community_app/models/perk_model.dart';
+import 'package:sagelink_communities/models/perk_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 String getPerkQuery = """

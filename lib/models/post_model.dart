@@ -1,6 +1,6 @@
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/models/user_model.dart';
-import 'package:community_app/models/comment_model.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
+import 'package:sagelink_communities/models/user_model.dart';
+import 'package:sagelink_communities/models/comment_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 

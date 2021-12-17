@@ -1,7 +1,7 @@
-import 'package:community_app/components/activity_badge.dart';
-import 'package:community_app/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/activity_badge.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
-import 'package:community_app/models/brand_model.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
 
 typedef OnSelectionCallback = void Function(
     BuildContext context, String brandId);

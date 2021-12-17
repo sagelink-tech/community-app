@@ -1,10 +1,10 @@
-import 'package:community_app/components/clickable_avatar.dart';
-import 'package:community_app/components/list_spacer.dart';
-import 'package:community_app/views/posts/new_comment.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/list_spacer.dart';
+import 'package:sagelink_communities/views/posts/new_comment.dart';
 import 'package:flutter/material.dart';
-import 'package:community_app/models/post_model.dart';
+import 'package:sagelink_communities/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:community_app/views/posts/comment_list.dart';
+import 'package:sagelink_communities/views/posts/comment_list.dart';
 
 String getPostQuery = """
 query Posts(\$where: PostWhere, \$options: CommentOptions) {

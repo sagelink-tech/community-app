@@ -1,6 +1,6 @@
-import 'package:community_app/components/empty_result.dart';
-import 'package:community_app/models/perk_model.dart';
-import 'package:community_app/views/perks/perk_cell.dart';
+import 'package:sagelink_communities/components/empty_result.dart';
+import 'package:sagelink_communities/models/perk_model.dart';
+import 'package:sagelink_communities/views/perks/perk_cell.dart';
 import 'package:flutter/material.dart';
 
 typedef OnSelectionCallback = void Function(

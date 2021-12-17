@@ -1,10 +1,10 @@
-import 'package:community_app/components/clickable_avatar.dart';
-import 'package:community_app/utils/asset_utils.dart';
-import 'package:community_app/views/pages/brand_home_page.dart';
-import 'package:community_app/views/perks/perk_view.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/utils/asset_utils.dart';
+import 'package:sagelink_communities/views/pages/brand_home_page.dart';
+import 'package:sagelink_communities/views/perks/perk_view.dart';
 import 'package:flutter/material.dart';
 
-import 'package:community_app/models/perk_model.dart';
+import 'package:sagelink_communities/models/perk_model.dart';
 
 typedef OnDetailCallback = void Function(BuildContext context, String perkId);
 
