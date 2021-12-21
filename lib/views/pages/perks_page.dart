@@ -1,8 +1,9 @@
-import 'package:community_app/components/brand_chip.dart';
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/models/user_model.dart';
-import 'package:community_app/models/perk_model.dart';
-import 'package:community_app/views/perks/perk_list.dart';
+import 'package:sagelink_communities/components/brand_chip.dart';
+import 'package:sagelink_communities/components/error_view.dart';
+import 'package:sagelink_communities/components/loading.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
+import 'package:sagelink_communities/models/perk_model.dart';
+import 'package:sagelink_communities/views/perks/perk_list.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -13,6 +14,36 @@ query Brands {
     shopifyToken
     mainColor
     id
+  }
+}
+''';
+
+String getPerksQuery = '''
+query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere) {
+  perks(options: \$options, where: \$where) {
+    id
+    title
+    description
+    imageUrls
+    productName
+    productId
+    price
+    createdAt
+    startDate
+    endDate
+    createdBy {
+      id
+      name
+      username
+    }
+    commentsAggregate {
+      count
+    }
+    inBrandCommunity {
+      id
+      name
+      mainColor
+    }
   }
 }
 ''';
@@ -66,36 +97,32 @@ class _PerksPageState extends State<PerksPage> {
   }
 
   Future<List<PerkModel>> _getPerks(GraphQLClient client) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    var perkJson = {
-      "id": "123",
-      "title": "Test Perk",
-      "description":
-          "This is a test perk for us to see what the visual aesthetic of the consumer application actually looks like. This is going to be a bit longer than necessary just so we can start testing around and whatever. Who knows what I'm actually going to end up writing - probably just some nonsense if I'm being honest. Ok I'm done.",
-      "productId": "123",
-      "productName": "Test Product",
-      "price": 35.0,
-      "imageUrls": <String>[
-        "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQeIJLT6aYwziw15ir4UcdBj_9jGZ9j3tTjgT_BugucHZht9POENS6JZ2VbKao&usqp=CAE",
-        "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118",
-        "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118"
-      ],
-      "currency": Currencies.usd,
-      "type": PerkType.productDrop,
-      "startDate": DateTime(2022, 1, 1, 0, 0, 0).toString(),
-      "endDate": DateTime(2022, 1, 2, 0, 0, 0).toString(),
-      "commentsAggregate": {"count": 0},
-      "inBrandCommunity": BrandModel().toJson(),
-      "createdBy": UserModel().toJson(),
+    Map<String, dynamic> variables = {
+      "options": {
+        "sort": [
+          {"createdAt": "DESC"}
+        ]
+      }
     };
-    return [
-      PerkModel.fromJson(perkJson),
-      PerkModel.fromJson(perkJson),
-      PerkModel.fromJson(perkJson),
-      PerkModel.fromJson(perkJson),
-      PerkModel.fromJson(perkJson),
-      PerkModel.fromJson(perkJson)
-    ];
+
+    if (selectedBrandIds.isNotEmpty) {
+      variables['where'] = {
+        "inBrandCommunityConnection": {
+          "node": {"id_IN": selectedBrandIds}
+        }
+      };
+    }
+
+    QueryResult result = await client.query(QueryOptions(
+      document: gql(getPerksQuery),
+      variables: variables,
+    ));
+
+    if (result.data != null && (result.data!['perks'] as List).isNotEmpty) {
+      List perkJsons = result.data!['perks'] as List;
+      return perkJsons.map((e) => PerkModel.fromJson(e)).toList();
+    }
+    return [];
   }
 
   @override
@@ -134,10 +161,14 @@ class _PerksPageState extends State<PerksPage> {
         return FutureBuilder(
             future: _getPerks(client),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasData) {
+              if (snapshot.hasError) {
+                return const ErrorView();
+              } else if (snapshot.hasData) {
                 perks = snapshot.data;
+                return PerkListView(perks, (context, perkId) => {});
+              } else {
+                return const Loading();
               }
-              return PerkListView(perks, (context, perkId) => {});
             });
       });
     }

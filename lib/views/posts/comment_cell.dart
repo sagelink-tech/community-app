@@ -1,8 +1,8 @@
-import 'package:community_app/components/clickable_avatar.dart';
-import 'package:community_app/components/list_spacer.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/list_spacer.dart';
 import 'package:flutter/material.dart';
 
-import 'package:community_app/models/comment_model.dart';
+import 'package:sagelink_communities/models/comment_model.dart';
 
 class CommentCell extends StatelessWidget {
   final int itemNo;

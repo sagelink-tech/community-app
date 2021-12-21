@@ -1,10 +1,10 @@
-import 'package:community_app/components/activity_badge.dart';
-import 'package:community_app/components/clickable_avatar.dart';
-import 'package:community_app/views/pages/brand_home_page.dart';
-import 'package:community_app/views/perks/perk_view.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/utils/asset_utils.dart';
+import 'package:sagelink_communities/views/pages/brand_home_page.dart';
+import 'package:sagelink_communities/views/perks/perk_view.dart';
 import 'package:flutter/material.dart';
 
-import 'package:community_app/models/perk_model.dart';
+import 'package:sagelink_communities/models/perk_model.dart';
 
 typedef OnDetailCallback = void Function(BuildContext context, String perkId);
 
@@ -41,11 +41,9 @@ class PerkCell extends StatelessWidget {
             SizedBox(
                 height: 181.0,
                 width: double.infinity,
-                child: Image.network(
-                    perk.imageUrls.isEmpty
-                        ? "http://contrapoderweb.com/wp-content/uploads/2014/10/default-img-400x240.gif"
-                        : perk.imageUrls[0],
-                    fit: BoxFit.cover))
+                child: perk.imageUrls.isEmpty
+                    ? AssetUtils.defaultImage()
+                    : Image.network(perk.imageUrls[0], fit: BoxFit.cover))
           ]),
           const SizedBox(height: 10),
           InkWell(

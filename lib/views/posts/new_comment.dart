@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:community_app/providers.dart';
+import 'package:sagelink_communities/providers.dart';
 
 String createCommentMutation = """
 mutation CreateComments(\$input: [CommentCreateInput!]!) {

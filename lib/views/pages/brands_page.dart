@@ -1,6 +1,8 @@
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/views/brand_list/brand_list.dart';
-import 'package:community_app/views/pages/brand_home_page.dart';
+import 'package:sagelink_communities/components/error_view.dart';
+import 'package:sagelink_communities/components/loading.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
+import 'package:sagelink_communities/views/brand_list/brand_list.dart';
+import 'package:sagelink_communities/views/pages/brand_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -36,10 +38,10 @@ class BrandsPage extends ConsumerWidget {
         builder: (QueryResult result,
             {VoidCallback? refetch, FetchMore? fetchMore}) {
           if (result.hasException) {
-            return Text(result.exception.toString());
+            return const ErrorView();
           }
           if (result.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Loading();
           }
           brands = [];
           for (var b in result.data?['brands']) {

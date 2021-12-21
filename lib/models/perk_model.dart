@@ -1,6 +1,6 @@
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/models/user_model.dart';
-import 'package:community_app/models/comment_model.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
+import 'package:sagelink_communities/models/user_model.dart';
+import 'package:sagelink_communities/models/comment_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +31,7 @@ class PerkModel extends ChangeNotifier {
   String description = "";
   String productId = "";
   String productName = "";
-  double price = 0.0; // in cents
+  num price = 0.0; // in cents
   Currencies currency = Currencies.usd;
   List<String> imageUrls = [];
   DateTime startDate = DateTime(2020, 1, 1, 0, 0, 1);
@@ -97,17 +97,17 @@ class PerkModel extends ChangeNotifier {
     title = json['title'];
     description = json['description'];
     productId = json["productId"];
-    imageUrls = json["imageUrls"];
     productName = json["productName"];
+    imageUrls = List<String>.from(json["imageUrls"] ?? []);
     price = json['price'];
-    currency = json['currency'];
-    type = json['type'];
+    currency = json['currency'] ?? Currencies.usd;
+    type = json['type'] ?? PerkType.exclusiveProduct;
 
-    if (json.containsKey('startDate')) {
+    if (json.containsKey('startDate') && json['startDate'] != null) {
       startDate =
           DateTime.tryParse(json["startDate"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
     }
-    if (json.containsKey('endDate')) {
+    if (json.containsKey('endDate') && json['endDate'] != null) {
       endDate =
           DateTime.tryParse(json["endDate"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
     }
@@ -133,3 +133,29 @@ class PerkModel extends ChangeNotifier {
     comments = commentList;
   }
 }
+
+
+
+// var perkJson = {
+//   "id": "123",
+//   "title": "Test Perk",
+//   "description":
+//       "This is a test perk for us to see what the visual aesthetic of the consumer application actually looks like. This is going to be a bit longer than necessary just so we can start testing around and whatever. Who knows what I'm actually going to end up writing - probably just some nonsense if I'm being honest. Ok I'm done.",
+//   "productId": "123",
+//   "productName": "Test Product",
+//   "price": 35.0,
+//   "imageUrls": <String>[
+//     "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQeIJLT6aYwziw15ir4UcdBj_9jGZ9j3tTjgT_BugucHZht9POENS6JZ2VbKao&usqp=CAE",
+//     "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118",
+//     "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118"
+//   ],
+//   "currency": Currencies.usd,
+//   "type": PerkType.productDrop,
+//   "startDate": DateTime(2022, 1, 1, 0, 0, 0).toString(),
+//   "endDate": DateTime(2022, 1, 2, 0, 0, 0).toString(),
+//   "commentsAggregate": {"count": 0},
+//   "inBrandCommunity": BrandModel().toJson(),
+//   "createdBy": UserModel().toJson(),
+// };
+
+// _perk = PerkModel.fromJson(perkJson);

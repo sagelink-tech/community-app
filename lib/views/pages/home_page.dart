@@ -1,7 +1,9 @@
-import 'package:community_app/components/brand_chip.dart';
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/models/post_model.dart';
-import 'package:community_app/views/posts/post_list.dart';
+import 'package:sagelink_communities/components/brand_chip.dart';
+import 'package:sagelink_communities/components/error_view.dart';
+import 'package:sagelink_communities/components/loading.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
+import 'package:sagelink_communities/models/post_model.dart';
+import 'package:sagelink_communities/views/posts/post_list.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -153,10 +155,14 @@ class _HomePageState extends State<HomePage> {
         return FutureBuilder(
             future: _getPosts(client),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasData) {
+              if (snapshot.hasError) {
+                return const ErrorView();
+              } else if (snapshot.hasData) {
                 posts = snapshot.data;
+                return PostListView(posts, (context, postId) => {});
+              } else {
+                return const Loading();
               }
-              return PostListView(posts, (context, postId) => {});
             });
       });
     }

@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:sagelink_communities/utils/asset_utils.dart';
 import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
 
@@ -29,16 +30,25 @@ class _EmbeddedImageCarouselState extends State<EmbeddedImageCarousel> {
   }
 
   List<Widget> _buildImages() {
-    return widget.imageUrls
-        .map((imageUrl) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: widget.height,
-            )))
-        .toList();
+    return widget.imageUrls.isNotEmpty
+        ? widget.imageUrls
+            .map((imageUrl) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: widget.height,
+                )))
+            .toList()
+        : [
+            Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: AssetUtils.defaultImage(
+                  width: double.infinity,
+                  height: widget.height,
+                ))
+          ];
   }
 
   @override
@@ -67,7 +77,9 @@ class _EmbeddedImageCarouselState extends State<EmbeddedImageCarousel> {
             style: ElevatedButton.styleFrom(
                 primary: Theme.of(context).backgroundColor,
                 onPrimary: Theme.of(context).colorScheme.onBackground),
-            onPressed: () => _showFullScreen(context),
+            onPressed: widget.imageUrls.isNotEmpty
+                ? () => _showFullScreen(context)
+                : null,
           ))
     ]);
   }

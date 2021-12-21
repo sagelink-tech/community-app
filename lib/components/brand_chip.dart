@@ -1,5 +1,5 @@
-import 'package:community_app/components/clickable_avatar.dart';
-import 'package:community_app/models/brand_model.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
 import 'package:flutter/material.dart';
 
 typedef OnSelectionCallback = void Function(BrandModel? brand, bool selected);

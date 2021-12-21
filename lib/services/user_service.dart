@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:community_app/models/post_model.dart';
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/models/user_model.dart';
+import 'package:sagelink_communities/models/post_model.dart';
+import 'package:sagelink_communities/models/brand_model.dart';
+import 'package:sagelink_communities/models/user_model.dart';
 
 const String brandData = '''
 [

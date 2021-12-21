@@ -1,17 +1,21 @@
-import 'package:community_app/components/image_carousel.dart';
+import 'package:sagelink_communities/components/image_carousel.dart';
 import 'package:flutter/material.dart';
-import 'package:community_app/models/perk_model.dart';
-import 'package:community_app/models/brand_model.dart';
-import 'package:community_app/models/user_model.dart';
+import 'package:sagelink_communities/models/perk_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 String getPerkQuery = """
-query Posts(\$where: PostWhere, \$options: CommentOptions) {
-  posts(where: \$where) {
+query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere) {
+  perks(options: \$options, where: \$where) {
     id
     title
-    body
+    description
+    imageUrls
+    productName
+    productId
+    price
     createdAt
+    startDate
+    endDate
     createdBy {
       id
       name
@@ -20,15 +24,10 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
     commentsAggregate {
       count
     }
-    comments(options: \$options) {
+    inBrandCommunity {
       id
-      body
-      createdAt
-      createdBy {
-        id
-        name
-        username
-      }
+      name
+      mainColor
     }
   }
 }
@@ -111,7 +110,7 @@ class _PerkViewState extends State<PerkView>
               tabs: const [
                 Tab(text: "Description"),
                 Tab(text: "Details"),
-                Tab(text: "Conversations")
+                Tab(text: "Conversation")
               ])),
     ];
   }
@@ -138,12 +137,6 @@ class _PerkViewState extends State<PerkView>
           variables: {
             "where": {"id": widget.perkId},
             "options": {"limit": 1},
-            "postsOptions": {
-              "limit": 10,
-              "sort": [
-                {"createdAt": "DESC"}
-              ]
-            }
           },
         ),
         builder: (QueryResult result,
@@ -151,31 +144,7 @@ class _PerkViewState extends State<PerkView>
           if (result.isNotLoading &&
               result.hasException == false &&
               result.data != null) {
-            //_perk = PerkModel.fromJson(result.data?['perks'][0]);
-
-            var perkJson = {
-              "id": "123",
-              "title": "Test Perk",
-              "description":
-                  "This is a test perk for us to see what the visual aesthetic of the consumer application actually looks like. This is going to be a bit longer than necessary just so we can start testing around and whatever. Who knows what I'm actually going to end up writing - probably just some nonsense if I'm being honest. Ok I'm done.",
-              "productId": "123",
-              "productName": "Test Product",
-              "price": 35.0,
-              "imageUrls": <String>[
-                "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQeIJLT6aYwziw15ir4UcdBj_9jGZ9j3tTjgT_BugucHZht9POENS6JZ2VbKao&usqp=CAE",
-                "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118",
-                "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118"
-              ],
-              "currency": Currencies.usd,
-              "type": PerkType.productDrop,
-              "startDate": DateTime(2022, 1, 1, 0, 0, 0).toString(),
-              "endDate": DateTime(2022, 1, 2, 0, 0, 0).toString(),
-              "commentsAggregate": {"count": 0},
-              "inBrandCommunity": BrandModel().toJson(),
-              "createdBy": UserModel().toJson(),
-            };
-
-            _perk = PerkModel.fromJson(perkJson);
+            _perk = PerkModel.fromJson(result.data?['perks'][0]);
           }
 
           return Scaffold(

@@ -1,4 +1,4 @@
-import 'package:community_app/views/scaffold/main_scaffold.dart';
+import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import "package:graphql_flutter/graphql_flutter.dart";
@@ -19,10 +19,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // GraphQL Setup
-    final HttpLink link = HttpLink("http://localhost:8000/api/sl/graphql");
+    final HttpLink link = HttpLink(
+        "https://sl-gql-server.herokuapp.com/graphql"); //"http://localhost/graphql");
 
-    ValueNotifier<GraphQLClient> client = ValueNotifier(
-        GraphQLClient(cache: GraphQLCache(store: HiveStore()), link: link));
+    ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
+        defaultPolicies: DefaultPolicies(
+            watchQuery: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
+            watchMutation: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
+            query: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
+            mutate: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
+            subscribe: Policies(
+                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all)),
+        cache: GraphQLCache(store: HiveStore()),
+        link: link));
 
     // Theme setup
     ThemeType themeType = ThemeType.lightMode;

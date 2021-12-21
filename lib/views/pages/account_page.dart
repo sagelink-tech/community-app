@@ -1,6 +1,9 @@
-import 'package:community_app/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/list_spacer.dart';
+import 'package:sagelink_communities/providers.dart';
 import 'package:flutter/material.dart';
-import 'package:community_app/models/user_model.dart';
+import 'package:sagelink_communities/models/user_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 String getUserQuery = """
@@ -14,7 +17,7 @@ query Users(\$where: UserWhere) {
 }
 """;
 
-class AccountPage extends StatefulWidget {
+class AccountPage extends ConsumerStatefulWidget {
   const AccountPage({Key? key, required this.userId}) : super(key: key);
   final String userId;
 
@@ -24,11 +27,112 @@ class AccountPage extends StatefulWidget {
   _AccountPageState createState() => _AccountPageState();
 }
 
-class _AccountPageState extends State<AccountPage> {
+class _AccountPageState extends ConsumerState<AccountPage>
+    with SingleTickerProviderStateMixin {
   UserModel _user = UserModel();
+
+  bool _isEditing = false;
+
+  void _toggleEditing() {
+    setState(() {
+      _isEditing = !_isEditing;
+    });
+  }
+
+  bool _isCollapsed = false;
+  final double _headerSize = 50.0;
+
+  late ScrollController _scrollController;
+  late TabController _tabController;
+
+  _scrollListener() {
+    if (_scrollController.offset >= _headerSize) {
+      setState(() {
+        _isCollapsed = true;
+      });
+    } else {
+      setState(() {
+        _isCollapsed = false;
+      });
+    }
+  }
+
+  @override
+  initState() {
+    super.initState();
+    _scrollController = ScrollController(initialScrollOffset: 0.0);
+    _tabController = TabController(length: 3, vsync: this);
+    _scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  _buildHeader(BuildContext context, bool boxIsScrolled) {
+    return <Widget>[
+      SliverList(
+        delegate: SliverChildListDelegate([
+          Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(children: [
+                Column(children: [
+                  ClickableAvatar(
+                      avatarText: _user.name[0],
+                      avatarURL: _user.accountPictureUrl,
+                      radius: 40)
+                ]),
+                const ListSpacer(width: 20),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(_user.username,
+                      style: Theme.of(context).textTheme.headline3,
+                      textAlign: TextAlign.start),
+                  Text(_user.name,
+                      style: Theme.of(context).textTheme.headline6,
+                      textAlign: TextAlign.start),
+                ]),
+              ])),
+        ]),
+      ),
+      SliverAppBar(
+          toolbarHeight: 0.0,
+          automaticallyImplyLeading: false,
+          backgroundColor: Theme.of(context).backgroundColor,
+          elevation: 1,
+          snap: false,
+          floating: false,
+          pinned: true,
+          bottom: TabBar(
+              labelColor: Theme.of(context).colorScheme.onBackground,
+              controller: _tabController,
+              tabs: const [
+                Tab(text: "Overview"),
+                Tab(text: "Brands"),
+                Tab(text: "Activity")
+              ])),
+    ];
+  }
+
+  _buildBody(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.only(top: _isCollapsed ? 45 : 0),
+        child: TabBarView(
+          controller: _tabController,
+          children: const [
+            Text("overview goes here"),
+            Text("brands go here"),
+            Text("activity goes here"),
+          ],
+        ));
+  }
 
   @override
   Widget build(BuildContext context) {
+    final loggedInUser = ref.watch(loggedInUserProvider);
+
     return Query(
         options: QueryOptions(
           document: gql(getUserQuery),
@@ -43,35 +147,28 @@ class _AccountPageState extends State<AccountPage> {
             _user = UserModel.fromJson(result.data?['users'][0]);
           }
           return Scaffold(
-            appBar: AppBar(
-                title: result.isLoading || result.hasException
-                    ? const Text('')
-                    : Text(_user.username),
-                actions: [
-                  IconButton(
-                    onPressed: result.isLoading ? null : refetch,
-                    icon: const Icon(Icons.refresh),
-                  ),
-                ],
-                backgroundColor: Theme.of(context).backgroundColor,
-                elevation: 0),
-            body: Center(
-              child: (result.hasException
-                  ? Text(result.exception.toString())
+              appBar: AppBar(
+                  title: null,
+                  actions: loggedInUser.user!.id == _user.id
+                      ? [
+                          IconButton(
+                            onPressed: _toggleEditing,
+                            icon: Icon(_isEditing ? Icons.done : Icons.edit),
+                          )
+                        ]
+                      : null,
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  elevation: 0),
+              body: (result.hasException
+                  ? Center(child: Text(result.exception.toString()))
                   : result.isLoading
-                      ? const CircularProgressIndicator()
-                      : Column(
-                          children: [
-                            ClickableAvatar(
-                              avatarText: _user.name[0],
-                              avatarURL: _user.accountPictureUrl,
-                            ),
-                            Text(_user.name),
-                            Text(_user.email),
-                          ],
-                        )),
-            ),
-          );
+                      ? const Center(child: CircularProgressIndicator())
+                      : NestedScrollView(
+                          floatHeaderSlivers: false,
+                          controller: _scrollController,
+                          headerSliverBuilder: (context, innerBoxIsScrolled) =>
+                              _buildHeader(context, innerBoxIsScrolled),
+                          body: _buildBody(context))));
         });
   }
 }
