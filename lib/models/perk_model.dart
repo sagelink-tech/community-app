@@ -112,7 +112,10 @@ class PerkModel extends ChangeNotifier {
           DateTime.tryParse(json["endDate"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
     }
 
-    commentCount = json['commentsAggregate']['count'];
+    if (json.containsKey('commentsAggregate')) {
+      commentCount = json['commentsAggregate']['count'];
+    }
+
     if (json.containsKey('createdAt')) {
       createdAt =
           DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);

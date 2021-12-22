@@ -9,8 +9,10 @@ typedef OnSelectionCallback = void Function(
 class PerkListView extends StatelessWidget {
   final List<PerkModel> perks;
   final OnSelectionCallback onSelection;
+  final bool showBrand;
 
-  const PerkListView(this.perks, this.onSelection, {Key? key})
+  const PerkListView(this.perks, this.onSelection,
+      {this.showBrand = true, Key? key})
       : super(key: key);
 
   @override
@@ -22,8 +24,12 @@ class PerkListView extends StatelessWidget {
             itemCount: perks.length,
             cacheExtent: 20,
             controller: ScrollController(),
-            itemBuilder: (context, index) =>
-                PerkCell(index, perks[index], onSelection))
+            itemBuilder: (context, index) => PerkCell(
+                  index,
+                  perks[index],
+                  onSelection,
+                  showBrand: showBrand,
+                ))
         : const EmptyResult(text: "Looks like no perks just yet...");
   }
 }

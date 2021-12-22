@@ -1,15 +1,17 @@
 import 'package:sagelink_communities/components/stacked_avatars.dart';
+import 'package:sagelink_communities/models/perk_model.dart';
 import 'package:sagelink_communities/utils/asset_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/brand_model.dart';
 import 'package:sagelink_communities/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/views/brands/brand_overview.dart';
+import 'package:sagelink_communities/views/perks/perk_list.dart';
 import 'package:sagelink_communities/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/views/posts/post_list.dart';
 
 String getBrandQuery = """
-query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions, \$membersFirst: Int, \$employeesFirst: Int) {
+query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions, \$perksOptions: PerkOptions, \$membersFirst: Int, \$employeesFirst: Int) {
   brands(where: \$where, options: \$options) {
     id
     name
@@ -54,6 +56,18 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
         }
       }
     }
+    perks(options: \$perksOptions) {
+      id
+      title
+      description
+      imageUrls
+      productName
+      productId
+      price
+      createdAt
+      startDate
+      endDate
+    }
   }
 }
 """;
@@ -72,6 +86,8 @@ class _BrandHomepageState extends State<BrandHomepage>
     with SingleTickerProviderStateMixin {
   BrandModel _brand = BrandModel();
   List<PostModel> _posts = [];
+  List<PerkModel> _perks = [];
+
   bool _isCollapsed = false;
   final double _headerSize = 200.0;
 
@@ -155,7 +171,7 @@ class _BrandHomepageState extends State<BrandHomepage>
           controller: _tabController,
           children: [
             PostListView(_posts, (context, postId) => {}, showBrand: false),
-            const Text("perks go here"),
+            PerkListView(_perks, (context, perkId) => {}, showBrand: false),
             BrandOverview(_brand),
           ],
         ));
@@ -176,7 +192,13 @@ class _BrandHomepageState extends State<BrandHomepage>
               ]
             },
             "membersFirst": 5,
-            "employeesFirst": 5
+            "employeesFirst": 5,
+            "perksOptions": {
+              "limit": 10,
+              "sort": [
+                {"createdAt": "DESC"}
+              ]
+            }
           },
         ),
         builder: (QueryResult result,
@@ -192,6 +214,13 @@ class _BrandHomepageState extends State<BrandHomepage>
               posts.add(post);
             }
             _posts = posts;
+            List<PerkModel> perks = [];
+            for (var p in result.data?['brands'][0]['perks']) {
+              PerkModel perk = PerkModel.fromJson(p);
+              perk.brand = _brand;
+              perks.add(perk);
+            }
+            _perks = perks;
           }
           return Scaffold(
               appBar: AppBar(
