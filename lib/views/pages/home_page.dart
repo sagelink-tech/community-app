@@ -131,6 +131,9 @@ class _HomePageState extends State<HomePage> {
                   if (snapshot.hasData) {
                     brands = snapshot.data;
                   }
+                  if (snapshot.hasError) {
+                    print(snapshot.error);
+                  }
                   return ListView.separated(
                       padding: const EdgeInsets.all(5),
                       scrollDirection: Axis.horizontal,

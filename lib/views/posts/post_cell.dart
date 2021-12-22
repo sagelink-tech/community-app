@@ -1,6 +1,6 @@
 import 'package:sagelink_communities/components/activity_badge.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
-import 'package:sagelink_communities/views/pages/brand_home_page.dart';
+import 'package:sagelink_communities/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/views/posts/post_view.dart';
 import 'package:flutter/material.dart';
 

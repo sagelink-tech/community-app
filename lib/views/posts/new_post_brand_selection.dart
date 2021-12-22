@@ -1,7 +1,7 @@
 import 'package:sagelink_communities/components/error_view.dart';
 import 'package:sagelink_communities/components/loading.dart';
 import 'package:sagelink_communities/models/brand_model.dart';
-import 'package:sagelink_communities/views/brand_list/brand_list.dart';
+import 'package:sagelink_communities/views/brands/brand_list.dart';
 import 'package:sagelink_communities/views/posts/new_post_view.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';

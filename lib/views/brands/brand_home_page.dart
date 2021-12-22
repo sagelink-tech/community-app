@@ -1,10 +1,10 @@
-import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/stacked_avatars.dart';
 import 'package:sagelink_communities/utils/asset_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/brand_model.dart';
 import 'package:sagelink_communities/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/views/pages/account_page.dart';
+import 'package:sagelink_communities/views/brands/brand_overview.dart';
 import 'package:sagelink_communities/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/views/posts/post_list.dart';
 
@@ -105,12 +105,6 @@ class _BrandHomepageState extends State<BrandHomepage>
     super.dispose();
   }
 
-  // Navigation
-  _goToAccount(String userId) {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
-  }
-
   // Build Functions
   _buildHeader(BuildContext context, bool boxIsScrolled) {
     return <Widget>[
@@ -127,7 +121,10 @@ class _BrandHomepageState extends State<BrandHomepage>
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Column(children: [
                 Text(_brand.name, style: Theme.of(context).textTheme.headline3),
-                Text(_brand.totalCommunityCount.toString() + " members"),
+                StackedAvatars(
+                  _brand.employees,
+                  showOverflow: (_brand.totalCommunityCount > 3),
+                ),
                 const Text("VIP Community"),
               ])),
         ]),
@@ -159,23 +156,7 @@ class _BrandHomepageState extends State<BrandHomepage>
           children: [
             PostListView(_posts, (context, postId) => {}, showBrand: false),
             const Text("perks go here"),
-            Column(
-              children: [
-                const Text("People"),
-                Expanded(
-                    child: ListView(
-                        children: _brand.employees
-                            .map((e) => ListTile(
-                                  leading: ClickableAvatar(
-                                      avatarText: e.name[0],
-                                      avatarURL: e.accountPictureUrl),
-                                  title: Text(e.name),
-                                  subtitle: Text(e.jobTitle),
-                                  onTap: () => _goToAccount(e.id),
-                                ))
-                            .toList())),
-              ],
-            )
+            BrandOverview(_brand),
           ],
         ));
   }
