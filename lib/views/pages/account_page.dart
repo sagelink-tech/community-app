@@ -75,7 +75,7 @@ class _AccountPageState extends ConsumerState<AccountPage>
   }
 
   Future<UserModel?> _getUser(GraphQLClient client) async {
-    client.resetStore();
+    //client.resetStore();
     Map<String, dynamic> variables = {
       "where": {"id": widget.userId},
       "options": {"limit": 1}

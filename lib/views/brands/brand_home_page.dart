@@ -91,8 +91,10 @@ class _BrandHomepageState extends State<BrandHomepage>
   bool _isCollapsed = false;
   final double _headerSize = 200.0;
 
-  late ScrollController _scrollController;
-  late TabController _tabController;
+  late final ScrollController _scrollController =
+      ScrollController(initialScrollOffset: 0.0);
+  late final TabController _tabController =
+      TabController(length: 3, vsync: this);
 
   _scrollListener() {
     if (_scrollController.offset >= _headerSize) {
@@ -109,8 +111,6 @@ class _BrandHomepageState extends State<BrandHomepage>
   @override
   initState() {
     super.initState();
-    _scrollController = ScrollController(initialScrollOffset: 0.0);
-    _tabController = TabController(length: 3, vsync: this);
     _scrollController.addListener(_scrollListener);
   }
 

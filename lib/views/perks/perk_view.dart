@@ -1,5 +1,7 @@
+import 'package:sagelink_communities/components/error_view.dart';
 import 'package:sagelink_communities/components/image_carousel.dart';
 import 'package:flutter/material.dart';
+import 'package:sagelink_communities/components/loading.dart';
 import 'package:sagelink_communities/models/perk_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -152,9 +154,9 @@ class _PerkViewState extends State<PerkView>
                   backgroundColor: Theme.of(context).backgroundColor,
                   elevation: 0),
               body: (result.hasException
-                  ? Text(result.exception.toString())
+                  ? const ErrorView()
                   : result.isLoading
-                      ? const CircularProgressIndicator()
+                      ? const Loading()
                       : Stack(alignment: Alignment.bottomCenter, children: [
                           NestedScrollView(
                               floatHeaderSlivers: false,

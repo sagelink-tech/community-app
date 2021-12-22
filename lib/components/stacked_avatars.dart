@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:collection/src/iterable_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/models/user_model.dart';

@@ -24,16 +24,15 @@ class MyApp extends StatelessWidget {
 
     ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
         defaultPolicies: DefaultPolicies(
-            watchQuery: Policies(
-                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
-            watchMutation: Policies(
-                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
-            query: Policies(
-                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
-            mutate: Policies(
-                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all),
-            subscribe: Policies(
-                fetch: FetchPolicy.cacheAndNetwork, error: ErrorPolicy.all)),
+            watchQuery:
+                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+            watchMutation:
+                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+            query: Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+            mutate:
+                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+            subscribe:
+                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
         cache: GraphQLCache(store: HiveStore()),
         link: link));
 
