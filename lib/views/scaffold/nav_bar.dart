@@ -44,7 +44,7 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
       items.add(ListTile(
         title: Text(item.tabText),
         leading: item.icon,
-        selectedColor: Theme.of(context).colorScheme.secondary,
+        selectedTileColor: Theme.of(context).colorScheme.secondary,
         selected: (widget.selectedIndex == idx),
         onTap: () => {_onItemTapped(idx, context)},
       ));

@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // GraphQL Setup
     final HttpLink link = HttpLink(
-        "https://sl-gql-server.herokuapp.com/graphql"); //"http://localhost/graphql");
+        "http://localhost/graphql"); //"https://sl-gql-server.herokuapp.com/graphql");
 
     ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
         defaultPolicies: DefaultPolicies(

@@ -12,7 +12,14 @@ query Brands {
     name
     shopifyToken
     mainColor
+    logoUrl
     id
+    employeesConnection {
+      totalCount
+    }
+    membersConnection {
+      totalCount
+    }
   }
 }
 ''';

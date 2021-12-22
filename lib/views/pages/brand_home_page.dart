@@ -1,31 +1,58 @@
+import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/utils/asset_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/brand_model.dart';
 import 'package:sagelink_communities/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:sagelink_communities/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/views/posts/post_list.dart';
 
 String getBrandQuery = """
-query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions) {
+query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions, \$membersFirst: Int, \$employeesFirst: Int) {
   brands(where: \$where, options: \$options) {
     id
     name
     description
     website
     mainColor
+    logoUrl
     posts(options: \$postsOptions) {
       commentsAggregate {
         count
       }
       createdBy {
-        name
         id
+        name
         username
       }
       title
       body
       id
+    }
+    employeesConnection(first: \$employeesFirst) {
+      totalCount
+      edges {
+        node {
+          id
+          name
+          username
+        }
+        roles
+        founder
+        owner
+        jobTitle
+      }
+    }
+    membersConnection(first: \$membersFirst) {
+      totalCount
+      edges {
+        node {
+          id
+          name
+          username
+        }
+      }
     }
   }
 }
@@ -67,7 +94,7 @@ class _BrandHomepageState extends State<BrandHomepage>
   initState() {
     super.initState();
     _scrollController = ScrollController(initialScrollOffset: 0.0);
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _scrollController.addListener(_scrollListener);
   }
 
@@ -78,6 +105,13 @@ class _BrandHomepageState extends State<BrandHomepage>
     super.dispose();
   }
 
+  // Navigation
+  _goToAccount(String userId) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
+  }
+
+  // Build Functions
   _buildHeader(BuildContext context, bool boxIsScrolled) {
     return <Widget>[
       SliverList(
@@ -93,7 +127,7 @@ class _BrandHomepageState extends State<BrandHomepage>
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Column(children: [
                 Text(_brand.name, style: Theme.of(context).textTheme.headline3),
-                Text(_brand.followers.length.toString() + " members"),
+                Text(_brand.totalCommunityCount.toString() + " members"),
                 const Text("VIP Community"),
               ])),
         ]),
@@ -109,7 +143,11 @@ class _BrandHomepageState extends State<BrandHomepage>
           bottom: TabBar(
               labelColor: Theme.of(context).colorScheme.onBackground,
               controller: _tabController,
-              tabs: const [Tab(text: "Conversations"), Tab(text: "My Perks")])),
+              tabs: const [
+                Tab(text: "Conversations"),
+                Tab(text: "My Perks"),
+                Tab(text: "Overview")
+              ])),
     ];
   }
 
@@ -121,6 +159,23 @@ class _BrandHomepageState extends State<BrandHomepage>
           children: [
             PostListView(_posts, (context, postId) => {}, showBrand: false),
             const Text("perks go here"),
+            Column(
+              children: [
+                const Text("People"),
+                Expanded(
+                    child: ListView(
+                        children: _brand.employees
+                            .map((e) => ListTile(
+                                  leading: ClickableAvatar(
+                                      avatarText: e.name[0],
+                                      avatarURL: e.accountPictureUrl),
+                                  title: Text(e.name),
+                                  subtitle: Text(e.jobTitle),
+                                  onTap: () => _goToAccount(e.id),
+                                ))
+                            .toList())),
+              ],
+            )
           ],
         ));
   }
@@ -138,7 +193,9 @@ class _BrandHomepageState extends State<BrandHomepage>
               "sort": [
                 {"createdAt": "DESC"}
               ]
-            }
+            },
+            "membersFirst": 5,
+            "employeesFirst": 5
           },
         ),
         builder: (QueryResult result,

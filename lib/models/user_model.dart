@@ -44,3 +44,36 @@ class UserModel extends ChangeNotifier {
         'accountPictureUrl': accountPictureUrl
       };
 }
+
+class EmployeeModel extends UserModel {
+  List<String> roles = [];
+  bool founder = false;
+  bool owner = false;
+  String jobTitle = "";
+  EmployeeModel() : super();
+
+  @override
+  EmployeeModel.fromJson(Map<String, dynamic> json) {
+    //UserModel.fromJson(json);
+    id = json['id'];
+    username = json['username'];
+    name = json['name'];
+    email = json.containsKey('email') ? json['email'] : "";
+    accountPictureUrl =
+        json.containsKey('accountPictureUrl') ? json['accountPictureUrl'] : "";
+    roles = List<String>.from(json["roles"] ?? []);
+    founder = json['founder'];
+    owner = json['owner'];
+    jobTitle = json['jobTitle'];
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    var _json = super.toJson();
+    _json['roles'] = roles;
+    _json['founder'] = founder;
+    _json['owner'] = owner;
+    _json['jobTitle'] = jobTitle;
+    return _json;
+  }
+}

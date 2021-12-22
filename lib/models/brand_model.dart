@@ -11,23 +11,34 @@ class BrandModel extends ChangeNotifier {
   String website = "www.brand.com";
   Color mainColor = Colors.blueGrey;
 
-  List<UserModel> _owners = [];
+  // Employees
+  List<EmployeeModel> _employees = [];
 
-  List<UserModel> get owners => _owners;
+  List<EmployeeModel> get employees => _employees;
 
-  set owners(List<UserModel> owners) {
-    _owners = owners;
+  set employees(List<EmployeeModel> employees) {
+    _employees = employees;
     notifyListeners();
   }
 
-  List<UserModel> _followers = [];
+  int employeeCount = 0;
 
-  List<UserModel> get followers => _followers;
+  // Members
+  List<UserModel> _members = [];
 
-  set followers(List<UserModel> followers) {
-    _followers = followers;
+  List<UserModel> get members => _members;
+
+  set members(List<UserModel> members) {
+    _members = members;
     notifyListeners();
   }
+
+  int memberCount = 0;
+
+  // helpers
+  int get totalCommunityCount => employeeCount + memberCount;
+
+  //constructors
 
   BrandModel();
 
@@ -43,6 +54,37 @@ class BrandModel extends ChangeNotifier {
     mainColor = json.containsKey('mainColor') && json['mainColor'] != null
         ? ColorUtils.parseHex((json['mainColor']))
         : Colors.blueGrey;
+
+    employeeCount = json.containsKey('employeesConnection')
+        ? json['employeesConnection']['totalCount']
+        : 0;
+    memberCount = json.containsKey('membersConnection')
+        ? json['membersConnection']['totalCount']
+        : 0;
+
+    if (json.containsKey('employeesConnection') &&
+        (json['employeesConnection'] as Map).containsKey('edges')) {
+      List<EmployeeModel> _emps = [];
+      for (Map e in json['employeesConnection']['edges']) {
+        var _json = e['node'];
+        for (var key in e.keys) {
+          if (key != ' node') {
+            _json[key] = e[key];
+          }
+        }
+        _emps.add(EmployeeModel.fromJson(_json));
+      }
+      employees = _emps;
+    }
+
+    if (json.containsKey('membersConnection') &&
+        (json['membersConnection'] as Map).containsKey('edges')) {
+      List<UserModel> _membs = [];
+      for (var e in json['membersConnection']['edges']) {
+        _membs.add(UserModel.fromJson(e['node']));
+      }
+      members = _membs;
+    }
   }
 
   Map<String, dynamic> toJson() => {
