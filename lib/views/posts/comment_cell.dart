@@ -12,14 +12,18 @@ typedef ShowThreadCallback = void Function(
 typedef AddReplyCallback = void Function(
     BuildContext context, String commentId);
 
+typedef AddReactionCallback = void Function(
+    BuildContext context, String commentId);
+
 class CommentCell extends StatelessWidget {
   final int itemNo;
   final CommentModel comment;
   final ShowThreadCallback? onShowThread;
   final AddReplyCallback? onAddReply;
+  final AddReactionCallback? onAddReaction;
 
   const CommentCell(this.itemNo, this.comment,
-      {this.onAddReply, this.onShowThread, Key? key})
+      {this.onAddReply, this.onShowThread, this.onAddReaction, Key? key})
       : super(key: key);
 
   void _goToAccount(BuildContext context, String userId) async {
@@ -27,9 +31,73 @@ class CommentCell extends StatelessWidget {
         MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+  Widget _buildBody(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+          color: Theme.of(context).selectedRowColor,
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(10.0),
+            bottomRight: Radius.circular(10.0),
+            topRight: Radius.circular(10.0),
+          )),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(comment.creator.name,
+            style: Theme.of(context).textTheme.titleSmall),
+        const ListSpacer(),
+        ExpandableText(
+          comment.body,
+          expandText: "show more",
+          collapseText: "show less",
+          animation: true,
+          linkEllipsis: true,
+          linkColor: Theme.of(context).colorScheme.tertiary,
+          collapseOnTextTap: true,
+          style: Theme.of(context).textTheme.bodyText1,
+          maxLines: 3,
+        )
+      ]),
+    );
+  }
+
+  Widget _buildReactButtons(BuildContext context) {
+    return Row(children: [
+      Text(timeago.format(comment.createdAt, locale: "en_short"),
+          style: Theme.of(context).textTheme.caption),
+      TextButton(
+          onPressed: () => {
+                if (onAddReaction != null) {onAddReaction!(context, comment.id)}
+              },
+          child: const Text("React")),
+      TextButton(
+          onPressed: () => {
+                if (onAddReply != null) {onAddReply!(context, comment.id)}
+              },
+          child: const Text("Reply")),
+      const Spacer(),
+      Text(
+        "reactions",
+        style: Theme.of(context).textTheme.caption,
+      )
+    ]);
+  }
+
+  Widget _buildReplies(BuildContext context) {
+    if (comment.replyCount == 0) {
+      return const SizedBox.shrink();
+    }
+    return Row(children: [
+      // add first comment author
+      TextButton(
+          onPressed: () => {
+                if (onShowThread != null) {onShowThread!(context, comment.id)}
+              },
+          child: Text(comment.replyCount.toString() + " replies")),
+    ]);
+  }
+
+  Widget _buildLeftColumn(BuildContext context) {
+    List<Widget> _widgets = [
       Align(
           alignment: Alignment.topCenter,
           child: ClickableAvatar(
@@ -37,46 +105,42 @@ class CommentCell extends StatelessWidget {
             avatarURL: comment.creator.accountPictureUrl,
             radius: 20,
             onTap: () => _goToAccount(context, comment.creator.id),
-          )),
+          ))
+    ];
+
+    // if (comment.replyCount == 0) {
+    //   _widgets.add(
+    //     Container(
+    //       constraints: const BoxConstraints(
+    //           minWidth: 20, maxWidth: 30, minHeight: 25, maxHeight: 120),
+    //       margin: const EdgeInsets.only(left: 20, bottom: 20),
+    //       decoration: const BoxDecoration(
+    //           color: Colors.transparent,
+    //           borderRadius:
+    //               BorderRadius.only(bottomLeft: Radius.circular(10.0)),
+    //           border: Border(
+    //             left: BorderSide(color: Colors.black),
+    //             bottom: BorderSide(color: Colors.black),
+    //           )),
+    //     ),
+    //   );
+    // }
+    return Column(
+        children: _widgets, crossAxisAlignment: CrossAxisAlignment.start);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _buildLeftColumn(context),
       const ListSpacer(),
       Flexible(
           flex: 1,
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(
-              comment.creator.name + " • " + timeago.format(comment.createdAt),
-              style: Theme.of(context).textTheme.caption,
-            ),
-            const ListSpacer(),
-            ExpandableText(
-              comment.body,
-              expandText: "show more",
-              collapseText: "show less",
-              animation: true,
-              linkEllipsis: true,
-              linkColor: Theme.of(context).colorScheme.tertiary,
-              collapseOnTextTap: true,
-              style: Theme.of(context).textTheme.bodyText1,
-              maxLines: 3,
-            ),
-            const ListSpacer(),
-            Row(
-              children: [
-                TextButton(
-                    onPressed: () => {
-                          if (onShowThread != null)
-                            {onShowThread!(context, comment.id)}
-                        },
-                    child: Text(comment.replyCount.toString() + " replies")),
-                IconButton(
-                    color: Theme.of(context).colorScheme.tertiary,
-                    onPressed: () => {
-                          if (onAddReply != null)
-                            {onAddReply!(context, comment.id)}
-                        },
-                    icon: const Icon(Icons.add_comment_outlined)),
-              ],
-            )
+            _buildBody(context),
+            _buildReactButtons(context),
+            _buildReplies(context),
           ]))
     ]);
   }

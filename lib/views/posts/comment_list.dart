@@ -8,6 +8,34 @@ typedef ShowThreadCallback = void Function(
 typedef AddReplyCallback = void Function(
     BuildContext context, String commentId);
 
+String getCommentThreadQuery = """
+query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
+  comments(where: \$where, options: \$options) {
+    replies {
+      id
+      body
+      createdAt
+      createdBy {
+        id
+        name
+        username
+      }
+    }
+    repliesAggregate {
+      count
+    }
+    id
+    body
+    createdAt
+    createdBy {
+      id
+      name
+      username
+    }
+  }
+}
+""";
+
 class CommentListView extends StatelessWidget {
   final List<CommentModel> comments;
 

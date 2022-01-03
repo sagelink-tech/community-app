@@ -123,36 +123,36 @@ class AppTheme {
         .copyWith(
           headline1: base.headline5!.copyWith(
             fontWeight: FontWeight.bold,
-            fontSize: 28.0,
+            fontSize: 27.0,
           ),
           headline2: base.headline5!.copyWith(
             fontWeight: FontWeight.w500,
-            fontSize: 28.0,
+            fontSize: 27.0,
           ),
           headline3: base.headline5!.copyWith(
             fontWeight: FontWeight.normal,
-            fontSize: 24.0,
+            fontSize: 23.0,
           ),
           headline4: base.headline5!.copyWith(
             fontWeight: FontWeight.normal,
-            fontSize: 22.0,
+            fontSize: 21.0,
           ),
           headline5: base.headline5!.copyWith(
             letterSpacing: 2.5,
             fontWeight: FontWeight.bold,
-            fontSize: 14.0,
+            fontSize: 13.0,
           ),
           headline6: base.headline6!.copyWith(
-            fontSize: 20.0,
+            fontSize: 19.0,
             fontWeight: FontWeight.normal,
           ),
           caption: base.caption!.copyWith(
             fontWeight: FontWeight.w400,
-            fontSize: 16.0,
+            fontSize: 15.0,
           ),
           bodyText1: base.bodyText1!.copyWith(
             fontWeight: FontWeight.normal,
-            fontSize: 16.0,
+            fontSize: 15.0,
           ),
         )
         .apply(fontFamily: GoogleFonts.poppins().fontFamily);
