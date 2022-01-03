@@ -1,12 +1,15 @@
+import 'package:sagelink_communities/components/empty_result.dart';
 import 'package:sagelink_communities/components/error_view.dart';
 import 'package:sagelink_communities/components/image_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/components/loading.dart';
 import 'package:sagelink_communities/models/perk_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/views/posts/comment_list.dart';
+import 'package:sagelink_communities/views/posts/new_comment.dart';
 
 String getPerkQuery = """
-query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere) {
+query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions: CommentOptions) {
   perks(options: \$options, where: \$where) {
     id
     title
@@ -31,6 +34,16 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere) {
       name
       mainColor
     }
+    comments(options: \$commentOptions) {
+      id
+      body
+      createdAt
+      createdBy {
+        id
+        name
+        username
+      }
+    }
   }
 }
 """;
@@ -50,6 +63,7 @@ class _PerkViewState extends State<PerkView>
   PerkModel _perk = PerkModel();
   bool _isCollapsed = false;
   final double _headerSize = 200.0;
+  int _currentIndex = 0;
 
   late ScrollController _scrollController;
   late TabController _tabController;
@@ -66,12 +80,19 @@ class _PerkViewState extends State<PerkView>
     }
   }
 
+  _tabListener() {
+    setState(() {
+      _currentIndex = _tabController.index;
+    });
+  }
+
   @override
   initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _scrollController = ScrollController(initialScrollOffset: 0.0);
     _scrollController.addListener(_scrollListener);
+    _tabController.addListener(_tabListener);
   }
 
   @override
@@ -125,10 +146,32 @@ class _PerkViewState extends State<PerkView>
           controller: _tabController,
           children: [
             Text(_perk.description, style: Theme.of(context).textTheme.caption),
-            const Text('details go here'),
-            const Text('conversations go here')
+            Text(_perk.details, style: Theme.of(context).textTheme.caption),
+            _perk.comments.isNotEmpty
+                ? CommentListView(_perk.comments)
+                : const EmptyResult(text: "No conversation started yet!")
           ],
         ));
+  }
+
+  Widget _buildButtons(BuildContext context, VoidCallback? refetch) {
+    if (_currentIndex == 2) {
+      return Container(
+          padding: const EdgeInsets.all(20),
+          child: NewComment(
+            parentId: _perk.id,
+            onCompleted: () => refetch != null ? refetch() : null,
+            isOnPerk: true,
+            isReply: false,
+          ));
+    } else {
+      return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              primary: Theme.of(context).colorScheme.secondary,
+              onPrimary: Theme.of(context).colorScheme.onError),
+          onPressed: () => {},
+          child: const Text("Redeem"));
+    }
   }
 
   @override
@@ -139,6 +182,11 @@ class _PerkViewState extends State<PerkView>
           variables: {
             "where": {"id": widget.perkId},
             "options": {"limit": 1},
+            "commentOptions": {
+              "sort": [
+                {"createdAt": "DESC"}
+              ]
+            }
           },
         ),
         builder: (QueryResult result,
@@ -167,16 +215,7 @@ class _PerkViewState extends State<PerkView>
                               body: _buildBody(context)),
                           Padding(
                               padding: const EdgeInsets.only(bottom: 10),
-                              child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      primary: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      onPrimary: Theme.of(context)
-                                          .colorScheme
-                                          .onError),
-                                  onPressed: () => {},
-                                  child: const Text("Redeem")))
+                              child: _buildButtons(context, refetch))
                         ])));
         });
   }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/views/posts/comment_list.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 String getPostQuery = """
 query Posts(\$where: PostWhere, \$options: CommentOptions) {
@@ -56,6 +57,14 @@ class PostView extends StatefulWidget {
 
 class _PostViewState extends State<PostView> {
   PostModel _post = PostModel();
+
+  void _showCommentThread(BuildContext context, String commentId) {
+    print('should show thread for ' + commentId);
+  }
+
+  void _composeReplyOnThread(BuildContext context, String commentId) {
+    print('should add to thread for ' + commentId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +134,14 @@ class _PostViewState extends State<PostView> {
                                                 _post.creator.accountPictureUrl,
                                           ),
                                           const ListSpacer(),
-                                          Text(_post.creator.name),
+                                          Text(
+                                              _post.creator.name +
+                                                  " • " +
+                                                  timeago
+                                                      .format(_post.createdAt),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .caption),
                                         ],
                                       ),
                                       const ListSpacer(),
@@ -134,7 +150,11 @@ class _PostViewState extends State<PostView> {
                                               .textTheme
                                               .headline5),
                                       const ListSpacer(),
-                                      CommentListView(_post.comments),
+                                      CommentListView(
+                                        _post.comments,
+                                        onAddReply: _composeReplyOnThread,
+                                        onShowThread: _showCommentThread,
+                                      ),
                                     ],
                                   ))),
                           Align(
@@ -143,7 +163,7 @@ class _PostViewState extends State<PostView> {
                                 padding: const EdgeInsets.all(20),
                                 child: NewComment(
                                     focused: widget.autofocusCommentField,
-                                    postId: widget.postId,
+                                    parentId: widget.postId,
                                     onCompleted: refetch!)),
                           )
                         ])),

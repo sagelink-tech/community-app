@@ -167,6 +167,7 @@ class AppTheme {
           primaryContainer: accent1Darker,
           secondary: accent2,
           secondaryContainer: ColorUtils.shiftHsl(accent2, -.2),
+          tertiary: accent3,
           background: bg1,
           surface: surface,
           onBackground: txt,

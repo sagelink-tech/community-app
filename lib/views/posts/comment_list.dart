@@ -2,10 +2,21 @@ import 'package:sagelink_communities/models/comment_model.dart';
 import 'package:sagelink_communities/views/posts/comment_cell.dart';
 import 'package:flutter/material.dart';
 
+typedef ShowThreadCallback = void Function(
+    BuildContext context, String commentId);
+
+typedef AddReplyCallback = void Function(
+    BuildContext context, String commentId);
+
 class CommentListView extends StatelessWidget {
   final List<CommentModel> comments;
 
-  const CommentListView(this.comments, {Key? key}) : super(key: key);
+  final ShowThreadCallback? onShowThread;
+  final AddReplyCallback? onAddReply;
+
+  const CommentListView(this.comments,
+      {this.onShowThread, this.onAddReply, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +28,12 @@ class CommentListView extends StatelessWidget {
       itemCount: comments.length,
       cacheExtent: 20,
       controller: ScrollController(),
-      itemBuilder: (context, index) => CommentCell(index, comments[index]),
+      itemBuilder: (context, index) => CommentCell(
+        index,
+        comments[index],
+        onAddReply: onAddReply,
+        onShowThread: onShowThread,
+      ),
       separatorBuilder: (context, index) => const Divider(),
     );
   }

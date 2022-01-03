@@ -2,6 +2,7 @@ import 'package:sagelink_communities/components/activity_badge.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/views/posts/post_view.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 
 import 'package:sagelink_communities/models/post_model.dart';
@@ -77,8 +78,8 @@ class PostCell extends StatelessWidget {
                       avatarURL: post.creator.accountPictureUrl),
                   const SizedBox(width: 10),
                   Text(
-                    post.creator.name,
-                    style: Theme.of(context).textTheme.subtitle1,
+                    post.creator.name + " • " + timeago.format(post.createdAt),
+                    style: Theme.of(context).textTheme.caption,
                   )
                 ],
               ),

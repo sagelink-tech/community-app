@@ -29,6 +29,7 @@ class PerkModel extends ChangeNotifier {
   String id = "";
   String title = "";
   String description = "";
+  String details = "";
   String productId = "";
   String productName = "";
   num price = 0.0; // in cents
@@ -96,6 +97,7 @@ class PerkModel extends ChangeNotifier {
     id = json['id'];
     title = json['title'];
     description = json['description'];
+    details = json.containsKey('details') ? json['details'] : "";
     productId = json["productId"];
     productName = json["productName"];
     imageUrls = List<String>.from(json["imageUrls"] ?? []);
