@@ -1,10 +1,10 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/list_spacer.dart';
-import 'package:sagelink_communities/views/posts/new_comment.dart';
+import 'package:sagelink_communities/views/comments/new_comment.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/views/posts/comment_list.dart';
+import 'package:sagelink_communities/views/comments/comment_list.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 String getPostQuery = """
