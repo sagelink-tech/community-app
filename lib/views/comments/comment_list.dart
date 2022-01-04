@@ -1,5 +1,5 @@
 import 'package:sagelink_communities/models/comment_model.dart';
-import 'package:sagelink_communities/views/posts/comment_cell.dart';
+import 'package:sagelink_communities/views/comments/comment_cell.dart';
 import 'package:flutter/material.dart';
 
 typedef ShowThreadCallback = void Function(

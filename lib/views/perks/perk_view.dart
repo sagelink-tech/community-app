@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:sagelink_communities/components/loading.dart';
 import 'package:sagelink_communities/models/perk_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/views/posts/comment_list.dart';
-import 'package:sagelink_communities/views/posts/new_comment.dart';
+import 'package:sagelink_communities/views/comments/comment_list.dart';
+import 'package:sagelink_communities/views/comments/new_comment.dart';
 
 String getPerkQuery = """
 query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions: CommentOptions) {
