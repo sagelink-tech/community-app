@@ -27,7 +27,6 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
     createdBy {
       id
       name
-      username
     }
     commentsAggregate {
       count

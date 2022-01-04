@@ -97,7 +97,7 @@ class PerkModel extends ChangeNotifier {
     id = json['id'];
     title = json['title'];
     description = json['description'];
-    details = json.containsKey('details') ? json['details'] : "";
+    details = json.containsKey('details') ? json['details'] ?? "" : "";
     productId = json["productId"];
     productName = json["productName"];
     imageUrls = List<String>.from(json["imageUrls"] ?? []);

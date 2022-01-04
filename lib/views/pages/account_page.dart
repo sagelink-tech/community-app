@@ -12,9 +12,10 @@ String getUserQuery = """
 query Users(\$where: UserWhere) {
   users(where: \$where) {
     id
-    username
     email
+    description
     name
+    accountPictureUrl
   }
 }
 """;
@@ -81,10 +82,8 @@ class _AccountPageState extends ConsumerState<AccountPage>
       "options": {"limit": 1}
     };
 
-    QueryResult result = await client.query(QueryOptions(
-        document: gql(getUserQuery),
-        variables: variables,
-        fetchPolicy: FetchPolicy.noCache));
+    QueryResult result = await client
+        .query(QueryOptions(document: gql(getUserQuery), variables: variables));
     if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
       return UserModel.fromJson(result.data?['users'][0]);
     }
@@ -106,11 +105,8 @@ class _AccountPageState extends ConsumerState<AccountPage>
                 ]),
                 const ListSpacer(width: 20),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(_user.username,
-                      style: Theme.of(context).textTheme.headline3,
-                      textAlign: TextAlign.start),
                   Text(_user.name,
-                      style: Theme.of(context).textTheme.headline6,
+                      style: Theme.of(context).textTheme.headline3,
                       textAlign: TextAlign.start),
                 ]),
               ])),

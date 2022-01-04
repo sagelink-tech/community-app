@@ -41,50 +41,42 @@ const String brandData = '''
 
 const userData = '''[
   {
-    "username": "customer1",
     "name": "Test Customer 1",
     "email": "test@test.com",
     "accountPictureUrl": "http://logo.url"
   },
   {
-    "username": "customer2",
     "name": "Test Customer 2",
     "email": "test@test.com",
     "accountPictureUrl": "http://logo.url"
   },
   {
-    "username": "customer3",
     "name": "Test Customer 3",
     "email": "test@test.com",
     "accountPictureUrl": "http://logo.url"
   },
 
   {
-    "username": "customer4",
     "name": "Test Customer 4",
     "email": "test@test.com",
     "accountPictureUrl": "http://logo.url"
   },
   {
-    "username": "hausbaus",
     "name": "Haus Owner",
     "email": "test@drink.haus",
     "accountPictureUrl": "http://logo.url"
   },
   {
-    "username": "haus_comm_manager",
     "name": "J The Comm Manager",
     "email": "j@drink.haus",
     "accountPictureUrl": "http://logo.url"
   },
   {
-    "username": "saks4life",
     "name": "Sakara Owner",
     "email": "s@sakaralife.com",
     "accountPictureUrl": "http://logo.url"
   },
   {
-    "username": "sakara_comm_manager",
     "name": "M The Comm Manager",
     "email": "m@sakaralife.com",
     "accountPictureUrl": "http://logo.url"

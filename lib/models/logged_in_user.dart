@@ -6,7 +6,6 @@ String getUserQuery = """
 query Users(\$where: UserWhere) {
   users(where: \$where) {
     id
-    username
     email
     name
   }

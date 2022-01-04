@@ -24,7 +24,6 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
     createdBy {
       id
       name
-      username
     }
     commentsAggregate {
       count
@@ -41,7 +40,6 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
       createdBy {
         id
         name
-        username
       }
     }
   }

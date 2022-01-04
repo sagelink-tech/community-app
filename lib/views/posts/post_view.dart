@@ -17,7 +17,6 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
     createdBy {
       id
       name
-      username
     }
     inBrandCommunity {
       id
@@ -35,7 +34,6 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
       createdBy {
         id
         name
-        username
       }
     }
   }

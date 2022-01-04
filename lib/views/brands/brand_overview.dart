@@ -31,13 +31,7 @@ class BrandOverview extends StatelessWidget {
     return Wrap(
       spacing: 6.0,
       runSpacing: 6.0,
-      children: const <Widget>[
-        Chip(label: Text('Health')),
-        Chip(label: Text('Food')),
-        Chip(label: Text('Local Business')),
-        Chip(label: Text('Environment')),
-        Chip(label: Text('Wildlife Preservation')),
-      ],
+      children: brand.causes.map((c) => Chip(label: Text(c.title))).toList(),
     );
   }
 

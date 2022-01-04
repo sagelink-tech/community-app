@@ -26,7 +26,6 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
       createdBy {
         id
         name
-        username
       }
       title
       body
@@ -38,7 +37,6 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
         node {
           id
           name
-          username
         }
         roles
         founder
@@ -52,7 +50,6 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
         node {
           id
           name
-          username
         }
       }
     }
@@ -67,6 +64,10 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
       createdAt
       startDate
       endDate
+    }
+    causes {
+      title
+      id
     }
   }
 }

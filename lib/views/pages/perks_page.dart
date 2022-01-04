@@ -34,7 +34,6 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere) {
     createdBy {
       id
       name
-      username
     }
     commentsAggregate {
       count

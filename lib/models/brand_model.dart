@@ -1,4 +1,5 @@
 import 'package:sagelink_communities/models/user_model.dart';
+import 'package:sagelink_communities/models/cause_model.dart';
 import 'package:sagelink_communities/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -35,6 +36,14 @@ class BrandModel extends ChangeNotifier {
 
   int memberCount = 0;
 
+  // Causes
+  List<CauseModel> _causes = [];
+  List<CauseModel> get causes => _causes;
+  set causes(List<CauseModel> causes) {
+    _causes = causes;
+    notifyListeners();
+  }
+
   // helpers
   int get totalCommunityCount => employeeCount + memberCount;
 
@@ -46,9 +55,9 @@ class BrandModel extends ChangeNotifier {
     id = json['id'];
     name = json['name'];
     description = json.containsKey('description') ? json['description'] : "";
-    logoUrl = json.containsKey('logoUrl') ? json['logoUrl'] : "";
+    logoUrl = json.containsKey('logoUrl') ? json['logoUrl'] ?? "" : "";
     backgroundImageUrl = json.containsKey('backgroundImageUrl')
-        ? json['backgroundImageUrl']
+        ? json['backgroundImageUrl'] ?? ""
         : "";
     website = json.containsKey('website') ? json['website'] : "";
     mainColor = json.containsKey('mainColor') && json['mainColor'] != null
@@ -84,6 +93,14 @@ class BrandModel extends ChangeNotifier {
         _membs.add(UserModel.fromJson(e['node']));
       }
       members = _membs;
+    }
+
+    if (json.containsKey('causes')) {
+      List<CauseModel> _c = [];
+      for (var c in json['causes']) {
+        _c.add(CauseModel(c['id'], c['title']));
+      }
+      causes = _c;
     }
   }
 

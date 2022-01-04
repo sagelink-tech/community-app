@@ -46,7 +46,6 @@ const String brandData = '''
 
 const userData = '''
 {
-  "username": "TestAccount",
   "name": "Test User",
   "email": "test@test.com",
   "accountPictureUrl": "http://logo.url"

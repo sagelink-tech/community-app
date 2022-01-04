@@ -18,7 +18,6 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
       createdBy {
         id
         name
-        username
       }
     }
     repliesAggregate {
@@ -30,7 +29,6 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
     createdBy {
       id
       name
-      username
     }
   }
 }
