@@ -1,5 +1,6 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:sagelink_communities/components/list_spacer.dart';
 import 'package:sagelink_communities/models/brand_model.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,6 +29,9 @@ class BrandOverview extends StatelessWidget {
 
   // Builders
   Widget causesList(BuildContext context) {
+    if (brand.causes.isEmpty) {
+      return const SizedBox(height: 30);
+    }
     return Wrap(
       spacing: 6.0,
       runSpacing: 6.0,
@@ -69,8 +73,10 @@ class BrandOverview extends StatelessWidget {
       peopleList(context),
       Text("Mission", style: Theme.of(context).textTheme.headline4),
       Text(brand.description, style: Theme.of(context).textTheme.bodyLarge),
+      const ListSpacer(),
       Text("Causes", style: Theme.of(context).textTheme.headline4),
       causesList(context),
+      const ListSpacer(),
       Text("Links", style: Theme.of(context).textTheme.headline4),
       externalLinks(context),
     ]);
