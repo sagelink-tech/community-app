@@ -61,7 +61,7 @@ class _NewCommentState extends ConsumerState<NewComment> {
           child: TextFormField(
               autofocus: widget.focused,
               decoration: InputDecoration(
-                labelText: 'Comment',
+                labelText: widget.isReply ? 'Reply' : 'Comment',
                 border: const OutlineInputBorder(),
                 errorBorder: OutlineInputBorder(
                     borderSide:

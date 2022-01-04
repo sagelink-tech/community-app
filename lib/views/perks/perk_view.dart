@@ -41,6 +41,9 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
         id
         name
       }
+      repliesAggregate {
+        count
+      }
     }
   }
 }
@@ -59,6 +62,8 @@ class PerkView extends StatefulWidget {
 class _PerkViewState extends State<PerkView>
     with SingleTickerProviderStateMixin {
   PerkModel _perk = PerkModel();
+  bool showingThread = false;
+  String? _threadId;
   bool _isCollapsed = false;
   final double _headerSize = 200.0;
   int _currentIndex = 0;
@@ -100,6 +105,21 @@ class _PerkViewState extends State<PerkView>
     super.dispose();
   }
 
+  void _showCommentThread(String commentId) {
+    setState(() {
+      showingThread = true;
+      _threadId = commentId;
+    });
+    print('should show thread for ' + commentId);
+  }
+
+  void completeReplyOnThread(String commentId) {
+    setState(() {
+      showingThread = false;
+      _threadId = null;
+    });
+  }
+
   _buildHeader(BuildContext context, bool boxIsScrolled) {
     return <Widget>[
       SliverList(
@@ -136,7 +156,7 @@ class _PerkViewState extends State<PerkView>
     ];
   }
 
-  _buildBody(BuildContext context) {
+  _buildBody(BuildContext context, VoidCallback? refetch) {
     return Container(
         padding:
             EdgeInsets.only(left: 24, right: 24, top: _isCollapsed ? 45 : 0),
@@ -146,7 +166,20 @@ class _PerkViewState extends State<PerkView>
             Text(_perk.description, style: Theme.of(context).textTheme.caption),
             Text(_perk.details, style: Theme.of(context).textTheme.caption),
             _perk.comments.isNotEmpty
-                ? CommentListView(_perk.comments)
+                ? CommentListView(
+                    _perk.comments,
+                    onAddReply: (commentId) => {
+                      completeReplyOnThread(commentId),
+                      if (refetch != null) refetch()
+                    },
+                    onShowThread: _showCommentThread,
+                    onCloseThread: () => {
+                      setState(() {
+                        showingThread = false;
+                      }),
+                      if (refetch != null) refetch()
+                    },
+                  )
                 : const EmptyResult(text: "No conversation started yet!")
           ],
         ));
@@ -157,18 +190,20 @@ class _PerkViewState extends State<PerkView>
       return Container(
           padding: const EdgeInsets.all(20),
           child: NewComment(
-            parentId: _perk.id,
+            parentId: showingThread ? _threadId! : _perk.id,
             onCompleted: () => refetch != null ? refetch() : null,
             isOnPerk: true,
-            isReply: false,
+            isReply: showingThread,
           ));
     } else {
-      return ElevatedButton(
-          style: ElevatedButton.styleFrom(
-              primary: Theme.of(context).colorScheme.secondary,
-              onPrimary: Theme.of(context).colorScheme.onError),
-          onPressed: () => {},
-          child: const Text("Redeem"));
+      return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  primary: Theme.of(context).colorScheme.secondary,
+                  onPrimary: Theme.of(context).colorScheme.onError),
+              onPressed: () => {},
+              child: const Text("Redeem")));
     }
   }
 
@@ -210,10 +245,8 @@ class _PerkViewState extends State<PerkView>
                               headerSliverBuilder:
                                   (context, innerBoxIsScrolled) =>
                                       _buildHeader(context, innerBoxIsScrolled),
-                              body: _buildBody(context)),
-                          Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: _buildButtons(context, refetch))
+                              body: _buildBody(context, refetch)),
+                          _buildButtons(context, refetch)
                         ])));
         });
   }

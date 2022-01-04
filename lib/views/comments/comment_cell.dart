@@ -6,14 +6,11 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:sagelink_communities/models/comment_model.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 
-typedef ShowThreadCallback = void Function(
-    BuildContext context, String commentId);
+typedef ShowThreadCallback = void Function(String commentId);
 
-typedef AddReplyCallback = void Function(
-    BuildContext context, String commentId);
+typedef AddReplyCallback = void Function(String commentId);
 
-typedef AddReactionCallback = void Function(
-    BuildContext context, String commentId);
+typedef AddReactionCallback = void Function(String commentId);
 
 class CommentCell extends StatelessWidget {
   final int itemNo;
@@ -21,9 +18,14 @@ class CommentCell extends StatelessWidget {
   final ShowThreadCallback? onShowThread;
   final AddReplyCallback? onAddReply;
   final AddReactionCallback? onAddReaction;
+  final bool inThreadView;
 
   const CommentCell(this.itemNo, this.comment,
-      {this.onAddReply, this.onShowThread, this.onAddReaction, Key? key})
+      {this.onAddReply,
+      this.onShowThread,
+      this.onAddReaction,
+      this.inThreadView = false,
+      Key? key})
       : super(key: key);
 
   void _goToAccount(BuildContext context, String userId) async {
@@ -66,7 +68,7 @@ class CommentCell extends StatelessWidget {
           style: Theme.of(context).textTheme.caption),
       TextButton(
           onPressed: () => {
-                if (onAddReaction != null) {onAddReaction!(context, comment.id)}
+                if (onAddReaction != null) {onAddReaction!(comment.id)}
               },
           style: TextButton.styleFrom(
             primary: Theme.of(context).colorScheme.secondary,
@@ -74,7 +76,7 @@ class CommentCell extends StatelessWidget {
           child: const Text("React")),
       TextButton(
           onPressed: () => {
-                if (onAddReply != null) {onAddReply!(context, comment.id)}
+                if (onShowThread != null) {onShowThread!(comment.id)}
               },
           style: TextButton.styleFrom(
             primary: Theme.of(context).colorScheme.secondary,
@@ -89,14 +91,14 @@ class CommentCell extends StatelessWidget {
   }
 
   Widget _buildReplies(BuildContext context) {
-    if (comment.replyCount == 0) {
+    if (comment.replyCount == 0 || inThreadView) {
       return const SizedBox.shrink();
     }
     return Row(children: [
       // add first comment author
       TextButton(
           onPressed: () => {
-                if (onShowThread != null) {onShowThread!(context, comment.id)}
+                if (onShowThread != null) {onShowThread!(comment.id)}
               },
           child: Text(comment.replyCount.toString() + " replies")),
     ]);
