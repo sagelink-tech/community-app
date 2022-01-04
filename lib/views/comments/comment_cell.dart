@@ -68,11 +68,17 @@ class CommentCell extends StatelessWidget {
           onPressed: () => {
                 if (onAddReaction != null) {onAddReaction!(context, comment.id)}
               },
+          style: TextButton.styleFrom(
+            primary: Theme.of(context).colorScheme.secondary,
+          ),
           child: const Text("React")),
       TextButton(
           onPressed: () => {
                 if (onAddReply != null) {onAddReply!(context, comment.id)}
               },
+          style: TextButton.styleFrom(
+            primary: Theme.of(context).colorScheme.secondary,
+          ),
           child: const Text("Reply")),
       const Spacer(),
       Text(
