@@ -4,7 +4,7 @@ import 'package:sagelink_communities/models/comment_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-enum PostType { undefined, text, image, url, poll, survey, product }
+enum PostType { undefined, conversation, link, poll, survey }
 
 class PostModel extends ChangeNotifier {
   String id = "";
@@ -66,7 +66,7 @@ class PostModel extends ChangeNotifier {
     comments = commentList;
 
     //Need to serialize/deserialize properly
-    type = PostType.text;
+    type = PostType.conversation;
   }
   // Eventually other stuff would go here, notifications, friends, draft posts, etc
 }
