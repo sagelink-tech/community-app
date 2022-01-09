@@ -19,6 +19,7 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
     createdBy {
       id
       name
+      accountPictureUrl
     }
     inBrandCommunity {
       id
@@ -36,6 +37,7 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
       createdBy {
         id
         name
+        accountPictureUrl
       }
       repliesAggregate {
         count

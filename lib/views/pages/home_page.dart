@@ -11,6 +11,7 @@ String getBrandsQuery = '''
 query Brands {
   brands {
     name
+    logoUrl
     shopifyToken
     mainColor
     id
@@ -27,6 +28,7 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
     createdBy {
       id
       name
+      accountPictureUrl
     }
     commentsAggregate {
       count
@@ -35,6 +37,7 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
       id
       name
       mainColor
+      logoUrl
     }
     createdAt
   }

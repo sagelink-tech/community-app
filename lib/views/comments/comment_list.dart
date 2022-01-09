@@ -23,6 +23,7 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
       createdBy {
         id
         name
+        accountPictureUrl
       }
     }
     repliesAggregate {
@@ -34,6 +35,7 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
     createdBy {
       id
       name
+      accountPictureUrl
     }
   }
 }

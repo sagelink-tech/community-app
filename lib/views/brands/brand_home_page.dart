@@ -19,6 +19,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
     website
     mainColor
     logoUrl
+    backgroundImageUrl
     posts(options: \$postsOptions) {
       commentsAggregate {
         count
@@ -26,10 +27,12 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
       createdBy {
         id
         name
+        accountPictureUrl
       }
       title
       body
       id
+      createdAt
     }
     employeesConnection(first: \$employeesFirst) {
       totalCount
@@ -37,6 +40,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
         node {
           id
           name
+          accountPictureUrl
         }
         roles
         founder
@@ -50,6 +54,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
         node {
           id
           name
+          accountPictureUrl
         }
       }
     }
@@ -139,7 +144,7 @@ class _BrandHomepageState extends State<BrandHomepage>
               child: Column(children: [
                 Text(_brand.name, style: Theme.of(context).textTheme.headline3),
                 StackedAvatars(
-                  _brand.employees,
+                  [..._brand.employees, ..._brand.members],
                   showOverflow: (_brand.totalCommunityCount > 3),
                 ),
                 const Text("VIP Community"),

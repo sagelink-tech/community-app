@@ -21,6 +21,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
     createdAt
     startDate
     endDate
+    type
     createdBy {
       id
       name

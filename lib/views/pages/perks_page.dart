@@ -13,6 +13,7 @@ query Brands {
     name
     shopifyToken
     mainColor
+    logoUrl
     id
   }
 }
@@ -23,6 +24,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere) {
   perks(options: \$options, where: \$where) {
     id
     title
+    type
     description
     imageUrls
     productName
@@ -34,6 +36,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere) {
     createdBy {
       id
       name
+      accountPictureUrl
     }
     commentsAggregate {
       count
@@ -42,6 +45,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere) {
       id
       name
       mainColor
+      logoUrl
     }
   }
 }

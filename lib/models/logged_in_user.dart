@@ -8,6 +8,7 @@ query Users(\$where: UserWhere) {
     id
     email
     name
+    accountPictureUrl
   }
 }
 """;

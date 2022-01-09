@@ -5,7 +5,7 @@ import 'package:sagelink_communities/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 class LoginPage extends ConsumerWidget {
-  final userId1 = "30172a8c-c407-4852-b5b4-d0dedb39bde9";
+  final userId1 = "d01dee82-e65b-43b1-bc50-3a50b7c4fe33";
   final userId2 = "cd329013-5cb6-4bea-882a-8b7a4591dd11";
 
   const LoginPage({Key? key}) : super(key: key);
