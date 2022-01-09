@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:tuple/tuple.dart';
 
 String getUserQuery = """
 query Users(\$where: UserWhere) {
@@ -49,6 +51,34 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       LoggedInUser _loggedInUser =
           LoggedInUser(user: _user, status: LoginState.isLoggedIn);
       state = _loggedInUser;
+    }
+  }
+
+  void loginWithEmail(
+      GraphQLClient client, String userEmail, BuildContext context) async {
+    state.status = LoginState.isLoggingIn;
+
+    final QueryResult result = await client.query(QueryOptions(
+      document: gql(getUserQuery),
+      variables: {
+        "where": {"email": userEmail},
+        "options": {"limit": 1}
+      },
+    ));
+    if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
+      UserModel _user = UserModel.fromJson(result.data?['users'][0]);
+      LoggedInUser _loggedInUser =
+          LoggedInUser(user: _user, status: LoginState.isLoggedIn);
+      state = _loggedInUser;
+    } else {
+      LoggedInUser _loggedInUser =
+          LoggedInUser(user: null, status: LoginState.isLoggedOut);
+      state = _loggedInUser;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            (result.exception ?? Exception("Error signing in")).toString()),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ));
     }
   }
 
