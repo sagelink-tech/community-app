@@ -11,6 +11,7 @@ String getBrandsQuery = '''
 query Brands {
   brands {
     name
+    logoUrl
     shopifyToken
     mainColor
     id
@@ -27,7 +28,7 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
     createdBy {
       id
       name
-      username
+      accountPictureUrl
     }
     commentsAggregate {
       count
@@ -36,6 +37,7 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
       id
       name
       mainColor
+      logoUrl
     }
     createdAt
   }
@@ -130,6 +132,9 @@ class _HomePageState extends State<HomePage> {
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.hasData) {
                     brands = snapshot.data;
+                  }
+                  if (snapshot.hasError) {
+                    print(snapshot.error);
                   }
                   return ListView.separated(
                       padding: const EdgeInsets.all(5),

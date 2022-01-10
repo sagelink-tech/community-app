@@ -1,10 +1,13 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/error_view.dart';
 import 'package:sagelink_communities/components/list_spacer.dart';
-import 'package:sagelink_communities/views/posts/new_comment.dart';
+import 'package:sagelink_communities/components/loading.dart';
+import 'package:sagelink_communities/views/comments/new_comment.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/views/posts/comment_list.dart';
+import 'package:sagelink_communities/views/comments/comment_list.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 String getPostQuery = """
 query Posts(\$where: PostWhere, \$options: CommentOptions) {
@@ -16,7 +19,7 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
     createdBy {
       id
       name
-      username
+      accountPictureUrl
     }
     inBrandCommunity {
       id
@@ -34,7 +37,10 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
       createdBy {
         id
         name
-        username
+        accountPictureUrl
+      }
+      repliesAggregate {
+        count
       }
     }
   }
@@ -56,6 +62,60 @@ class PostView extends StatefulWidget {
 
 class _PostViewState extends State<PostView> {
   PostModel _post = PostModel();
+  String? _threadId;
+  bool showingThread = false;
+
+  void _showCommentThread(String commentId) {
+    setState(() {
+      showingThread = true;
+      _threadId = commentId;
+    });
+    print('should show thread for ' + commentId);
+  }
+
+  void completeReplyOnThread(String commentId) {
+    setState(() {
+      showingThread = false;
+      _threadId = null;
+    });
+  }
+
+  List<Widget> _buildBodyView() {
+    return [
+      const ListSpacer(),
+      Text('ORIGINAL POST', style: Theme.of(context).textTheme.headline5),
+      const ListSpacer(),
+      Text(_post.title, style: Theme.of(context).textTheme.headline4),
+      const ListSpacer(),
+      Text(_post.body, style: Theme.of(context).textTheme.bodyText1),
+      const ListSpacer(),
+      Row(children: [
+        ClickableAvatar(
+          radius: 30,
+          avatarText: _post.creator.name[0],
+          avatarURL: _post.creator.accountPictureUrl,
+        ),
+        const ListSpacer(),
+        Text(_post.creator.name + " • " + timeago.format(_post.createdAt),
+            style: Theme.of(context).textTheme.caption),
+      ]),
+    ];
+  }
+
+  _buildCommentField(VoidCallback? refetch) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+          padding: const EdgeInsets.all(20),
+          child: NewComment(
+              focused: widget.autofocusCommentField,
+              parentId: showingThread ? _threadId! : widget.postId,
+              isReply: showingThread,
+              onCompleted: () => {
+                    if (refetch != null) {refetch()}
+                  })),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,78 +137,44 @@ class _PostViewState extends State<PostView> {
             _post = PostModel.fromJson(result.data?['posts'][0]);
           }
           return Scaffold(
-            appBar: AppBar(
-                title: result.isLoading || result.hasException
-                    ? const Text('')
-                    : Text(_post.brand.name),
-                backgroundColor: Theme.of(context).backgroundColor,
-                elevation: 1),
-            body: Container(
-              alignment: AlignmentDirectional.topStart,
-              child: (result.hasException
-                  ? Text(result.exception.toString())
+              appBar: AppBar(
+                  title: const Text(''),
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  elevation: 1),
+              body: (result.hasException
+                  ? const ErrorView()
                   : result.isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : Column(children: <Widget>[
-                          Expanded(
-                              child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 25),
-                                  child: ListView(
-                                    children: [
-                                      const ListSpacer(),
-                                      Text('ORIGINAL POST',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headline5),
-                                      const ListSpacer(),
-                                      Text(
-                                        _post.title,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline4,
-                                      ),
-                                      const ListSpacer(),
-                                      Text(
-                                        _post.body,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyText1,
-                                      ),
-                                      const ListSpacer(),
-                                      Row(
-                                        children: [
-                                          ClickableAvatar(
-                                            radius: 30,
-                                            avatarText: _post.creator.name[0],
-                                            avatarURL:
-                                                _post.creator.accountPictureUrl,
-                                          ),
-                                          const ListSpacer(),
-                                          Text(_post.creator.name),
-                                        ],
-                                      ),
-                                      const ListSpacer(),
-                                      Text('RESPONSES',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headline5),
-                                      const ListSpacer(),
-                                      CommentListView(_post.comments),
-                                    ],
-                                  ))),
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Container(
-                                padding: const EdgeInsets.all(20),
-                                child: NewComment(
-                                    focused: widget.autofocusCommentField,
-                                    postId: widget.postId,
-                                    onCompleted: refetch!)),
-                          )
-                        ])),
-            ),
-          );
+                      ? const Loading()
+                      : Container(
+                          alignment: AlignmentDirectional.topStart,
+                          padding: const EdgeInsets.symmetric(horizontal: 25),
+                          child: Stack(children: [
+                            ListView(shrinkWrap: true, children: <Widget>[
+                              ..._buildBodyView(),
+                              // Responses header
+                              const ListSpacer(),
+                              Text('RESPONSES',
+                                  style: Theme.of(context).textTheme.headline5),
+                              const ListSpacer(),
+                              // Comment view
+                              CommentListView(
+                                _post.comments,
+                                onAddReply: (commentId) => {
+                                  completeReplyOnThread(commentId),
+                                  if (refetch != null) refetch()
+                                },
+                                onShowThread: _showCommentThread,
+                                onCloseThread: () => {
+                                  setState(() {
+                                    showingThread = false;
+                                  }),
+                                  if (refetch != null) refetch()
+                                },
+                              ),
+                              const ListSpacer(height: 60)
+                            ]),
+                            _buildCommentField(refetch)
+                          ]))));
         });
   }
 }

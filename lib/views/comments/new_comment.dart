@@ -18,13 +18,18 @@ typedef OnCompletionCallback = void Function();
 class NewComment extends ConsumerStatefulWidget {
   const NewComment(
       {Key? key,
-      required this.postId,
+      required this.parentId,
       required this.onCompleted,
-      this.focused = false})
+      this.focused = false,
+      this.isOnPerk = false,
+      this.isReply = false})
       : super(key: key);
-  final String postId;
+
+  final String parentId;
   final OnCompletionCallback onCompleted;
   final bool focused;
+  final bool isReply;
+  final bool isOnPerk;
 
   static const routeName = '/comments';
 
@@ -56,7 +61,7 @@ class _NewCommentState extends ConsumerState<NewComment> {
           child: TextFormField(
               autofocus: widget.focused,
               decoration: InputDecoration(
-                labelText: 'Comment',
+                labelText: widget.isReply ? 'Reply' : 'Comment',
                 border: const OutlineInputBorder(),
                 errorBorder: OutlineInputBorder(
                     borderSide:
@@ -78,6 +83,37 @@ class _NewCommentState extends ConsumerState<NewComment> {
               onChanged: (value) => setState(() => body = value),
               enabled: enabled));
 
+  _getCommentVariables() {
+    var input = {
+      "body": body,
+      "createdBy": {
+        "connect": {
+          "where": {
+            "node": {"id": ref.read(loggedInUserProvider).getUser().id}
+          }
+        }
+      }
+    };
+    var connectionData = {
+      "connect": {
+        "where": {
+          "node": {"id": widget.parentId}
+        }
+      }
+    };
+
+    if (widget.isReply) {
+      input["onComment"] = connectionData;
+    } else if (widget.isOnPerk) {
+      input["onPerk"] = connectionData;
+    } else {
+      input["onPost"] = connectionData;
+    }
+    return {
+      "input": [input]
+    };
+  }
+
   Widget buildSubmit({bool enabled = true}) => Builder(
       builder: (context) => Mutation(
           options: MutationOptions(
@@ -93,32 +129,7 @@ class _NewCommentState extends ConsumerState<NewComment> {
                         final isValid = formKey.currentState!.validate();
 
                         if (isValid) {
-                          runMutation({
-                            "input": [
-                              {
-                                "body": body,
-                                "createdBy": {
-                                  "connect": {
-                                    "where": {
-                                      "node": {
-                                        "id": ref
-                                            .read(loggedInUserProvider)
-                                            .getUser()
-                                            .id
-                                      }
-                                    }
-                                  }
-                                },
-                                "onPost": {
-                                  "connect": {
-                                    "where": {
-                                      "node": {"id": widget.postId}
-                                    }
-                                  }
-                                }
-                              }
-                            ]
-                          });
+                          runMutation(_getCommentVariables());
                         }
                       }
                     : null,

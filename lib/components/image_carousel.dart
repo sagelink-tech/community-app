@@ -73,7 +73,8 @@ class _EmbeddedImageCarouselState extends State<EmbeddedImageCarousel> {
           padding: const EdgeInsets.all(10),
           child: ElevatedButton.icon(
             icon: const Icon(Icons.photo_camera),
-            label: Text(widget.imageUrls.length.toString() + " Photos"),
+            label: Text(widget.imageUrls.length.toString() +
+                (widget.imageUrls.length == 1 ? " Photo" : " Photos")),
             style: ElevatedButton.styleFrom(
                 primary: Theme.of(context).backgroundColor,
                 onPrimary: Theme.of(context).colorScheme.onBackground),

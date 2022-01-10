@@ -29,11 +29,12 @@ class BrandListCell extends StatelessWidget {
           ),
           child: Column(children: [
             ListTile(
-                title: null,
-                trailing: IconButton(
-                    icon: const Icon(Icons.more_vert),
-                    // ignore: avoid_print
-                    onPressed: () => print('test'))),
+              title: null,
+              trailing: IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  // ignore: avoid_print
+                  onPressed: () => print('test')),
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -44,7 +45,7 @@ class BrandListCell extends StatelessWidget {
                   radius: 25,
                 ),
                 Text(brand.name, style: Theme.of(context).textTheme.bodyText1),
-                Text(brand.followers.length.toString() + ' members',
+                Text(brand.totalCommunityCount.toString() + ' members',
                     style: Theme.of(context).textTheme.subtitle2),
                 const ActivityChip(activityCount: 0),
               ],

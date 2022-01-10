@@ -1,4 +1,5 @@
 import 'package:sagelink_communities/models/user_model.dart';
+import 'package:sagelink_communities/models/cause_model.dart';
 import 'package:sagelink_communities/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -11,23 +12,42 @@ class BrandModel extends ChangeNotifier {
   String website = "www.brand.com";
   Color mainColor = Colors.blueGrey;
 
-  List<UserModel> _owners = [];
+  // Employees
+  List<EmployeeModel> _employees = [];
 
-  List<UserModel> get owners => _owners;
+  List<EmployeeModel> get employees => _employees;
 
-  set owners(List<UserModel> owners) {
-    _owners = owners;
+  set employees(List<EmployeeModel> employees) {
+    _employees = employees;
     notifyListeners();
   }
 
-  List<UserModel> _followers = [];
+  int employeeCount = 0;
 
-  List<UserModel> get followers => _followers;
+  // Members
+  List<UserModel> _members = [];
 
-  set followers(List<UserModel> followers) {
-    _followers = followers;
+  List<UserModel> get members => _members;
+
+  set members(List<UserModel> members) {
+    _members = members;
     notifyListeners();
   }
+
+  int memberCount = 0;
+
+  // Causes
+  List<CauseModel> _causes = [];
+  List<CauseModel> get causes => _causes;
+  set causes(List<CauseModel> causes) {
+    _causes = causes;
+    notifyListeners();
+  }
+
+  // helpers
+  int get totalCommunityCount => employeeCount + memberCount;
+
+  //constructors
 
   BrandModel();
 
@@ -35,14 +55,53 @@ class BrandModel extends ChangeNotifier {
     id = json['id'];
     name = json['name'];
     description = json.containsKey('description') ? json['description'] : "";
-    logoUrl = json.containsKey('logoUrl') ? json['logoUrl'] : "";
+    logoUrl = json.containsKey('logoUrl') ? json['logoUrl'] ?? "" : "";
     backgroundImageUrl = json.containsKey('backgroundImageUrl')
-        ? json['backgroundImageUrl']
+        ? json['backgroundImageUrl'] ?? ""
         : "";
     website = json.containsKey('website') ? json['website'] : "";
     mainColor = json.containsKey('mainColor') && json['mainColor'] != null
         ? ColorUtils.parseHex((json['mainColor']))
         : Colors.blueGrey;
+
+    employeeCount = json.containsKey('employeesConnection')
+        ? json['employeesConnection']['totalCount']
+        : 0;
+    memberCount = json.containsKey('membersConnection')
+        ? json['membersConnection']['totalCount']
+        : 0;
+
+    if (json.containsKey('employeesConnection') &&
+        (json['employeesConnection'] as Map).containsKey('edges')) {
+      List<EmployeeModel> _emps = [];
+      for (Map e in json['employeesConnection']['edges']) {
+        var _json = e['node'];
+        for (var key in e.keys) {
+          if (key != ' node') {
+            _json[key] = e[key];
+          }
+        }
+        _emps.add(EmployeeModel.fromJson(_json));
+      }
+      employees = _emps;
+    }
+
+    if (json.containsKey('membersConnection') &&
+        (json['membersConnection'] as Map).containsKey('edges')) {
+      List<UserModel> _membs = [];
+      for (var e in json['membersConnection']['edges']) {
+        _membs.add(UserModel.fromJson(e['node']));
+      }
+      members = _membs;
+    }
+
+    if (json.containsKey('causes')) {
+      List<CauseModel> _c = [];
+      for (var c in json['causes']) {
+        _c.add(CauseModel(c['id'], c['title']));
+      }
+      causes = _c;
+    }
   }
 
   Map<String, dynamic> toJson() => {

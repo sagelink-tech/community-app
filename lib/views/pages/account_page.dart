@@ -1,5 +1,7 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/error_view.dart';
 import 'package:sagelink_communities/components/list_spacer.dart';
+import 'package:sagelink_communities/components/loading.dart';
 import 'package:sagelink_communities/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/user_model.dart';
@@ -10,9 +12,10 @@ String getUserQuery = """
 query Users(\$where: UserWhere) {
   users(where: \$where) {
     id
-    username
     email
+    description
     name
+    accountPictureUrl
   }
 }
 """;
@@ -72,6 +75,21 @@ class _AccountPageState extends ConsumerState<AccountPage>
     super.dispose();
   }
 
+  Future<UserModel?> _getUser(GraphQLClient client) async {
+    //client.resetStore();
+    Map<String, dynamic> variables = {
+      "where": {"id": widget.userId},
+      "options": {"limit": 1}
+    };
+
+    QueryResult result = await client
+        .query(QueryOptions(document: gql(getUserQuery), variables: variables));
+    if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
+      return UserModel.fromJson(result.data?['users'][0]);
+    }
+    return null;
+  }
+
   _buildHeader(BuildContext context, bool boxIsScrolled) {
     return <Widget>[
       SliverList(
@@ -87,11 +105,8 @@ class _AccountPageState extends ConsumerState<AccountPage>
                 ]),
                 const ListSpacer(width: 20),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(_user.username,
-                      style: Theme.of(context).textTheme.headline3,
-                      textAlign: TextAlign.start),
                   Text(_user.name,
-                      style: Theme.of(context).textTheme.headline6,
+                      style: Theme.of(context).textTheme.headline3,
                       textAlign: TextAlign.start),
                 ]),
               ])),
@@ -133,42 +148,41 @@ class _AccountPageState extends ConsumerState<AccountPage>
   Widget build(BuildContext context) {
     final loggedInUser = ref.watch(loggedInUserProvider);
 
-    return Query(
-        options: QueryOptions(
-          document: gql(getUserQuery),
-          variables: {
-            "where": {"id": widget.userId},
-            "options": {"limit": 1}
-          },
-        ),
-        builder: (QueryResult result,
-            {VoidCallback? refetch, FetchMore? fetchMore}) {
-          if (result.data != null) {
-            _user = UserModel.fromJson(result.data?['users'][0]);
-          }
-          return Scaffold(
-              appBar: AppBar(
-                  title: null,
-                  actions: loggedInUser.user!.id == _user.id
-                      ? [
-                          IconButton(
-                            onPressed: _toggleEditing,
-                            icon: Icon(_isEditing ? Icons.done : Icons.edit),
-                          )
-                        ]
-                      : null,
-                  backgroundColor: Theme.of(context).backgroundColor,
-                  elevation: 0),
-              body: (result.hasException
-                  ? Center(child: Text(result.exception.toString()))
-                  : result.isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : NestedScrollView(
-                          floatHeaderSlivers: false,
-                          controller: _scrollController,
-                          headerSliverBuilder: (context, innerBoxIsScrolled) =>
-                              _buildHeader(context, innerBoxIsScrolled),
-                          body: _buildBody(context))));
-        });
+    return GraphQLConsumer(builder: (GraphQLClient client) {
+      return FutureBuilder(
+          future: _getUser(client),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasData) {
+              _user = snapshot.data;
+            } else if (snapshot.hasError) {
+              //TO DO: DEBUG THIS ERROR
+              print("RANDOM ERROR...");
+              print(snapshot.error);
+            }
+            return Scaffold(
+                appBar: AppBar(
+                    title: null,
+                    actions: loggedInUser.getUser().id == _user.id
+                        ? [
+                            IconButton(
+                              onPressed: _toggleEditing,
+                              icon: Icon(_isEditing ? Icons.done : Icons.edit),
+                            )
+                          ]
+                        : null,
+                    backgroundColor: Theme.of(context).backgroundColor,
+                    elevation: 0),
+                body: (snapshot.hasData
+                    ? NestedScrollView(
+                        floatHeaderSlivers: false,
+                        controller: _scrollController,
+                        headerSliverBuilder: (context, innerBoxIsScrolled) =>
+                            _buildHeader(context, innerBoxIsScrolled),
+                        body: _buildBody(context))
+                    : snapshot.hasError
+                        ? const ErrorView()
+                        : const Loading()));
+          });
+    });
   }
 }
