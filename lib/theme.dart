@@ -124,6 +124,7 @@ class AppTheme {
           headline1: base.headline5!.copyWith(
             fontWeight: FontWeight.bold,
             fontSize: 27.0,
+            fontStyle: FontStyle.normal,
           ),
           headline2: base.headline5!.copyWith(
             fontWeight: FontWeight.w500,

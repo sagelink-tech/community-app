@@ -1,3 +1,4 @@
+import 'package:sagelink_communities/views/scaffold/admin_scaffold.dart';
 import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,28 +52,42 @@ class MyApp extends StatelessWidget {
               currentFocus.focusedChild!.unfocus();
             }
           },
-          child: MaterialApp(theme: theme.themeData, home: const AppScaffold()),
+          child: const BaseApp(),
         ));
   }
 }
 
-class AppScaffold extends ConsumerWidget {
-  const AppScaffold({Key? key}) : super(key: key);
+class BaseApp extends ConsumerWidget {
+  const BaseApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Riverpod setup
     final loggedInUser = ref.watch(loggedInUserProvider);
+    final appState = ref.watch(appStateProvider);
 
-    if (loggedInUser.status == LoginState.isLoggedIn) {
-      return const MainScaffold();
+    ThemeData _theme() {
+      // Theme setup
+      ThemeType themeType =
+          appState.isDarkModeEnabled ? ThemeType.darkMode : ThemeType.lightMode;
+      return AppTheme.fromType(themeType).themeData;
     }
 
-    // Return the current view, based on the currentUser value:
-    else {
-      return const Scaffold(
-        body: LoginPage(),
-      );
+    Widget _home() {
+      if (loggedInUser.status == LoginState.isLoggedIn) {
+        return appState.viewingAdminSite
+            ? const AdminScaffold()
+            : const MainScaffold();
+      }
+
+      // Return the current view, based on the currentUser value:
+      else {
+        return const Scaffold(
+          body: LoginPage(),
+        );
+      }
     }
+
+    return MaterialApp(theme: _theme(), home: _home());
   }
 }

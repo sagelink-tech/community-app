@@ -1,82 +1,61 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
-import 'package:sagelink_communities/components/loading.dart';
+import 'package:sagelink_communities/components/empty_result.dart';
 import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
-import 'package:sagelink_communities/views/pages/brands_page.dart';
 import 'package:sagelink_communities/views/pages/home_page.dart';
-import 'package:sagelink_communities/views/pages/perks_page.dart';
 import 'package:sagelink_communities/views/pages/settings_page.dart';
 import 'package:sagelink_communities/views/posts/new_post_brand_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/providers.dart';
+import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
 import 'package:sagelink_communities/views/scaffold/nav_bar.dart';
 import 'package:sagelink_communities/views/scaffold/nav_bar_mobile.dart';
 
-typedef OnClickCallback = void Function();
-
-class TabItem {
-  String title;
-  String tabText;
-  Icon icon;
-  Widget body;
-  bool showFloatingAction;
-
-  TabItem(this.title, this.tabText, this.icon, this.body,
-      {this.showFloatingAction = true});
-}
-
-class MainScaffold extends ConsumerStatefulWidget {
-  const MainScaffold({Key? key}) : super(key: key);
+class AdminScaffold extends ConsumerStatefulWidget {
+  const AdminScaffold({Key? key}) : super(key: key);
 
   @override
   _MainScaffoldState createState() => _MainScaffoldState();
 }
 
-class _MainScaffoldState extends ConsumerState<MainScaffold> {
+class _MainScaffoldState extends ConsumerState<AdminScaffold> {
   int _selectedIndex = 0;
   late List<TabItem> pages;
-
-  late final loggedInUser = ref.watch(loggedInUserProvider);
 
   @override
   void initState() {
     super.initState();
+    //final loggedInUser = ref.read(loggedInUserProvider);
   }
 
-  List<TabItem> consumerPageOptions = [
-    TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
-    TabItem("My Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
-        const PerksPage()),
-    TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
-        const BrandsPage(),
-        showFloatingAction: false),
-    TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
-        const SettingsPage(),
-        showFloatingAction: false)
-  ];
-
-  List<TabItem> _pageOptions() {
+  List<TabItem> _pageOptions(bool isMobile) {
     var _pages = [
       TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
-      TabItem("My Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
-          const PerksPage()),
-      TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
-          const BrandsPage(),
-          showFloatingAction: false),
-      TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
-          const SettingsPage(),
-          showFloatingAction: false)
+      TabItem("Members", "Members", const Icon(Icons.people_outline),
+          const EmptyResult(text: "Members")),
+      TabItem(
+          "Conversations",
+          "Conversations",
+          const Icon(Icons.forum_outlined),
+          const EmptyResult(text: "Conversations")),
+      TabItem("Messages", "Messages", const Icon(Icons.chat_bubble_outlined),
+          const EmptyResult(text: "Messages")),
+      TabItem("Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
+          const EmptyResult(text: "Perks")),
+      TabItem("Team", "Team", const Icon(Icons.groups_outlined),
+          const EmptyResult(text: "Team")),
+      TabItem("Brand", "Brand", const Icon(Icons.casino_outlined),
+          const EmptyResult(text: "Brand")),
+      TabItem("Settings", "Settings", const Icon(Icons.settings_outlined),
+          const SettingsPage()),
     ];
 
-    if (loggedInUser.isAdmin) {
-      _pages.add(TabItem(
-          "",
-          "Admin",
-          const Icon(Icons.admin_panel_settings_outlined),
-          const GoToAdminPage(),
-          showFloatingAction: false));
+    if (isMobile) {
+      _pages.add(TabItem("Main", "Main",
+          const Icon(Icons.transit_enterexit_outlined), const GoToAdminPage()));
     }
+
     return _pages;
   }
 
@@ -86,6 +65,8 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     MediaQueryData queryData;
     queryData = MediaQuery.of(context);
     bool showSmallScreenView = queryData.size.width < 600;
+
+    final loggedInUser = ref.watch(loggedInUserProvider);
 
     void _handlePageSelection(int index) {
       setState(() {
@@ -100,7 +81,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_pageOptions()[_selectedIndex].title),
+        title: Text(_pageOptions(showSmallScreenView)[_selectedIndex].title),
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
@@ -117,8 +98,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           )
         ],
       ),
-      body: _pageOptions()[_selectedIndex].body,
-      floatingActionButton: _pageOptions()[_selectedIndex].showFloatingAction
+      body: _pageOptions(showSmallScreenView)[_selectedIndex].body,
+      floatingActionButton: _pageOptions(showSmallScreenView)[_selectedIndex]
+              .showFloatingAction
           ? FloatingActionButton(
               onPressed: () {
                 Navigator.push(
@@ -131,16 +113,10 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
               backgroundColor: Theme.of(context).colorScheme.secondary,
             )
           : null,
-      drawer: showSmallScreenView
-          ? null
-          : HomeNavDrawerMenu(
-              onSelect: _handlePageSelection,
-              tabItems: _pageOptions(),
-              selectedIndex: _selectedIndex),
-      bottomNavigationBar: !showSmallScreenView
-          ? null
-          : HomeNavTabMenu(
-              onSelect: _handlePageSelection, tabItems: _pageOptions()),
+      drawer: HomeNavDrawerMenu(
+          onSelect: _handlePageSelection,
+          tabItems: _pageOptions(showSmallScreenView),
+          selectedIndex: _selectedIndex),
     );
   }
 }

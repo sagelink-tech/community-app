@@ -10,6 +10,14 @@ query Users(\$where: UserWhere) {
     email
     name
     accountPictureUrl
+    employeeOfBrandsConnection {
+      edges {
+        roles
+        node {
+          id
+        }
+      }
+    }
   }
 }
 """;
@@ -23,13 +31,18 @@ enum LoginState {
 class LoggedInUser {
   UserModel? user;
   LoginState status = LoginState.isLoggedOut;
-  bool isAdmin = true;
+  bool isAdmin = false;
+  String? adminBrandId;
 
   UserModel getUser() {
     return user ?? UserModel();
   }
 
-  LoggedInUser({this.user, this.status = LoginState.isLoggedOut});
+  LoggedInUser(
+      {this.user,
+      this.status = LoginState.isLoggedOut,
+      this.isAdmin = false,
+      this.adminBrandId});
 }
 
 class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
@@ -46,9 +59,21 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       },
     ));
     if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
-      UserModel _user = UserModel.fromJson(result.data?['users'][0]);
-      LoggedInUser _loggedInUser =
-          LoggedInUser(user: _user, status: LoginState.isLoggedIn);
+      var _userData = result.data?['users'][0];
+      UserModel _user = UserModel.fromJson(_userData);
+      String? brandId;
+      bool isAdmin = false;
+
+      if ((_userData['employeeOfBrandsConnection']['edges'] as List)
+          .isNotEmpty) {
+        brandId =
+            _userData['employeeOfBrandsConnection']['edges'][0]['node']['id'];
+      }
+      LoggedInUser _loggedInUser = LoggedInUser(
+          user: _user,
+          status: LoginState.isLoggedIn,
+          isAdmin: isAdmin,
+          adminBrandId: brandId);
       state = _loggedInUser;
     }
   }
@@ -65,9 +90,23 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       },
     ));
     if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
-      UserModel _user = UserModel.fromJson(result.data?['users'][0]);
-      LoggedInUser _loggedInUser =
-          LoggedInUser(user: _user, status: LoginState.isLoggedIn);
+      var _userData = result.data?['users'][0];
+      UserModel _user = UserModel.fromJson(_userData);
+      String? brandId;
+      bool isAdmin = false;
+
+      if ((_userData['employeeOfBrandsConnection']['edges'] as List)
+          .isNotEmpty) {
+        isAdmin = true;
+        brandId =
+            _userData['employeeOfBrandsConnection']['edges'][0]['node']['id'];
+      }
+
+      LoggedInUser _loggedInUser = LoggedInUser(
+          user: _user,
+          status: LoginState.isLoggedIn,
+          isAdmin: isAdmin,
+          adminBrandId: brandId);
       state = _loggedInUser;
     } else {
       LoggedInUser _loggedInUser =
