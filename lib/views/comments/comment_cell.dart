@@ -63,7 +63,7 @@ class CommentCell extends StatelessWidget {
   }
 
   Widget _buildReactButtons(BuildContext context) {
-    return Row(children: [
+    List<Widget> _buttons = [
       Text(timeago.format(comment.createdAt, locale: "en_short"),
           style: Theme.of(context).textTheme.caption),
       TextButton(
@@ -87,7 +87,14 @@ class CommentCell extends StatelessWidget {
         "reactions",
         style: Theme.of(context).textTheme.caption,
       )
-    ]);
+    ];
+
+    // If in thread view, remove the "reply" button option
+    if (inThreadView) {
+      _buttons.removeAt(2);
+    }
+
+    return Row(children: _buttons);
   }
 
   Widget _buildReplies(BuildContext context) {
