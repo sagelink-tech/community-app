@@ -1,4 +1,5 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/models/logged_in_user.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:sagelink_communities/views/pages/brands_page.dart';
 import 'package:sagelink_communities/views/pages/home_page.dart';

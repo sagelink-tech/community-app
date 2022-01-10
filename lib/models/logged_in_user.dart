@@ -36,7 +36,7 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   LoggedInUserStateNotifier(state) : super(state ?? LoggedInUser());
 
   void loginWithUserId(GraphQLClient client, String userId) async {
-    state.status = LoginState.isLoggingIn;
+    state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
 
     final QueryResult result = await client.query(QueryOptions(
       document: gql(getUserQuery),
@@ -55,7 +55,7 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
 
   void loginWithEmail(
       GraphQLClient client, String userEmail, BuildContext context) async {
-    state.status = LoginState.isLoggingIn;
+    state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
 
     final QueryResult result = await client.query(QueryOptions(
       document: gql(getUserQuery),
