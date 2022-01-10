@@ -14,6 +14,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
     id
     title
     description
+    details
     imageUrls
     productName
     productId
@@ -25,6 +26,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
     createdBy {
       id
       name
+      accountPictureUrl
     }
     commentsAggregate {
       count
@@ -41,6 +43,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
       createdBy {
         id
         name
+        accountPictureUrl
       }
       repliesAggregate {
         count

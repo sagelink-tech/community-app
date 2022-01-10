@@ -100,7 +100,8 @@ class CommentCell extends StatelessWidget {
           onPressed: () => {
                 if (onShowThread != null) {onShowThread!(comment.id)}
               },
-          child: Text(comment.replyCount.toString() + " replies")),
+          child: Text(comment.replyCount.toString() +
+              (comment.replyCount == 1 ? " reply" : " replies"))),
     ]);
   }
 
