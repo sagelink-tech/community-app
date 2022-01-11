@@ -75,7 +75,7 @@ class BaseApp extends ConsumerWidget {
 
     Widget _home() {
       if (loggedInUser.status == LoginState.isLoggedIn) {
-        return appState.viewingAdminSite
+        return (appState.viewingAdminSite && loggedInUser.isAdmin)
             ? const AdminScaffold()
             : const MainScaffold();
       }

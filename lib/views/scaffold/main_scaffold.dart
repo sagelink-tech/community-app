@@ -85,7 +85,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     // Check for device size
     MediaQueryData queryData;
     queryData = MediaQuery.of(context);
-    bool showSmallScreenView = queryData.size.width < 600;
+    bool showSmallScreenView = queryData.size.width < 550;
 
     void _handlePageSelection(int index) {
       setState(() {

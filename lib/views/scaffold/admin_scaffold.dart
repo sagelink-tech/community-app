@@ -10,7 +10,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/providers.dart';
 import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
 import 'package:sagelink_communities/views/scaffold/nav_bar.dart';
-import 'package:sagelink_communities/views/scaffold/nav_bar_mobile.dart';
 
 class AdminScaffold extends ConsumerStatefulWidget {
   const AdminScaffold({Key? key}) : super(key: key);
@@ -29,7 +28,7 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
     //final loggedInUser = ref.read(loggedInUserProvider);
   }
 
-  List<TabItem> _pageOptions(bool isMobile) {
+  List<TabItem> _pageOptions() {
     var _pages = [
       TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
       TabItem("Members", "Members", const Icon(Icons.people_outline),
@@ -49,22 +48,17 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
           const EmptyResult(text: "Brand")),
       TabItem("Settings", "Settings", const Icon(Icons.settings_outlined),
           const SettingsPage()),
+      TabItem("", "Main", const Icon(Icons.transit_enterexit_outlined),
+          const GoToAdminPage())
     ];
-
-    if (isMobile) {
-      _pages.add(TabItem("Main", "Main",
-          const Icon(Icons.transit_enterexit_outlined), const GoToAdminPage()));
-    }
-
     return _pages;
   }
 
   @override
   Widget build(BuildContext context) {
     // Check for device size
-    MediaQueryData queryData;
-    queryData = MediaQuery.of(context);
-    bool showSmallScreenView = queryData.size.width < 600;
+    var smallestDimension = MediaQuery.of(context).size.shortestSide;
+    bool showSmallScreenView = smallestDimension < 550;
 
     final loggedInUser = ref.watch(loggedInUserProvider);
 
@@ -72,6 +66,9 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
       setState(() {
         _selectedIndex = index;
       });
+      if (showSmallScreenView) {
+        Navigator.pop(context);
+      }
     }
 
     void _goToAccount(String userId) async {
@@ -79,16 +76,41 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
           MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_pageOptions(showSmallScreenView)[_selectedIndex].title),
+    Widget _buildDrawer() {
+      return Container(
+          color: Theme.of(context).primaryColor,
+          width: 225,
+          child: Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                  elevation: 1,
+                  title: Text(
+                    "SAGELINK",
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline6!
+                        .copyWith(color: Colors.white),
+                  )),
+              body: ListView.builder(
+                  itemCount: _pageOptions().length,
+                  itemBuilder: (BuildContext bc, int index) => ListTile(
+                      onTap: () => {_handlePageSelection(index)},
+                      title: Text(_pageOptions()[index].tabText),
+                      leading: _pageOptions()[index].icon,
+                      tileColor: null,
+                      selected: _selectedIndex == index,
+                      selectedTileColor: Theme.of(bc).colorScheme.secondary,
+                      selectedColor: Theme.of(bc).colorScheme.onError,
+                      iconColor: Theme.of(bc).colorScheme.onError,
+                      textColor: Theme.of(bc).colorScheme.onError))));
+    }
+
+    AppBar _buildBodyAppBar() {
+      return AppBar(
+        title: Text(_pageOptions()[_selectedIndex].title),
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.search),
-          //   onPressed: () {},
-          // ),
           ClickableAvatar(
             avatarText: loggedInUser.getUser().name[0],
             avatarURL: loggedInUser.getUser().accountPictureUrl,
@@ -97,10 +119,11 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
             onTap: () => _goToAccount(loggedInUser.getUser().id),
           )
         ],
-      ),
-      body: _pageOptions(showSmallScreenView)[_selectedIndex].body,
-      floatingActionButton: _pageOptions(showSmallScreenView)[_selectedIndex]
-              .showFloatingAction
+      );
+    }
+
+    FloatingActionButton? _buildActionButton() {
+      return _pageOptions()[_selectedIndex].showFloatingAction
           ? FloatingActionButton(
               onPressed: () {
                 Navigator.push(
@@ -112,11 +135,33 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
                   color: Theme.of(context).colorScheme.background),
               backgroundColor: Theme.of(context).colorScheme.secondary,
             )
-          : null,
-      drawer: HomeNavDrawerMenu(
-          onSelect: _handlePageSelection,
-          tabItems: _pageOptions(showSmallScreenView),
-          selectedIndex: _selectedIndex),
-    );
+          : null;
+    }
+
+    Widget _buildMobileLayout() {
+      return Scaffold(
+          appBar: _buildBodyAppBar(),
+          body: _pageOptions()[_selectedIndex].body,
+          floatingActionButton: _buildActionButton(),
+          drawer: Drawer(
+            child: _buildDrawer(),
+            backgroundColor: Theme.of(context).primaryColor,
+          ));
+    }
+
+    Widget _buildWebLayout() {
+      return Row(children: [
+        _buildDrawer(),
+        const Divider(),
+        Expanded(
+            child: Scaffold(
+          appBar: _buildBodyAppBar(),
+          body: _pageOptions()[_selectedIndex].body,
+          floatingActionButton: _buildActionButton(),
+        ))
+      ]);
+    }
+
+    return showSmallScreenView ? _buildMobileLayout() : _buildWebLayout();
   }
 }
