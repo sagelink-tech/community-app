@@ -1,5 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/components/activity_badge.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/models/app_state_model.dart';
+import 'package:sagelink_communities/models/logged_in_user.dart';
+import 'package:sagelink_communities/providers.dart';
 import 'package:sagelink_communities/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/views/posts/post_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -10,7 +14,7 @@ import 'package:sagelink_communities/models/post_model.dart';
 typedef OnDetailCallback = void Function(BuildContext context, String postId);
 typedef OnBrandCallback = void Function(BuildContext context, String brandId);
 
-class PostCell extends StatelessWidget {
+class PostCell extends ConsumerWidget {
   final int itemNo;
   final PostModel post;
   final OnDetailCallback? onDetailClick;
@@ -20,6 +24,25 @@ class PostCell extends StatelessWidget {
   const PostCell(this.itemNo, this.post,
       {this.showBrand = true, this.onDetailClick, this.onBrandClick, Key? key})
       : super(key: key);
+
+  List<PopupMenuItem> _menuItems(bool isAdmin, bool isAuthor) {
+    List<PopupMenuItem> _items = [];
+    if (isAuthor) {
+      _items.add(const PopupMenuItem(
+          child: ListTile(
+              leading: Icon(Icons.edit_outlined), title: Text("Edit"))));
+    }
+    if (isAuthor || isAdmin) {
+      _items.add(const PopupMenuItem(
+          child: ListTile(
+              leading: Icon(Icons.delete_outlined), title: Text("Delete"))));
+    } else {
+      _items.add(const PopupMenuItem(
+          child: ListTile(
+              leading: Icon(Icons.flag_outlined), title: Text("Report"))));
+    }
+    return _items;
+  }
 
   void _handleClick(context, String postId,
       {bool withTextFocus = false}) async {
@@ -46,7 +69,10 @@ class PostCell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    LoggedInUser _loggedInUser = ref.watch(loggedInUserProvider);
+    AppState _appState = ref.watch(appStateProvider);
+
     _buildTitle() {
       return InkWell(
           onTap: () => _handleBrandClick(context),
@@ -60,7 +86,13 @@ class PostCell extends StatelessWidget {
                     backgroundColor: post.brand.mainColor,
                   ),
                   const SizedBox(width: 10),
-                  Text(post.brand.name)
+                  Text(post.brand.name),
+                  const Spacer(),
+                  PopupMenuButton(
+                      itemBuilder: (BuildContext bc) => _menuItems(
+                          (_loggedInUser.isAdmin &&
+                              _loggedInUser.adminBrandId == post.brand.id),
+                          (_loggedInUser.getUser().id == post.creator.id)))
                 ],
               )));
     }
