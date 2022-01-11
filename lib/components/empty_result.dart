@@ -17,7 +17,7 @@ class EmptyResult extends StatelessWidget {
               style: Theme.of(context).textTheme.headline3,
               textAlign: TextAlign.center,
             ),
-            Text("😞", style: Theme.of(context).textTheme.headline1),
+            //Text("😞", style: Theme.of(context).textTheme.headlineLarge),
             Text("Check back later for any updates!",
                 style: Theme.of(context).textTheme.caption,
                 textAlign: TextAlign.center)

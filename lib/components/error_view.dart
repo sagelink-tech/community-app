@@ -16,7 +16,7 @@ class ErrorView extends StatelessWidget {
               style: Theme.of(context).textTheme.headline3,
               textAlign: TextAlign.center,
             ),
-            Text("😞", style: Theme.of(context).textTheme.headline1),
+            //Text("😞", style: Theme.of(context).textTheme.headline1),
             Text("Try reloading? Could be a server error...",
                 style: Theme.of(context).textTheme.caption,
                 textAlign: TextAlign.center)
