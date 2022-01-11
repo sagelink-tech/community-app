@@ -106,7 +106,8 @@ class _PostViewState extends State<PostView> {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-          padding: const EdgeInsets.all(20),
+          color: Theme.of(context).backgroundColor,
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
           child: NewComment(
               focused: widget.autofocusCommentField,
               parentId: showingThread ? _threadId! : widget.postId,

@@ -192,7 +192,8 @@ class _PerkViewState extends State<PerkView>
   Widget _buildButtons(BuildContext context, VoidCallback? refetch) {
     if (_currentIndex == 2) {
       return Container(
-          padding: const EdgeInsets.all(20),
+          color: Theme.of(context).backgroundColor,
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
           child: NewComment(
             parentId: showingThread ? _threadId! : _perk.id,
             onCompleted: () => refetch != null ? refetch() : null,

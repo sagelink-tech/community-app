@@ -1,5 +1,7 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/empty_result.dart';
+import 'package:sagelink_communities/components/page_scaffold.dart';
+import 'package:sagelink_communities/components/split_view.dart';
 import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:sagelink_communities/views/pages/home_page.dart';
@@ -9,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/providers.dart';
 import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
-import 'package:sagelink_communities/views/scaffold/nav_bar.dart';
 
 class AdminScaffold extends ConsumerStatefulWidget {
   const AdminScaffold({Key? key}) : super(key: key);
@@ -47,9 +48,11 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
       TabItem("Brand", "Brand", const Icon(Icons.casino_outlined),
           const EmptyResult(text: "Brand")),
       TabItem("Settings", "Settings", const Icon(Icons.settings_outlined),
-          const SettingsPage()),
+          const SettingsPage(),
+          showFloatingAction: false),
       TabItem("", "Main", const Icon(Icons.transit_enterexit_outlined),
-          const GoToAdminPage())
+          const GoToAdminPage(),
+          showFloatingAction: false)
     ];
     return _pages;
   }
@@ -79,10 +82,11 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
     Widget _buildDrawer() {
       return Container(
           color: Theme.of(context).primaryColor,
-          width: 225,
+          width: 250,
           child: Scaffold(
               backgroundColor: Colors.transparent,
               appBar: AppBar(
+                  automaticallyImplyLeading: false,
                   elevation: 1,
                   title: Text(
                     "SAGELINK",
@@ -105,23 +109,6 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
                       textColor: Theme.of(bc).colorScheme.onError))));
     }
 
-    AppBar _buildBodyAppBar() {
-      return AppBar(
-        title: Text(_pageOptions()[_selectedIndex].title),
-        elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.background,
-        actions: [
-          ClickableAvatar(
-            avatarText: loggedInUser.getUser().name[0],
-            avatarURL: loggedInUser.getUser().accountPictureUrl,
-            radius: 20,
-            padding: const EdgeInsets.all(10),
-            onTap: () => _goToAccount(loggedInUser.getUser().id),
-          )
-        ],
-      );
-    }
-
     FloatingActionButton? _buildActionButton() {
       return _pageOptions()[_selectedIndex].showFloatingAction
           ? FloatingActionButton(
@@ -138,30 +125,22 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
           : null;
     }
 
-    Widget _buildMobileLayout() {
-      return Scaffold(
-          appBar: _buildBodyAppBar(),
+    return SplitView(
+        menu: _buildDrawer(),
+        content: PageScaffold(
+          title: _pageOptions()[_selectedIndex].title,
+          appBarElevation: 0,
+          actions: [
+            ClickableAvatar(
+              avatarText: loggedInUser.getUser().name[0],
+              avatarURL: loggedInUser.getUser().accountPictureUrl,
+              radius: 20,
+              padding: const EdgeInsets.all(10),
+              onTap: () => _goToAccount(loggedInUser.getUser().id),
+            )
+          ],
           body: _pageOptions()[_selectedIndex].body,
           floatingActionButton: _buildActionButton(),
-          drawer: Drawer(
-            child: _buildDrawer(),
-            backgroundColor: Theme.of(context).primaryColor,
-          ));
-    }
-
-    Widget _buildWebLayout() {
-      return Row(children: [
-        _buildDrawer(),
-        const Divider(),
-        Expanded(
-            child: Scaffold(
-          appBar: _buildBodyAppBar(),
-          body: _pageOptions()[_selectedIndex].body,
-          floatingActionButton: _buildActionButton(),
-        ))
-      ]);
-    }
-
-    return showSmallScreenView ? _buildMobileLayout() : _buildWebLayout();
+        ));
   }
 }
