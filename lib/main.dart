@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // GraphQL Setup
     final HttpLink link = HttpLink(
-        "https://sl-gql-server.herokuapp.com/graphql"); //"http://localhost/graphql");
+        "http://localhost/graphql"); //"https://sl-gql-server.herokuapp.com/graphql");
 
     ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
         defaultPolicies: DefaultPolicies(
@@ -36,10 +36,6 @@ class MyApp extends StatelessWidget {
                 Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
         cache: GraphQLCache(store: HiveStore()),
         link: link));
-
-    // Theme setup
-    ThemeType themeType = ThemeType.lightMode;
-    AppTheme theme = AppTheme.fromType(themeType);
 
     // Wrapper around scaffold
     return GraphQLProvider(
