@@ -4,6 +4,7 @@ import 'package:sagelink_communities/components/page_scaffold.dart';
 import 'package:sagelink_communities/components/split_view.dart';
 import 'package:sagelink_communities/views/admin_pages/conversations_page.dart';
 import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
+import 'package:sagelink_communities/views/admin_pages/home_page.dart';
 import 'package:sagelink_communities/views/admin_pages/members_page.dart';
 import 'package:sagelink_communities/views/admin_pages/perks_page.dart';
 import 'package:sagelink_communities/views/admin_pages/team_page.dart';
@@ -35,7 +36,8 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
 
   List<TabItem> _pageOptions() {
     var _pages = [
-      TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
+      TabItem(
+          "", "Home", const Icon(Icons.home_outlined), const AdminHomePage()),
       TabItem("Members", "Members", const Icon(Icons.people_outline),
           const AdminMembersPage(),
           showFloatingAction: false),

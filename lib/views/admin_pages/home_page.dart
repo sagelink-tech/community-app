@@ -33,17 +33,16 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
 }
 ''';
 
-class AdminConversationsPage extends ConsumerStatefulWidget {
-  const AdminConversationsPage({Key? key}) : super(key: key);
+class AdminHomePage extends ConsumerStatefulWidget {
+  const AdminHomePage({Key? key}) : super(key: key);
 
-  static const routeName = '/conversations';
+  static const routeName = '/home';
 
   @override
-  _AdminConversationsPageState createState() => _AdminConversationsPageState();
+  _AdminHomePageState createState() => _AdminHomePageState();
 }
 
-class _AdminConversationsPageState
-    extends ConsumerState<AdminConversationsPage> {
+class _AdminHomePageState extends ConsumerState<AdminHomePage> {
   List<PostModel> posts = [];
   late final LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
 
