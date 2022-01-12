@@ -91,10 +91,14 @@ class EmployeeModel extends UserModel {
     accountPictureUrl = json.containsKey('accountPictureUrl')
         ? json['accountPictureUrl'] ?? ""
         : "";
-    roles = List<String>.from(json["roles"] ?? []);
-    founder = json['founder'];
-    owner = json['owner'];
-    jobTitle = json['jobTitle'];
+    Map<String, dynamic>? _employeeJson;
+    if (json.containsKey('employeeOfBrandsConnection')) {
+      _employeeJson = json["employeeOfBrandsConnection"]["edges"][0];
+    }
+    roles = List<String>.from(json["roles"] ?? _employeeJson?["roles"] ?? "");
+    founder = json['founder'] ?? _employeeJson?["founder"] ?? false;
+    owner = json['owner'] ?? _employeeJson?["owner"] ?? "";
+    jobTitle = json['jobTitle'] ?? _employeeJson?["jobTitle"] ?? "";
 
     if (json.containsKey('causes')) {
       List<CauseModel> _c = [];

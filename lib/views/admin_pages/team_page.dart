@@ -8,7 +8,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-String getMembersQuery = """
+String getEmployeesQuery = """
 query Users(\$where: UserWhere, \$options: UserOptions) {
   users(where: \$where, options: \$options) {
     id
@@ -17,24 +17,27 @@ query Users(\$where: UserWhere, \$options: UserOptions) {
     name
     accountPictureUrl
     createdAt
-    memberOfBrandsConnection {
+    employeeOfBrandsConnection {
       edges {
-        tier
+        roles
+        founder
+        owner
+        jobTitle
       }
     }
   }
 }
 """;
 
-class MembersPage extends ConsumerStatefulWidget {
-  const MembersPage({Key? key}) : super(key: key);
+class TeamPage extends ConsumerStatefulWidget {
+  const TeamPage({Key? key}) : super(key: key);
 
   @override
-  _MembersPageState createState() => _MembersPageState();
+  _TeamPageState createState() => _TeamPageState();
 }
 
-class _MembersPageState extends ConsumerState<MembersPage> {
-  List<MemberModel> _members = [];
+class _TeamPageState extends ConsumerState<TeamPage> {
+  List<EmployeeModel> _employees = [];
 
   void _goToAccount(String userId) async {
     Navigator.push(context,
@@ -46,10 +49,11 @@ class _MembersPageState extends ConsumerState<MembersPage> {
     final loggedInUser = ref.watch(loggedInUserProvider);
     String? searchText;
 
-    Future<List<MemberModel>> fetchMembers(GraphQLClient client) async {
+    Future<List<EmployeeModel>> fetchTeam(GraphQLClient client) async {
+      print(loggedInUser.adminBrandId);
       Map<String, dynamic> variables = {
         "where": {
-          "memberOfBrands": {"id": loggedInUser.adminBrandId}
+          "employeeOfBrands": {"id": loggedInUser.adminBrandId}
         },
         "options": {
           "sort": [
@@ -58,15 +62,15 @@ class _MembersPageState extends ConsumerState<MembersPage> {
         }
       };
 
-      List<MemberModel> members = [];
+      List<EmployeeModel> team = [];
       QueryResult result = await client.query(
-          QueryOptions(document: gql(getMembersQuery), variables: variables));
+          QueryOptions(document: gql(getEmployeesQuery), variables: variables));
       if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
-        members = (result.data!['users'] as List)
-            .map((u) => MemberModel.fromJson(u))
+        team = (result.data!['users'] as List)
+            .map((u) => EmployeeModel.fromJson(u))
             .toList();
       }
-      return members;
+      return team;
     }
 
     Widget _buildUserTable() {
@@ -80,7 +84,7 @@ class _MembersPageState extends ConsumerState<MembersPage> {
                   child: DataTable(columns: const <DataColumn>[
                     DataColumn(
                       label: Text(
-                        'Member',
+                        'User',
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                     ),
@@ -92,18 +96,18 @@ class _MembersPageState extends ConsumerState<MembersPage> {
                     ),
                     DataColumn(
                       label: Text(
-                        'Member since',
+                        'Job Title',
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                     ),
                     DataColumn(
                       label: Text(
-                        'Tier',
+                        'Roles',
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                     ),
                   ], rows: <DataRow>[
-                    ..._members.map((e) => DataRow(cells: <DataCell>[
+                    ..._employees.map((e) => DataRow(cells: <DataCell>[
                           DataCell(
                               Row(children: [
                                 ClickableAvatar(
@@ -116,18 +120,18 @@ class _MembersPageState extends ConsumerState<MembersPage> {
                               ]),
                               onTap: () => {_goToAccount(e.id)}),
                           DataCell(Text(e.email)),
-                          DataCell(Text(timeago.format(e.createdAt))),
-                          DataCell(Text(e.tier)),
+                          DataCell(Text(e.jobTitle)),
+                          DataCell(Text(e.roles.join(", ")))
                         ]))
                   ]))));
     }
 
     return GraphQLConsumer(builder: (GraphQLClient client) {
       return FutureBuilder(
-          future: fetchMembers(client),
+          future: fetchTeam(client),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
-              _members = snapshot.data;
+              _employees = snapshot.data;
             } else if (snapshot.hasError) {
               //TO DO: DEBUG THIS ERROR
               print(snapshot.error);
@@ -165,7 +169,7 @@ class _MembersPageState extends ConsumerState<MembersPage> {
                     ),
                     Center(
                         child: Text(
-                      _members.length.toString() + " results",
+                      _employees.length.toString() + " results",
                       style: Theme.of(context).textTheme.caption,
                     )),
                     Expanded(

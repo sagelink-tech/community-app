@@ -4,6 +4,7 @@ import 'package:sagelink_communities/components/page_scaffold.dart';
 import 'package:sagelink_communities/components/split_view.dart';
 import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/views/admin_pages/members_page.dart';
+import 'package:sagelink_communities/views/admin_pages/team_page.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:sagelink_communities/views/pages/home_page.dart';
 import 'package:sagelink_communities/views/pages/settings_page.dart';
@@ -45,8 +46,9 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
           const EmptyResult(text: "Messages")),
       TabItem("Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
           const EmptyResult(text: "Perks")),
-      TabItem("Team", "Team", const Icon(Icons.groups_outlined),
-          const EmptyResult(text: "Team")),
+      TabItem(
+          "Team", "Team", const Icon(Icons.groups_outlined), const TeamPage(),
+          showFloatingAction: false),
       TabItem("Brand", "Brand", const Icon(Icons.casino_outlined),
           const EmptyResult(text: "Brand")),
       TabItem("Settings", "Settings", const Icon(Icons.settings_outlined),
