@@ -114,7 +114,6 @@ class _PerkViewState extends State<PerkView>
       showingThread = true;
       _threadId = commentId;
     });
-    print('should show thread for ' + commentId);
   }
 
   void completeReplyOnThread(String commentId) {

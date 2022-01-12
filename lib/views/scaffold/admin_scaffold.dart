@@ -9,7 +9,6 @@ import 'package:sagelink_communities/views/admin_pages/members_page.dart';
 import 'package:sagelink_communities/views/admin_pages/perks_page.dart';
 import 'package:sagelink_communities/views/admin_pages/team_page.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
-import 'package:sagelink_communities/views/pages/home_page.dart';
 import 'package:sagelink_communities/views/pages/settings_page.dart';
 import 'package:sagelink_communities/views/posts/new_post_brand_selection.dart';
 import 'package:flutter/material.dart';

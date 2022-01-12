@@ -70,7 +70,6 @@ class _PostViewState extends State<PostView> {
       showingThread = true;
       _threadId = commentId;
     });
-    print('should show thread for ' + commentId);
   }
 
   void completeReplyOnThread(String commentId) {
