@@ -3,6 +3,7 @@ import 'package:sagelink_communities/components/empty_result.dart';
 import 'package:sagelink_communities/components/page_scaffold.dart';
 import 'package:sagelink_communities/components/split_view.dart';
 import 'package:sagelink_communities/models/app_state_model.dart';
+import 'package:sagelink_communities/views/admin_pages/conversations_page.dart';
 import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/views/admin_pages/members_page.dart';
 import 'package:sagelink_communities/views/admin_pages/team_page.dart';
@@ -38,11 +39,9 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
       TabItem("Members", "Members", const Icon(Icons.people_outline),
           const MembersPage(),
           showFloatingAction: false),
-      TabItem(
-          "Conversations",
-          "Conversations",
-          const Icon(Icons.forum_outlined),
-          const EmptyResult(text: "Conversations")),
+      TabItem("Conversations", "Conversations",
+          const Icon(Icons.forum_outlined), const ConversationsPage(),
+          showFloatingAction: false),
       TabItem("Messages", "Messages", const Icon(Icons.chat_bubble_outlined),
           const EmptyResult(text: "Messages")),
       TabItem("Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
@@ -65,14 +64,14 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
   @override
   Widget build(BuildContext context) {
     final loggedInUser = ref.watch(loggedInUserProvider);
-    final appState = ref.watch(appStateProvider);
-    appState.updateDeviceState(MediaQuery.of(context).size);
+
+    bool showSmallScreen = MediaQuery.of(context).size.shortestSide <= 550;
 
     void _handlePageSelection(int index) {
       setState(() {
         _selectedIndex = index;
       });
-      if (appState.deviceState == DeviceState.mobile) {
+      if (showSmallScreen) {
         Navigator.pop(context);
       }
     }

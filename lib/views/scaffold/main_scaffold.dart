@@ -84,8 +84,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     // Check for device size
-    final appState = ref.watch(appStateProvider);
-    appState.updateDeviceState(MediaQuery.of(context).size);
+    bool showSmallScreen = MediaQuery.of(context).size.shortestSide <= 550;
 
     void _handlePageSelection(int index) {
       setState(() {
@@ -131,13 +130,13 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
               backgroundColor: Theme.of(context).colorScheme.secondary,
             )
           : null,
-      drawer: appState.deviceState == DeviceState.mobile
+      drawer: showSmallScreen
           ? null
           : HomeNavDrawerMenu(
               onSelect: _handlePageSelection,
               tabItems: _pageOptions(),
               selectedIndex: _selectedIndex),
-      bottomNavigationBar: appState.deviceState == DeviceState.mobile
+      bottomNavigationBar: showSmallScreen
           ? HomeNavTabMenu(
               onSelect: _handlePageSelection, tabItems: _pageOptions())
           : null,

@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 
-enum DeviceState {
-  mobile,
-  web,
-}
-
 class AppState extends ChangeNotifier {
   // Theme state
   var isDarkModeEnabled = false;
@@ -23,14 +18,6 @@ class AppState extends ChangeNotifier {
 
   void setViewingAdminSite(bool viewAdminSite) {
     viewingAdminSite = viewAdminSite;
-    notifyListeners();
-  }
-
-  // Screen sizes
-  DeviceState deviceState = DeviceState.mobile;
-  void updateDeviceState(Size screenSize) {
-    deviceState =
-        screenSize.shortestSide <= 550 ? DeviceState.mobile : DeviceState.web;
     notifyListeners();
   }
 }
