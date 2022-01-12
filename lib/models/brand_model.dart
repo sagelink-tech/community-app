@@ -88,9 +88,15 @@ class BrandModel extends ChangeNotifier {
 
     if (json.containsKey('membersConnection') &&
         (json['membersConnection'] as Map).containsKey('edges')) {
-      List<UserModel> _membs = [];
+      List<MemberModel> _membs = [];
       for (var e in json['membersConnection']['edges']) {
-        _membs.add(UserModel.fromJson(e['node']));
+        var _json = e['node'];
+        for (var key in e.keys) {
+          if (key != ' node') {
+            _json[key] = e[key];
+          }
+        }
+        _membs.add(MemberModel.fromJson(e['node']));
       }
       members = _membs;
     }
