@@ -2,10 +2,10 @@ import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/empty_result.dart';
 import 'package:sagelink_communities/components/page_scaffold.dart';
 import 'package:sagelink_communities/components/split_view.dart';
-import 'package:sagelink_communities/models/app_state_model.dart';
 import 'package:sagelink_communities/views/admin_pages/conversations_page.dart';
 import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/views/admin_pages/members_page.dart';
+import 'package:sagelink_communities/views/admin_pages/perks_page.dart';
 import 'package:sagelink_communities/views/admin_pages/team_page.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:sagelink_communities/views/pages/home_page.dart';
@@ -37,17 +37,17 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
     var _pages = [
       TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
       TabItem("Members", "Members", const Icon(Icons.people_outline),
-          const MembersPage(),
+          const AdminMembersPage(),
           showFloatingAction: false),
       TabItem("Conversations", "Conversations",
-          const Icon(Icons.forum_outlined), const ConversationsPage(),
+          const Icon(Icons.forum_outlined), const AdminConversationsPage(),
           showFloatingAction: false),
       TabItem("Messages", "Messages", const Icon(Icons.chat_bubble_outlined),
           const EmptyResult(text: "Messages")),
       TabItem("Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
-          const EmptyResult(text: "Perks")),
-      TabItem(
-          "Team", "Team", const Icon(Icons.groups_outlined), const TeamPage(),
+          const AdminPerksPage()),
+      TabItem("Team", "Team", const Icon(Icons.groups_outlined),
+          const AdminTeamPage(),
           showFloatingAction: false),
       TabItem("Brand", "Brand", const Icon(Icons.casino_outlined),
           const EmptyResult(text: "Brand")),

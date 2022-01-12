@@ -26,14 +26,14 @@ query Users(\$where: UserWhere, \$options: UserOptions) {
 }
 """;
 
-class MembersPage extends ConsumerStatefulWidget {
-  const MembersPage({Key? key}) : super(key: key);
+class AdminMembersPage extends ConsumerStatefulWidget {
+  const AdminMembersPage({Key? key}) : super(key: key);
 
   @override
-  _MembersPageState createState() => _MembersPageState();
+  _AdminMembersPageState createState() => _AdminMembersPageState();
 }
 
-class _MembersPageState extends ConsumerState<MembersPage> {
+class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
   List<MemberModel> _members = [];
 
   void _goToAccount(String userId) async {

@@ -6,7 +6,6 @@ import 'package:sagelink_communities/models/user_model.dart';
 import 'package:sagelink_communities/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 String getEmployeesQuery = """
 query Users(\$where: UserWhere, \$options: UserOptions) {
@@ -29,14 +28,14 @@ query Users(\$where: UserWhere, \$options: UserOptions) {
 }
 """;
 
-class TeamPage extends ConsumerStatefulWidget {
-  const TeamPage({Key? key}) : super(key: key);
+class AdminTeamPage extends ConsumerStatefulWidget {
+  const AdminTeamPage({Key? key}) : super(key: key);
 
   @override
-  _TeamPageState createState() => _TeamPageState();
+  _AdminTeamPageState createState() => _AdminTeamPageState();
 }
 
-class _TeamPageState extends ConsumerState<TeamPage> {
+class _AdminTeamPageState extends ConsumerState<AdminTeamPage> {
   List<EmployeeModel> _employees = [];
 
   void _goToAccount(String userId) async {

@@ -2,18 +2,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/components/error_view.dart';
 import 'package:sagelink_communities/components/loading.dart';
 import 'package:sagelink_communities/models/logged_in_user.dart';
-import 'package:sagelink_communities/models/post_model.dart';
+import 'package:sagelink_communities/models/perk_model.dart';
 import 'package:sagelink_communities/providers.dart';
-import 'package:sagelink_communities/views/posts/post_list.dart';
+import 'package:sagelink_communities/views/perks/perk_list.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-String getPostsQuery = '''
-query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
-  posts(options: \$options, where: \$where) {
+String getPerksQuery = '''
+query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere) {
+  perks(options: \$options, where: \$where) {
     id
     title
-    body
+    type
+    description
+    imageUrls
+    productName
+    productId
+    price
+    createdAt
+    startDate
+    endDate
     createdBy {
       id
       name
@@ -28,26 +36,24 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
       mainColor
       logoUrl
     }
-    createdAt
   }
 }
 ''';
 
-class AdminConversationsPage extends ConsumerStatefulWidget {
-  const AdminConversationsPage({Key? key}) : super(key: key);
+class AdminPerksPage extends ConsumerStatefulWidget {
+  const AdminPerksPage({Key? key}) : super(key: key);
 
   static const routeName = '/home';
 
   @override
-  _AdminConversationsPageState createState() => _AdminConversationsPageState();
+  _AdminPerksPageState createState() => _AdminPerksPageState();
 }
 
-class _AdminConversationsPageState
-    extends ConsumerState<AdminConversationsPage> {
-  List<PostModel> posts = [];
+class _AdminPerksPageState extends ConsumerState<AdminPerksPage> {
+  List<PerkModel> perks = [];
   late final LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
 
-  Future<List<PostModel>> _getPosts(
+  Future<List<PerkModel>> _getPerks(
       GraphQLClient client, String brandId) async {
     Map<String, dynamic> variables = {
       "options": {
@@ -61,29 +67,29 @@ class _AdminConversationsPageState
     };
 
     QueryResult result = await client.query(QueryOptions(
-      document: gql(getPostsQuery),
+      document: gql(getPerksQuery),
       variables: variables,
     ));
 
-    if (result.data != null && (result.data!['posts'] as List).isNotEmpty) {
-      List postJsons = result.data!['posts'] as List;
-      return postJsons.map((e) => PostModel.fromJson(e)).toList();
+    if (result.data != null && (result.data!['perks'] as List).isNotEmpty) {
+      List perkJsons = result.data!['perks'] as List;
+      return perkJsons.map((e) => PerkModel.fromJson(e)).toList();
     }
     return [];
   }
 
   @override
   Widget build(BuildContext context) {
-    _buildPostCells() {
+    _buildPerkCells() {
       return GraphQLConsumer(builder: (GraphQLClient client) {
         return FutureBuilder(
-            future: _getPosts(client, loggedInUser.adminBrandId!),
+            future: _getPerks(client, loggedInUser.adminBrandId!),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.hasError) {
                 return const ErrorView();
               } else if (snapshot.hasData) {
-                posts = snapshot.data;
-                return PostListView(posts, (context, postId) => {});
+                perks = snapshot.data;
+                return PerkListView(perks, (context, postId) => {});
               } else {
                 return const Loading();
               }
@@ -93,7 +99,7 @@ class _AdminConversationsPageState
 
     return Column(children: [
       const SizedBox(height: 10),
-      Expanded(child: _buildPostCells())
+      Expanded(child: _buildPerkCells())
     ]);
   }
 }
