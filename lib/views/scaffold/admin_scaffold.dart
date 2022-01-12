@@ -2,6 +2,7 @@ import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/empty_result.dart';
 import 'package:sagelink_communities/components/page_scaffold.dart';
 import 'package:sagelink_communities/components/split_view.dart';
+import 'package:sagelink_communities/models/app_state_model.dart';
 import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/views/admin_pages/members_page.dart';
 import 'package:sagelink_communities/views/admin_pages/team_page.dart';
@@ -63,17 +64,15 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    // Check for device size
-    var smallestDimension = MediaQuery.of(context).size.shortestSide;
-    bool showSmallScreenView = smallestDimension < 550;
-
     final loggedInUser = ref.watch(loggedInUserProvider);
+    final appState = ref.watch(appStateProvider);
+    appState.updateDeviceState(MediaQuery.of(context).size);
 
     void _handlePageSelection(int index) {
       setState(() {
         _selectedIndex = index;
       });
-      if (showSmallScreenView) {
+      if (appState.deviceState == DeviceState.mobile) {
         Navigator.pop(context);
       }
     }

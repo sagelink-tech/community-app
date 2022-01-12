@@ -1,5 +1,6 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/loading.dart';
+import 'package:sagelink_communities/models/app_state_model.dart';
 import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:sagelink_communities/views/pages/brands_page.dart';
@@ -83,9 +84,8 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     // Check for device size
-    MediaQueryData queryData;
-    queryData = MediaQuery.of(context);
-    bool showSmallScreenView = queryData.size.width < 550;
+    final appState = ref.watch(appStateProvider);
+    appState.updateDeviceState(MediaQuery.of(context).size);
 
     void _handlePageSelection(int index) {
       setState(() {
@@ -131,16 +131,16 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
               backgroundColor: Theme.of(context).colorScheme.secondary,
             )
           : null,
-      drawer: showSmallScreenView
+      drawer: appState.deviceState == DeviceState.mobile
           ? null
           : HomeNavDrawerMenu(
               onSelect: _handlePageSelection,
               tabItems: _pageOptions(),
               selectedIndex: _selectedIndex),
-      bottomNavigationBar: !showSmallScreenView
-          ? null
-          : HomeNavTabMenu(
-              onSelect: _handlePageSelection, tabItems: _pageOptions()),
+      bottomNavigationBar: appState.deviceState == DeviceState.mobile
+          ? HomeNavTabMenu(
+              onSelect: _handlePageSelection, tabItems: _pageOptions())
+          : null,
     );
   }
 }
