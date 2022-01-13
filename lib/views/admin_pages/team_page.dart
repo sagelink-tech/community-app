@@ -49,7 +49,6 @@ class _AdminTeamPageState extends ConsumerState<AdminTeamPage> {
     String? searchText;
 
     Future<List<EmployeeModel>> fetchTeam(GraphQLClient client) async {
-      print(loggedInUser.adminBrandId);
       Map<String, dynamic> variables = {
         "where": {
           "employeeOfBrands": {"id": loggedInUser.adminBrandId}

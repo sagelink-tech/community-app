@@ -2,6 +2,7 @@ import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/empty_result.dart';
 import 'package:sagelink_communities/components/page_scaffold.dart';
 import 'package:sagelink_communities/components/split_view.dart';
+import 'package:sagelink_communities/views/admin_pages/brand_page.dart';
 import 'package:sagelink_communities/views/admin_pages/conversations_page.dart';
 import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/views/admin_pages/home_page.dart';
@@ -51,7 +52,7 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
           const AdminTeamPage(),
           showFloatingAction: false),
       TabItem("Brand", "Brand", const Icon(Icons.casino_outlined),
-          const EmptyResult(text: "Brand")),
+          const AdminBrandHomepage()),
       TabItem("Settings", "Settings", const Icon(Icons.settings_outlined),
           const SettingsPage(),
           showFloatingAction: false),
