@@ -117,19 +117,22 @@ class PostCell extends StatelessWidget {
           : ([_buildBody(), const Divider(), _buildDetail()]);
     }
 
-    return Container(
-        padding: const EdgeInsets.all(10.0),
-        child: Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10), // if you need this
-              side: BorderSide(
-                color: Colors.grey.withOpacity(0.4),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              children: _composeChildren(),
-            )));
+    return Align(
+        alignment: Alignment.center,
+        child: Container(
+            padding: const EdgeInsets.all(10.0),
+            constraints: const BoxConstraints(minWidth: 200, maxWidth: 600),
+            child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10), // if you need this
+                  side: BorderSide(
+                    color: Colors.grey.withOpacity(0.4),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  children: _composeChildren(),
+                ))));
   }
 }
