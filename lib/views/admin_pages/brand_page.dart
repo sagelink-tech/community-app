@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/stacked_avatars.dart';
 import 'package:sagelink_communities/components/universal_image_picker.dart';
 import 'package:sagelink_communities/models/cause_model.dart';
@@ -70,15 +71,16 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
 
   // Editing data
   Image? newBannerImage;
-  Image? logoImage;
+  Image? newLogoImage;
   String description = "";
   List<String> causes = [];
   //List<BrandLink> links = [];
 
+  // Image Pickers
   late final UniversalImagePicker _bannerPicker = UniversalImagePicker(context,
       maxImages: 1, onSelected: _updateBannerImage);
   late final UniversalImagePicker _logoPicker =
-      UniversalImagePicker(context, maxImages: 1);
+      UniversalImagePicker(context, maxImages: 1, onSelected: _updateLogoImage);
 
   void _updateBannerImage() {
     if (_bannerPicker.images.isNotEmpty) {
@@ -93,6 +95,20 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
     }
   }
 
+  void _updateLogoImage() {
+    if (_logoPicker.images.isNotEmpty) {
+      setState(() {
+        newLogoImage =
+            Image.file(_logoPicker.images.first, fit: BoxFit.fitWidth);
+      });
+    } else {
+      setState(() {
+        newLogoImage = null;
+      });
+    }
+  }
+
+  // Preview State
   void togglePreview() {
     setState(() {
       showingPreview = !showingPreview;
@@ -108,6 +124,13 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
               height: 200.0,
               width: double.infinity,
               child: newBannerImage ?? _brand.bannerImage())),
+      InkWell(
+          onTap: () => _logoPicker.openImagePicker(),
+          child: ClickableAvatar(
+            avatarText: _brand.name[0],
+            avatarImage: newLogoImage ?? _brand.logoImage(),
+            radius: 40,
+          )),
       Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(children: [
