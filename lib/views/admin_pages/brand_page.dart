@@ -1,5 +1,7 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/list_spacer.dart';
 import 'package:sagelink_communities/components/stacked_avatars.dart';
 import 'package:sagelink_communities/components/universal_image_picker.dart';
 import 'package:sagelink_communities/models/cause_model.dart';
@@ -115,9 +117,9 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
     });
   }
 
-  // Preview Build Functions
-  _buildHeader(BuildContext context) {
-    return Column(children: [
+  // Preview Build
+  _buildPreview() {
+    var header = Column(children: [
       InkWell(
           onTap: () => _bannerPicker.openImagePicker(),
           child: SizedBox(
@@ -142,17 +144,13 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
             const Text("VIP Community"),
           ])),
     ]);
-  }
 
-  _buildBody(BuildContext context) {
-    return BrandOverview(
+    var body = BrandOverview(
       _brand,
       shrinkWrap: true,
       primary: false,
     );
-  }
 
-  _buildPreview() {
     return Container(
         clipBehavior: Clip.antiAlias,
         width: previewSize.width,
@@ -161,16 +159,48 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
             borderRadius: const BorderRadius.all(Radius.circular(40)),
             border: Border.all(color: Colors.black)),
         child: ListView(
-            shrinkWrap: true,
-            primary: false,
-            children: [_buildHeader(context), _buildBody(context)]));
+            shrinkWrap: true, primary: false, children: [header, body]));
   }
 
+  // Main Page build
   _buildMainPage() {
-    return ListView(
-        shrinkWrap: true,
-        primary: false,
-        children: [_buildHeader(context), _buildBody(context)]);
+    var bgSelection = DottedBorder(
+        borderType: BorderType.RRect,
+        radius: const Radius.circular(10),
+        dashPattern: const [5],
+        color: Theme.of(context).primaryColor,
+        child: ClipRRect(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+            child: SizedBox(
+                height: 200.0,
+                width: previewSize.width,
+                child: InkWell(
+                    onTap: () => _bannerPicker.openImagePicker(),
+                    child: newBannerImage ?? _brand.bannerImage()))));
+
+    var logoSelection = DottedBorder(
+        borderType: BorderType.Circle,
+        radius: const Radius.circular(10),
+        dashPattern: const [5],
+        color: Theme.of(context).primaryColor,
+        child: Container(
+            alignment: Alignment.center,
+            decoration: const ShapeDecoration(
+              shape: CircleBorder(),
+            ),
+            child: ClickableAvatar(
+                onTap: _logoPicker.openImagePicker,
+                avatarText: _brand.name[0],
+                avatarImage: newLogoImage ?? _brand.logoImage(),
+                radius: 40)));
+
+    return ListView(shrinkWrap: true, primary: false, children: [
+      Text("Banner Image", style: Theme.of(context).textTheme.headline4),
+      bgSelection,
+      const ListSpacer(),
+      Text("Logo Image", style: Theme.of(context).textTheme.headline4),
+      logoSelection
+    ]);
   }
 
   @override
