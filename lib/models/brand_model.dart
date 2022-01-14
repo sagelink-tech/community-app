@@ -1,7 +1,15 @@
 import 'package:sagelink_communities/models/user_model.dart';
 import 'package:sagelink_communities/models/cause_model.dart';
+import 'package:sagelink_communities/utils/asset_utils.dart';
 import 'package:sagelink_communities/utils/color_utils.dart';
 import 'package:flutter/material.dart';
+
+class BrandLink {
+  final String id;
+  final String title;
+  final String url;
+  const BrandLink(this.id, this.title, this.url);
+}
 
 class BrandModel extends ChangeNotifier {
   String id = "df487c75-7186-48ea-a507-25b80aa92c64";
@@ -11,6 +19,14 @@ class BrandModel extends ChangeNotifier {
   String backgroundImageUrl = "";
   String website = "www.brand.com";
   Color mainColor = Colors.blueGrey;
+
+  Image bannerImage() => backgroundImageUrl.isNotEmpty
+      ? Image.network(backgroundImageUrl, fit: BoxFit.fitWidth)
+      : AssetUtils.defaultImage();
+
+  Image logoImage() => logoUrl.isNotEmpty
+      ? Image.network(logoUrl, fit: BoxFit.cover)
+      : AssetUtils.defaultImage();
 
   // Employees
   List<EmployeeModel> _employees = [];

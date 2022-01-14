@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/components/stacked_avatars.dart';
+import 'package:sagelink_communities/components/universal_image_picker.dart';
+import 'package:sagelink_communities/models/cause_model.dart';
 import 'package:sagelink_communities/models/logged_in_user.dart';
 import 'package:sagelink_communities/providers.dart';
 import 'package:sagelink_communities/utils/asset_utils.dart';
@@ -66,6 +68,31 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
   bool showingPreview = false;
   Size previewSize = const Size(390, 844); // default to iPhone 13
 
+  // Editing data
+  Image? newBannerImage;
+  Image? logoImage;
+  String description = "";
+  List<String> causes = [];
+  //List<BrandLink> links = [];
+
+  late final UniversalImagePicker _bannerPicker = UniversalImagePicker(context,
+      maxImages: 1, onSelected: _updateBannerImage);
+  late final UniversalImagePicker _logoPicker =
+      UniversalImagePicker(context, maxImages: 1);
+
+  void _updateBannerImage() {
+    if (_bannerPicker.images.isNotEmpty) {
+      setState(() {
+        newBannerImage =
+            Image.file(_bannerPicker.images.first, fit: BoxFit.fitWidth);
+      });
+    } else {
+      setState(() {
+        newBannerImage = null;
+      });
+    }
+  }
+
   void togglePreview() {
     setState(() {
       showingPreview = !showingPreview;
@@ -75,12 +102,12 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
   // Preview Build Functions
   _buildHeader(BuildContext context) {
     return Column(children: [
-      SizedBox(
-          height: 200.0,
-          width: double.infinity,
-          child: _brand.backgroundImageUrl.isEmpty
-              ? AssetUtils.defaultImage()
-              : Image.network(_brand.backgroundImageUrl, fit: BoxFit.cover)),
+      InkWell(
+          onTap: () => _bannerPicker.openImagePicker(),
+          child: SizedBox(
+              height: 200.0,
+              width: double.infinity,
+              child: newBannerImage ?? _brand.bannerImage())),
       Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(children: [
@@ -140,7 +167,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
           if (result.isNotLoading &&
               result.hasException == false &&
               result.data != null) {
-            _brand = BrandModel.fromJson(result.data?['brands'][0]);
+            _brand = BrandModel.fromJson(result.data!['brands'][0]);
           }
           return (result.hasException
               ? Center(child: Text(result.exception.toString()))
