@@ -12,7 +12,7 @@ import 'package:sagelink_communities/providers.dart';
 import 'package:sagelink_communities/views/scaffold/nav_bar.dart';
 import 'package:sagelink_communities/views/scaffold/nav_bar_mobile.dart';
 
-typedef OnClickCallback = void Function();
+typedef OnAction = void Function(BuildContext context);
 
 class TabItem {
   String title;
@@ -20,9 +20,10 @@ class TabItem {
   Icon icon;
   Widget body;
   bool showFloatingAction;
+  OnAction? onAction;
 
   TabItem(this.title, this.tabText, this.icon, this.body,
-      {this.showFloatingAction = true});
+      {this.showFloatingAction = true, this.onAction});
 }
 
 class MainScaffold extends ConsumerStatefulWidget {

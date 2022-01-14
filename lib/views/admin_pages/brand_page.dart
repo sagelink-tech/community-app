@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/brand_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/views/brands/brand_overview.dart';
-import 'package:sagelink_communities/views/posts/new_post_view.dart';
 
 String getBrandQuery = """
 query Brands(\$where: BrandWhere, \$options: BrandOptions, \$membersFirst: Int, \$employeesFirst: Int) {
@@ -64,8 +63,16 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
     with SingleTickerProviderStateMixin {
   BrandModel _brand = BrandModel();
   late final LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
+  bool showingPreview = false;
+  Size previewSize = const Size(390, 844); // default to iPhone 13
 
-  // Build Functions
+  void togglePreview() {
+    setState(() {
+      showingPreview = !showingPreview;
+    });
+  }
+
+  // Preview Build Functions
   _buildHeader(BuildContext context) {
     return Column(children: [
       SizedBox(
@@ -95,6 +102,27 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
     );
   }
 
+  _buildPreview() {
+    return Container(
+        clipBehavior: Clip.antiAlias,
+        width: previewSize.width,
+        height: previewSize.height,
+        decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(40)),
+            border: Border.all(color: Colors.black)),
+        child: ListView(
+            shrinkWrap: true,
+            primary: false,
+            children: [_buildHeader(context), _buildBody(context)]));
+  }
+
+  _buildMainPage() {
+    return ListView(
+        shrinkWrap: true,
+        primary: false,
+        children: [_buildHeader(context), _buildBody(context)]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Query(
@@ -118,10 +146,23 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
               ? Center(child: Text(result.exception.toString()))
               : result.isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : ListView(
-                      shrinkWrap: true,
-                      primary: true,
-                      children: [_buildHeader(context), _buildBody(context)]));
+                  : Column(children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton(
+                              onPressed: togglePreview,
+                              child: const Text("Preview")),
+                        ],
+                      ),
+                      Expanded(
+                          child: SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              primary: true,
+                              child: showingPreview
+                                  ? _buildPreview()
+                                  : _buildMainPage()))
+                    ]));
         });
   }
 }
