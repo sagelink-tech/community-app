@@ -2,6 +2,43 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:path/path.dart' as path;
+import 'package:http/http.dart';
+import 'package:http_parser/http_parser.dart';
+
+// NOTE:
+// Images use a __ in the filename as a replacement
+// for a / in the final path on S3.
+// So if it is to be in brand/<brand_id>/banner.jpg
+// the upload filename should be:
+// brand__<brand_id>__banner.jpg
+
+String uploadPhotoMutation = """
+mutation SingleUpload(\$file: Upload!) {
+  singleUpload(file: \$file) {
+    success
+    message
+    mimetype
+    encoding
+    filename
+    location
+  }
+}
+""";
+
+String uploadMultiPhotoMutation = """
+mutation MultipleUpload(\$files: [Upload!]!) {
+  multipleUpload(files: \$files) {
+    success
+    message
+    mimetype
+    encoding
+    filename
+    location
+  }
+}
+""";
 
 class UniversalImagePicker {
   List<File> images = [];
@@ -40,7 +77,6 @@ class UniversalImagePicker {
     }
     images = selection;
     if (onSelected != null) {
-      print("Should show image");
       onSelected!();
     }
   }
@@ -71,5 +107,55 @@ class UniversalImagePicker {
             ),
           );
         });
+  }
+
+  MultipartFile convertImageToMultipartFiles(File image, String newFilename) {
+    var byteData = image.readAsBytesSync();
+    var multipartFile = MultipartFile.fromBytes('photo', byteData,
+        filename: newFilename,
+        contentType:
+            MediaType("image", path.extension(newFilename).substring(1)));
+    return multipartFile;
+  }
+
+  Future<QueryResult?> uploadImages(String baseKey,
+      {String imageKeyPrefix = "image",
+      required BuildContext context,
+      required GraphQLClient client}) async {
+    // if (images.isEmpty) {
+    //   return null;
+    // }
+
+    List<MultipartFile> files = [];
+
+    if (maxImages > 1) {
+      for (var i = 0; i < images.length; i++) {
+        var filename =
+            "${baseKey.replaceAll("/", "__")}${imageKeyPrefix}_$i${path.extension(images[i].path)}";
+        files.add(convertImageToMultipartFiles(images[i], filename));
+      }
+    } else {
+      var filename =
+          "${baseKey.replaceAll("/", "__")}$imageKeyPrefix${path.extension(images[0].path)}";
+      files.add(convertImageToMultipartFiles(images[0], filename));
+    }
+
+    Map<String, dynamic> variables = images.length == 1
+        ? {"file": files[0], "basePath": baseKey.replaceAll("/", "__")}
+        : {"files": files, "basePath": baseKey.replaceAll("/", "__")};
+
+    MutationOptions options = MutationOptions(
+        document: images.length == 1
+            ? gql(uploadPhotoMutation)
+            : gql(uploadMultiPhotoMutation),
+        variables: variables);
+
+    QueryResult result = await client.mutate(options);
+    if (result.hasException) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text("Error uploading images"),
+          backgroundColor: Theme.of(context).colorScheme.error));
+    }
+    return result;
   }
 }

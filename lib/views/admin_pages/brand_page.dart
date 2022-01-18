@@ -4,10 +4,8 @@ import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/list_spacer.dart';
 import 'package:sagelink_communities/components/stacked_avatars.dart';
 import 'package:sagelink_communities/components/universal_image_picker.dart';
-import 'package:sagelink_communities/models/cause_model.dart';
 import 'package:sagelink_communities/models/logged_in_user.dart';
 import 'package:sagelink_communities/providers.dart';
-import 'package:sagelink_communities/utils/asset_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/models/brand_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -70,6 +68,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
   late final LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
   bool showingPreview = false;
   Size previewSize = const Size(390, 844); // default to iPhone 13
+  bool isSaving = false;
 
   // Editing data
   Image? newBannerImage;
@@ -108,6 +107,55 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
         newLogoImage = null;
       });
     }
+  }
+
+  // Saving changes
+  bool canSave() {
+    return !isSaving && (newBannerImage != null || newLogoImage != null);
+  }
+
+  Future<bool> _saveChanges(BuildContext context, GraphQLClient client) async {
+    setState(() {
+      isSaving = true;
+    });
+
+    if (newLogoImage != null) {
+      // upload logo image
+      var logoResult = await _logoPicker.uploadImages("brands/${_brand.id}/",
+          imageKeyPrefix: "logo", context: context, client: client);
+      if (logoResult == null || logoResult.hasException) {
+        setState(() {
+          isSaving = false;
+        });
+        return false;
+      }
+    }
+    if (newBannerImage != null) {
+      // upload banner image
+      var bannerResult = await _bannerPicker.uploadImages(
+          "brands/${_brand.id}/",
+          imageKeyPrefix: "banner",
+          context: context,
+          client: client);
+      if (bannerResult == null || bannerResult.hasException) {
+        setState(() {
+          isSaving = false;
+        });
+        return false;
+      }
+    }
+    setState(() {
+      isSaving = false;
+    });
+    return true;
+  }
+
+  Widget _buildSaveButton(BuildContext context) {
+    return GraphQLConsumer(builder: (GraphQLClient client) {
+      return ElevatedButton(
+          onPressed: canSave() ? () => {_saveChanges(context, client)} : null,
+          child: const Text("Save"));
+    });
   }
 
   // Preview State
@@ -230,6 +278,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          _buildSaveButton(context),
                           ElevatedButton(
                               onPressed: togglePreview,
                               child: const Text("Preview")),
