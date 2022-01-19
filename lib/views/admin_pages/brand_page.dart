@@ -1,9 +1,12 @@
 import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/components/causes_chips.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/list_spacer.dart';
 import 'package:sagelink_communities/components/stacked_avatars.dart';
 import 'package:sagelink_communities/components/universal_image_picker.dart';
+import 'package:sagelink_communities/models/cause_model.dart';
 import 'package:sagelink_communities/models/logged_in_user.dart';
 import 'package:sagelink_communities/providers.dart';
 import 'package:flutter/material.dart';
@@ -54,8 +57,8 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$membersFirst: Int, 
 """;
 
 String updateBrandMutation = """
-mutation Mutation(\$where: BrandWhere, \$update: BrandUpdateInput) {
-  updateBrands(where: \$where, update: \$update) {
+mutation UpdateBrands(\$where: BrandWhere, \$update: BrandUpdateInput, \$connectOrCreate: BrandConnectOrCreateInput) {
+  updateBrands(where: \$where, update: \$update, connectOrCreate: \$connectOrCreate) {
     brands {
       id
     }
@@ -83,8 +86,20 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
   // Editing data
   Image? newBannerImage;
   Image? newLogoImage;
-  String description = "";
-  List<String> causes = [];
+  late String newDescription = _brand.description;
+  late List<CauseModel> causes = _brand.causes;
+
+  TextEditingController causesTextController = TextEditingController();
+  // Text controller functions
+  void formatAndEnterCause(String value) {
+    causes.add(
+        CauseModel("tmp_" + causes.length.toString(), value.toLowerCase()));
+    setState(() {
+      causes = causes;
+    });
+    causesTextController.clear();
+  }
+
   //List<BrandLink> links = [];
 
   // Image Pickers
@@ -121,14 +136,59 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
 
   // Saving changes
   bool canSave() {
-    return !isSaving && (newBannerImage != null || newLogoImage != null);
+    return !isSaving &&
+        (newBannerImage != null ||
+            newLogoImage != null ||
+            newDescription != _brand.description ||
+            causes != _brand.causes);
   }
 
   Future<bool> _saveChanges(BuildContext context, GraphQLClient client) async {
+    // No changes to make
+    if (!canSave()) {
+      return false;
+    }
+
+    // Start saving
     setState(() {
       isSaving = true;
     });
-    var updateData = {};
+
+    var updateData = {
+      "description": newDescription,
+    };
+
+    // parse causes
+    var newCausesSet = causes.toSet();
+    var oldCausesSet = _brand.causes.toSet();
+    var causesToRemove = oldCausesSet.difference(newCausesSet).toList();
+    var causesToAdd = newCausesSet.difference(oldCausesSet).toList();
+
+    // initialize mutation variables
+    var mutationVariables = {
+      "where": {"id": _brand.id},
+      "disconnect": {
+        "causes": causesToRemove
+            .map((e) => {
+                  "where": {
+                    "node": {"id": e.id}
+                  }
+                })
+            .toList()
+      },
+      "connectOrCreate": {
+        "causes": causesToAdd
+            .map((e) => {
+                  "where": {
+                    "node": {"title": e.title}
+                  },
+                  "onCreate": {
+                    "node": {"title": e.title}
+                  }
+                })
+            .toList()
+      }
+    };
 
     List<Future<ImageUploadResult>> imageUploadFutures = [];
 
@@ -169,21 +229,18 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
       }
     }
 
-    if (updateData.isEmpty) {
-      return false;
-    }
+    mutationVariables["update"] = updateData;
 
-    MutationOptions options =
-        MutationOptions(document: gql(updateBrandMutation), variables: {
-      "where": {"id": _brand.id},
-      "update": updateData
-    });
+    // Update
+    MutationOptions options = MutationOptions(
+        document: gql(updateBrandMutation), variables: mutationVariables);
 
     QueryResult result = await client.mutate(options);
 
     setState(() {
       isSaving = false;
     });
+
     return !result.hasException &&
         result.data!['updateBrands']['brands'][0]['id'] == _brand.id;
   }
@@ -205,27 +262,32 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
 
   // Preview Build
   _buildPreview() {
+    BrandModel previewBrand = _brand;
+    previewBrand.description = newDescription;
+    previewBrand.causes = causes;
+
     var header = Column(children: [
       InkWell(
           onTap: () => _bannerPicker.openImagePicker(),
           child: SizedBox(
               height: 200.0,
               width: double.infinity,
-              child: newBannerImage ?? _brand.bannerImage())),
+              child: newBannerImage ?? previewBrand.bannerImage())),
       InkWell(
           onTap: () => _logoPicker.openImagePicker(),
           child: ClickableAvatar(
-            avatarText: _brand.name[0],
-            avatarImage: newLogoImage ?? _brand.logoImage(),
+            avatarText: previewBrand.name[0],
+            avatarImage: newLogoImage ?? previewBrand.logoImage(),
             radius: 40,
           )),
       Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(children: [
-            Text(_brand.name, style: Theme.of(context).textTheme.headline3),
+            Text(previewBrand.name,
+                style: Theme.of(context).textTheme.headline3),
             StackedAvatars(
-              [..._brand.employees, ..._brand.members],
-              showOverflow: (_brand.totalCommunityCount > 3),
+              [...previewBrand.employees, ...previewBrand.members],
+              showOverflow: (previewBrand.totalCommunityCount > 3),
             ),
             const Text("VIP Community"),
           ])),
@@ -280,12 +342,57 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
                 avatarImage: newLogoImage ?? _brand.logoImage(),
                 radius: 40)));
 
+    var missionTextBox = TextFormField(
+        decoration: const InputDecoration(
+          labelText: null,
+          border: OutlineInputBorder(),
+        ),
+        maxLength: 500,
+        minLines: 5,
+        maxLines: 10,
+        initialValue: newDescription,
+        onChanged: (value) => setState(() => newDescription = value),
+        enabled: !(isSaving || showingPreview));
+
+    var causeInput = TextFormField(
+        decoration: const InputDecoration(
+          hintText: "Type a cause then hit enter",
+          border: OutlineInputBorder(),
+        ),
+        controller: causesTextController,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ \n]*"))
+        ],
+        maxLength: 20,
+        minLines: 1,
+        maxLines: 1,
+        textInputAction: TextInputAction.done,
+        onFieldSubmitted: formatAndEnterCause,
+        textCapitalization: TextCapitalization.none,
+        enabled: !(isSaving || showingPreview));
+
+    var causesDisplay = CausesChips(
+        causes: causes,
+        allowDeletion: true,
+        onCauseDeleted: (cause) =>
+            {causes.remove(cause), setState(() => causes = causes)});
+
     return ListView(shrinkWrap: true, primary: false, children: [
       Text("Banner Image", style: Theme.of(context).textTheme.headline4),
       bgSelection,
       const ListSpacer(),
       Text("Logo Image", style: Theme.of(context).textTheme.headline4),
-      logoSelection
+      logoSelection,
+      const ListSpacer(),
+      Text("Mission Statement", style: Theme.of(context).textTheme.headline4),
+      missionTextBox,
+      const ListSpacer(),
+      Text("Causes", style: Theme.of(context).textTheme.headline4),
+      causeInput,
+      causesDisplay,
+      const ListSpacer(
+        height: 50,
+      )
     ]);
   }
 
@@ -312,24 +419,27 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
               ? Center(child: Text(result.exception.toString()))
               : result.isLoading || isSaving
                   ? const Center(child: CircularProgressIndicator())
-                  : Column(children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          _buildSaveButton(context),
-                          ElevatedButton(
-                              onPressed: togglePreview,
-                              child: const Text("Preview")),
-                        ],
-                      ),
-                      Expanded(
-                          child: SingleChildScrollView(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              primary: true,
-                              child: showingPreview
-                                  ? _buildPreview()
-                                  : _buildMainPage()))
-                    ]));
+                  : Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: Column(children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            _buildSaveButton(context),
+                            ElevatedButton(
+                                onPressed: togglePreview,
+                                child: const Text("Preview")),
+                          ],
+                        ),
+                        Expanded(
+                            child: SingleChildScrollView(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 20),
+                                primary: true,
+                                child: showingPreview
+                                    ? _buildPreview()
+                                    : _buildMainPage()))
+                      ])));
         });
   }
 }

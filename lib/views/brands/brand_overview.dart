@@ -1,3 +1,4 @@
+import 'package:sagelink_communities/components/causes_chips.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/components/list_spacer.dart';
@@ -83,7 +84,7 @@ class BrandOverview extends StatelessWidget {
           Text(brand.description, style: Theme.of(context).textTheme.bodyText1),
           const ListSpacer(),
           Text("Causes", style: Theme.of(context).textTheme.headline4),
-          causesList(context),
+          CausesChips(causes: brand.causes),
           const ListSpacer(),
           Text("Links", style: Theme.of(context).textTheme.headline4),
           externalLinks(context),
