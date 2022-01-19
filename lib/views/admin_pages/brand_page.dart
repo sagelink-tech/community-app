@@ -1,4 +1,5 @@
 import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/components/causes_chips.dart';
@@ -140,7 +141,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
         (newBannerImage != null ||
             newLogoImage != null ||
             newDescription != _brand.description ||
-            causes != _brand.causes);
+            !listEquals(causes, _brand.causes));
   }
 
   Future<bool> _saveChanges(BuildContext context, GraphQLClient client) async {
