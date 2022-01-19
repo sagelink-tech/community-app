@@ -53,6 +53,16 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$membersFirst: Int, 
 }
 """;
 
+String updateBrandMutation = """
+mutation Mutation(\$where: BrandWhere, \$update: BrandUpdateInput) {
+  updateBrands(where: \$where, update: \$update) {
+    brands {
+      id
+    }
+  }
+}
+""";
+
 class AdminBrandHomepage extends ConsumerStatefulWidget {
   const AdminBrandHomepage({Key? key}) : super(key: key);
 
@@ -118,16 +128,19 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
     setState(() {
       isSaving = true;
     });
+    var updateData = {};
 
     if (newLogoImage != null) {
       // upload logo image
       var logoResult = await _logoPicker.uploadImages("brands/${_brand.id}/",
           imageKeyPrefix: "logo", context: context, client: client);
-      if (logoResult == null || logoResult.hasException) {
+      if (logoResult.isEmpty || !logoResult[0].success) {
         setState(() {
           isSaving = false;
         });
         return false;
+      } else {
+        updateData["logoUrl"] = logoResult[0].location;
       }
     }
     if (newBannerImage != null) {
@@ -137,17 +150,34 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
           imageKeyPrefix: "banner",
           context: context,
           client: client);
-      if (bannerResult == null || bannerResult.hasException) {
+      if (bannerResult.isEmpty || !bannerResult[0].success) {
         setState(() {
           isSaving = false;
         });
         return false;
+      } else {
+        updateData["backgroundImageUrl"] = bannerResult[0].location;
       }
     }
+    print(updateData);
+    if (updateData.isEmpty) {
+      return false;
+    }
+
+    MutationOptions options =
+        MutationOptions(document: gql(updateBrandMutation), variables: {
+      "where": {"id": _brand.id},
+      "update": updateData
+    });
+
+    QueryResult result = await client.mutate(options);
+    print(result);
+
     setState(() {
       isSaving = false;
     });
-    return true;
+    return !result.hasException &&
+        result.data!['updateBrands']['brands'][0]['id'] == _brand.id;
   }
 
   Widget _buildSaveButton(BuildContext context) {
@@ -272,7 +302,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
           }
           return (result.hasException
               ? Center(child: Text(result.exception.toString()))
-              : result.isLoading
+              : result.isLoading || isSaving
                   ? const Center(child: CircularProgressIndicator())
                   : Column(children: [
                       Row(

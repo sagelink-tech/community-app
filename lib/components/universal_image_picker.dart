@@ -40,6 +40,13 @@ mutation MultipleUpload(\$files: [Upload!]!) {
 }
 """;
 
+class ImageUploadResult {
+  bool success;
+  String location;
+
+  ImageUploadResult(this.success, this.location);
+}
+
 class UniversalImagePicker {
   List<File> images = [];
   dynamic picker;
@@ -118,7 +125,7 @@ class UniversalImagePicker {
     return multipartFile;
   }
 
-  Future<QueryResult?> uploadImages(String baseKey,
+  Future<List<ImageUploadResult>> uploadImages(String baseKey,
       {String imageKeyPrefix = "image",
       required BuildContext context,
       required GraphQLClient client}) async {
@@ -128,7 +135,9 @@ class UniversalImagePicker {
 
     List<MultipartFile> files = [];
 
-    if (maxImages > 1) {
+    bool singleFileUpload = maxImages == 1 || images.length == 1;
+
+    if (!singleFileUpload) {
       for (var i = 0; i < images.length; i++) {
         var filename =
             "${baseKey.replaceAll("/", "__")}${imageKeyPrefix}_$i${path.extension(images[i].path)}";
@@ -140,12 +149,12 @@ class UniversalImagePicker {
       files.add(convertImageToMultipartFiles(images[0], filename));
     }
 
-    Map<String, dynamic> variables = images.length == 1
+    Map<String, dynamic> variables = singleFileUpload
         ? {"file": files[0], "basePath": baseKey.replaceAll("/", "__")}
         : {"files": files, "basePath": baseKey.replaceAll("/", "__")};
 
     MutationOptions options = MutationOptions(
-        document: images.length == 1
+        document: singleFileUpload
             ? gql(uploadPhotoMutation)
             : gql(uploadMultiPhotoMutation),
         variables: variables);
@@ -155,7 +164,21 @@ class UniversalImagePicker {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: const Text("Error uploading images"),
           backgroundColor: Theme.of(context).colorScheme.error));
+      return [ImageUploadResult(false, "")];
     }
-    return result;
+
+    // Parse results
+    if (singleFileUpload) {
+      return [
+        ImageUploadResult(!(result.hasException || result.data == null),
+            result.data!['singleUpload']['location'])
+      ];
+    } else {
+      List<ImageUploadResult> results = [];
+      for (var el in (result.data!['multipleUpload'] as List)) {
+        results.add(ImageUploadResult(el['success'] == "true", el['location']));
+      }
+      return results;
+    }
   }
 }
