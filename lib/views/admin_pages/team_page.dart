@@ -46,7 +46,7 @@ class _AdminTeamPageState extends ConsumerState<AdminTeamPage> {
   @override
   Widget build(BuildContext context) {
     final loggedInUser = ref.watch(loggedInUserProvider);
-    String? searchText;
+    //String? searchText;
 
     Future<List<EmployeeModel>> fetchTeam(GraphQLClient client) async {
       Map<String, dynamic> variables = {
@@ -132,7 +132,6 @@ class _AdminTeamPageState extends ConsumerState<AdminTeamPage> {
               _employees = snapshot.data;
             } else if (snapshot.hasError) {
               //TO DO: DEBUG THIS ERROR
-              print(snapshot.error);
             }
             return Container(
                 alignment: Alignment.topLeft,

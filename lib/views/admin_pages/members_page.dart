@@ -44,7 +44,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
   @override
   Widget build(BuildContext context) {
     final loggedInUser = ref.watch(loggedInUserProvider);
-    String? searchText;
+    //String? searchText;
 
     Future<List<MemberModel>> fetchMembers(GraphQLClient client) async {
       Map<String, dynamic> variables = {
@@ -130,7 +130,6 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
               _members = snapshot.data;
             } else if (snapshot.hasError) {
               //TO DO: DEBUG THIS ERROR
-              print(snapshot.error);
             }
             return Container(
                 alignment: Alignment.topLeft,
