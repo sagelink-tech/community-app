@@ -27,12 +27,7 @@ class AdminScaffold extends ConsumerStatefulWidget {
 class _MainScaffoldState extends ConsumerState<AdminScaffold> {
   int _selectedIndex = 0;
   late List<TabItem> pages;
-
-  @override
-  void initState() {
-    super.initState();
-    //final loggedInUser = ref.read(loggedInUserProvider);
-  }
+  late final loggedInUser = ref.watch(loggedInUserProvider);
 
   List<TabItem> _pageOptions() {
     var _pages = [
@@ -58,15 +53,21 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
           showFloatingAction: false),
       TabItem("", "Main", const Icon(Icons.transit_enterexit_outlined),
           const GoToAdminPage(),
-          showFloatingAction: false)
+          showFloatingAction: false),
+      TabItem("", loggedInUser.getUser().name, const Icon(Icons.person_outline),
+          AccountPage(userId: loggedInUser.getUser().id),
+          leading: ClickableAvatar(
+            avatarText: loggedInUser.getUser().name[0],
+            avatarURL: loggedInUser.getUser().accountPictureUrl,
+            radius: 15,
+            padding: const EdgeInsets.all(0),
+          ))
     ];
     return _pages;
   }
 
   @override
   Widget build(BuildContext context) {
-    final loggedInUser = ref.watch(loggedInUserProvider);
-
     bool showSmallScreen = MediaQuery.of(context).size.shortestSide <= 550;
 
     void _handlePageSelection(int index) {
@@ -76,11 +77,6 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
       if (showSmallScreen) {
         Navigator.pop(context);
       }
-    }
-
-    void _goToAccount(String userId) async {
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
     }
 
     Widget _buildDrawer() {
@@ -104,7 +100,8 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
                   itemBuilder: (BuildContext bc, int index) => ListTile(
                       onTap: () => {_handlePageSelection(index)},
                       title: Text(_pageOptions()[index].tabText),
-                      leading: _pageOptions()[index].icon,
+                      leading: _pageOptions()[index].leading ??
+                          _pageOptions()[index].icon,
                       tileColor: null,
                       selected: _selectedIndex == index,
                       selectedTileColor: Theme.of(bc).colorScheme.secondary,
@@ -134,15 +131,9 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
         content: PageScaffold(
           title: _pageOptions()[_selectedIndex].title,
           appBarElevation: 0,
-          actions: [
-            ClickableAvatar(
-              avatarText: loggedInUser.getUser().name[0],
-              avatarURL: loggedInUser.getUser().accountPictureUrl,
-              radius: 20,
-              padding: const EdgeInsets.all(10),
-              onTap: () => _goToAccount(loggedInUser.getUser().id),
-            )
-          ],
+          actions: _pageOptions()[_selectedIndex].scaffoldAction != null
+              ? [_pageOptions()[_selectedIndex].scaffoldAction!]
+              : [],
           body: _pageOptions()[_selectedIndex].body,
           floatingActionButton: _buildActionButton(),
         ));

@@ -21,9 +21,14 @@ class TabItem {
   Widget body;
   bool showFloatingAction;
   OnAction? onAction;
+  Widget? scaffoldAction;
+  Widget? leading;
 
   TabItem(this.title, this.tabText, this.icon, this.body,
-      {this.showFloatingAction = true, this.onAction});
+      {this.showFloatingAction = true,
+      this.onAction,
+      this.scaffoldAction,
+      this.leading});
 }
 
 class MainScaffold extends ConsumerStatefulWidget {
