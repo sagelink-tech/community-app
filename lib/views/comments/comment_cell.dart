@@ -45,7 +45,7 @@ class CommentCell extends StatelessWidget {
           )),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(comment.creator.name,
-            style: Theme.of(context).textTheme.titleSmall),
+            style: Theme.of(context).textTheme.headline3),
         const ListSpacer(),
         ExpandableText(
           comment.body,
@@ -53,7 +53,7 @@ class CommentCell extends StatelessWidget {
           collapseText: "show less",
           animation: true,
           linkEllipsis: true,
-          linkColor: Theme.of(context).colorScheme.tertiary,
+          linkColor: Theme.of(context).colorScheme.secondaryVariant,
           collapseOnTextTap: true,
           style: Theme.of(context).textTheme.bodyText1,
           maxLines: 3,

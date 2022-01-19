@@ -80,7 +80,7 @@ class BrandOverview extends StatelessWidget {
           Text("People", style: Theme.of(context).textTheme.headline4),
           peopleList(context),
           Text("Mission", style: Theme.of(context).textTheme.headline4),
-          Text(brand.description, style: Theme.of(context).textTheme.bodyLarge),
+          Text(brand.description, style: Theme.of(context).textTheme.bodyText1),
           const ListSpacer(),
           Text("Causes", style: Theme.of(context).textTheme.headline4),
           causesList(context),
