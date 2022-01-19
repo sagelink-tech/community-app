@@ -42,9 +42,9 @@ mutation MultipleUpload(\$files: [Upload!]!) {
 
 class ImageUploadResult {
   bool success;
-  String location;
+  List<String> locations = [];
 
-  ImageUploadResult(this.success, this.location);
+  ImageUploadResult(this.success, this.locations);
 }
 
 class UniversalImagePicker {
@@ -125,7 +125,7 @@ class UniversalImagePicker {
     return multipartFile;
   }
 
-  Future<List<ImageUploadResult>> uploadImages(String baseKey,
+  Future<ImageUploadResult> uploadImages(String baseKey,
       {String imageKeyPrefix = "image",
       required BuildContext context,
       required GraphQLClient client}) async {
@@ -164,19 +164,18 @@ class UniversalImagePicker {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: const Text("Error uploading images"),
           backgroundColor: Theme.of(context).colorScheme.error));
-      return [ImageUploadResult(false, "")];
+      return ImageUploadResult(false, []);
     }
 
     // Parse results
     if (singleFileUpload) {
-      return [
-        ImageUploadResult(!(result.hasException || result.data == null),
-            result.data!['singleUpload']['location'])
-      ];
+      return ImageUploadResult(!(result.hasException || result.data == null),
+          [result.data!['singleUpload']['location']]);
     } else {
-      List<ImageUploadResult> results = [];
+      ImageUploadResult results = ImageUploadResult(true, []);
       for (var el in (result.data!['multipleUpload'] as List)) {
-        results.add(ImageUploadResult(el['success'] == "true", el['location']));
+        results.success == (results.success && el['success'] == "true");
+        results.locations.add(el['location']);
       }
       return results;
     }

@@ -130,36 +130,45 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
     });
     var updateData = {};
 
+    List<Future<ImageUploadResult>> imageUploadFutures = [];
+
     if (newLogoImage != null) {
       // upload logo image
+      imageUploadFutures.add(_logoPicker.uploadImages("brands/${_brand.id}/",
+          imageKeyPrefix: "logo", context: context, client: client));
+
       var logoResult = await _logoPicker.uploadImages("brands/${_brand.id}/",
           imageKeyPrefix: "logo", context: context, client: client);
-      if (logoResult.isEmpty || !logoResult[0].success) {
+
+      if (!logoResult.success) {
         setState(() {
           isSaving = false;
         });
         return false;
       } else {
-        updateData["logoUrl"] = logoResult[0].location;
+        updateData["logoUrl"] = logoResult.locations[0];
       }
     }
     if (newBannerImage != null) {
       // upload banner image
+      imageUploadFutures.add(_bannerPicker.uploadImages("brands/${_brand.id}/",
+          imageKeyPrefix: "banner", context: context, client: client));
+
       var bannerResult = await _bannerPicker.uploadImages(
           "brands/${_brand.id}/",
           imageKeyPrefix: "banner",
           context: context,
           client: client);
-      if (bannerResult.isEmpty || !bannerResult[0].success) {
+      if (!bannerResult.success) {
         setState(() {
           isSaving = false;
         });
         return false;
       } else {
-        updateData["backgroundImageUrl"] = bannerResult[0].location;
+        updateData["backgroundImageUrl"] = bannerResult.locations[0];
       }
     }
-    print(updateData);
+
     if (updateData.isEmpty) {
       return false;
     }
@@ -171,7 +180,6 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
     });
 
     QueryResult result = await client.mutate(options);
-    print(result);
 
     setState(() {
       isSaving = false;
@@ -248,7 +256,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
         dashPattern: const [5],
         color: Theme.of(context).primaryColor,
         child: ClipRRect(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
             child: SizedBox(
                 height: 200.0,
                 width: previewSize.width,
