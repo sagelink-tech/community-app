@@ -33,15 +33,13 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
   void createPostAction(BuildContext context) {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => NewPostPage(
-            brandId: loggedInUser.adminBrandId!,
-            onCompleted: () => Navigator.of(context).pop())));
+            brandId: loggedInUser.adminBrandId!, onCompleted: () => {})));
   }
 
   void createPerkAction(BuildContext context) {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => NewPerkPage(
-            brandId: loggedInUser.adminBrandId!,
-            onCompleted: () => Navigator.of(context).pop())));
+            brandId: loggedInUser.adminBrandId!, onCompleted: () => {})));
   }
 
   List<TabItem> _pageOptions() {
