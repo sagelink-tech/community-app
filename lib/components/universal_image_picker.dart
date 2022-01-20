@@ -57,6 +57,23 @@ class UniversalImagePicker {
 
   UniversalImagePicker(this.context, {this.maxImages = 1, this.onSelected});
 
+  void clearImages() {
+    images = [];
+    if (onSelected != null) {
+      onSelected!();
+    }
+  }
+
+  void removeImageAtIndex(int index) {
+    if (index >= images.length) {
+      return;
+    }
+    images.removeAt(index);
+    if (onSelected != null) {
+      onSelected!();
+    }
+  }
+
   void openImagePicker() async {
     if (kIsWeb) {
       // web image picker
@@ -68,15 +85,23 @@ class UniversalImagePicker {
   }
 
   void _imgFromSource(ImageSource source, int maxImages) async {
-    List<File> selection = [];
+    List<File> selection = images;
     if (source == ImageSource.gallery && maxImages > 1) {
       List<XFile>? xfiles = await ImagePicker().pickMultiImage();
       if (xfiles != null) {
         for (var xf in xfiles) {
+          if (selection.length >= maxImages) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                    "Selected too many photos. Adding the first $maxImages."),
+                backgroundColor: Theme.of(context).colorScheme.error));
+            break;
+          }
           selection.add(File(xf.path));
         }
       }
     } else {
+      selection = [];
       XFile? xfile = await ImagePicker().pickImage(source: source);
       if (xfile != null) {
         selection.add(File(xfile.path));
