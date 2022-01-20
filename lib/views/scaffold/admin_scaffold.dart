@@ -11,10 +11,11 @@ import 'package:sagelink_communities/views/admin_pages/perks_page.dart';
 import 'package:sagelink_communities/views/admin_pages/team_page.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:sagelink_communities/views/pages/settings_page.dart';
-import 'package:sagelink_communities/views/posts/new_post_brand_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/providers.dart';
+import 'package:sagelink_communities/views/perks/new_perk_view.dart';
+import 'package:sagelink_communities/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
 
 class AdminScaffold extends ConsumerStatefulWidget {
@@ -29,19 +30,41 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
   late List<TabItem> pages;
   late final loggedInUser = ref.watch(loggedInUserProvider);
 
+  void createPostAction(BuildContext context) {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => NewPostPage(
+            brandId: loggedInUser.adminBrandId!,
+            onCompleted: () => Navigator.of(context).pop())));
+  }
+
+  void createPerkAction(BuildContext context) {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => NewPerkPage(
+            brandId: loggedInUser.adminBrandId!,
+            onCompleted: () => Navigator.of(context).pop())));
+  }
+
   List<TabItem> _pageOptions() {
     var _pages = [
       TabItem(
-          "", "Home", const Icon(Icons.home_outlined), const AdminHomePage()),
+          "", "Home", const Icon(Icons.home_outlined), const AdminHomePage(),
+          onAction: createPostAction),
       TabItem("Members", "Members", const Icon(Icons.people_outline),
           const AdminMembersPage(),
           showFloatingAction: false),
-      TabItem("Conversations", "Conversations",
-          const Icon(Icons.forum_outlined), const AdminConversationsPage()),
+      TabItem(
+        "Conversations",
+        "Conversations",
+        const Icon(Icons.forum_outlined),
+        const AdminConversationsPage(),
+        onAction: createPostAction,
+      ),
       TabItem("Messages", "Messages", const Icon(Icons.chat_bubble_outlined),
-          const EmptyResult(text: "Messages")),
+          const EmptyResult(text: "Messages"),
+          onAction: createPostAction),
       TabItem("Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
-          const AdminPerksPage()),
+          const AdminPerksPage(),
+          onAction: createPerkAction),
       TabItem("Team", "Team", const Icon(Icons.groups_outlined),
           const AdminTeamPage(),
           showFloatingAction: false),
@@ -56,6 +79,7 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
           showFloatingAction: false),
       TabItem("", loggedInUser.getUser().name, const Icon(Icons.person_outline),
           AccountPage(userId: loggedInUser.getUser().id),
+          showFloatingAction: false,
           leading: ClickableAvatar(
             avatarText: loggedInUser.getUser().name[0],
             avatarURL: loggedInUser.getUser().accountPictureUrl,
@@ -114,10 +138,7 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
       return _pageOptions()[_selectedIndex].showFloatingAction
           ? FloatingActionButton(
               onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const NewPostBrandSelection()));
+                _pageOptions()[_selectedIndex].onAction?.call(context);
               },
               child: Icon(Icons.add,
                   color: Theme.of(context).colorScheme.background),

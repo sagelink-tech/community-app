@@ -1,10 +1,30 @@
 import 'package:sagelink_communities/models/brand_model.dart';
 import 'package:sagelink_communities/models/user_model.dart';
 import 'package:sagelink_communities/models/comment_model.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-enum PostType { undefined, conversation, link, poll, survey }
+enum PostType { text, link, images } //, poll, survey }
+
+extension PostTypeManager on PostType {
+  String toShortString() {
+    return toString().split('.').last;
+  }
+
+  Icon iconForPostType() {
+    switch (this) {
+      case PostType.text:
+        return const Icon(Icons.forum_outlined);
+      case PostType.link:
+        return const Icon(Icons.add_link_outlined);
+      case PostType.images:
+        return const Icon(Icons.camera_alt_outlined);
+      // case PostType.poll:
+      //   return const Icon(Icons.poll_outlined);
+      // case PostType.survey:
+      //   return const Icon(Icons.dynamic_form_outlined);
+    }
+  }
+}
 
 class PostModel extends ChangeNotifier {
   String id = "";
@@ -12,7 +32,7 @@ class PostModel extends ChangeNotifier {
   String body = "";
   DateTime createdAt = DateTime(2020, 1, 1, 0, 0, 1);
   int commentCount = 0;
-  PostType type = PostType.undefined;
+  PostType type = PostType.text;
 
   BrandModel _brand = BrandModel();
 
@@ -66,7 +86,7 @@ class PostModel extends ChangeNotifier {
     comments = commentList;
 
     //Need to serialize/deserialize properly
-    type = PostType.conversation;
+    type = PostType.text;
   }
   // Eventually other stuff would go here, notifications, friends, draft posts, etc
 }

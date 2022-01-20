@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/models/post_model.dart';
 import 'package:sagelink_communities/providers.dart';
 
-String createPostMutation = """
-mutation CreatePosts(\$input: [PostCreateInput!]!) {
-  createPosts(input: \$input) {
+String createPerkMutation = """
+mutation CreatePerks(\$input: [PerkCreateInput!]!) {
+  createPerks(input: \$input) {
     info {
       nodesCreated
     }
@@ -16,70 +15,53 @@ mutation CreatePosts(\$input: [PostCreateInput!]!) {
 
 typedef OnCompletionCallback = void Function();
 
-class NewPostPage extends ConsumerStatefulWidget {
-  const NewPostPage(
+class NewPerkPage extends ConsumerStatefulWidget {
+  const NewPerkPage(
       {Key? key, required this.brandId, required this.onCompleted})
       : super(key: key);
   final String brandId;
   final OnCompletionCallback onCompleted;
 
-  static const routeName = '/posts';
+  static const routeName = '/perks';
 
   @override
-  _NewPostPageState createState() => _NewPostPageState();
+  _NewPerkPageState createState() => _NewPerkPageState();
 }
 
-class _NewPostPageState extends ConsumerState<NewPostPage> {
+class _NewPerkPageState extends ConsumerState<NewPerkPage> {
   final formKey = GlobalKey<FormState>();
   String? title;
   String? body;
-  PostType selectedType = PostType.text;
 
-  Widget _buildPostTypeSelection(BuildContext context) {
-    return Align(
-        alignment: Alignment.bottomCenter,
-        child: Wrap(children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+          title: const Text("Create Perk"),
+          actions: [
+            buildSubmit(
+                enabled: (title != null &&
+                    title!.isNotEmpty &&
+                    body != null &&
+                    body!.isNotEmpty)),
+          ],
+          backgroundColor: Theme.of(context).backgroundColor,
+          elevation: 0),
+      body: Form(
+          key: formKey,
+          //autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              Text(
-                "select post type",
-                style: Theme.of(context).textTheme.caption,
-              ),
-              Wrap(
-                  children: PostType.values
-                      .map((e) => TextButton.icon(
-                            onPressed: () => setState(() {
-                              selectedType = e;
-                            }),
-                            icon: e.iconForPostType(),
-                            label: Text(e.toShortString()),
-                          ))
-                      .toList())
+              buildTitleForm(),
+              const SizedBox(height: 16),
+              buildBodyForm()
             ],
-          )
-        ]));
-  }
-
-  Widget _buildBody() {
-    return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
-        child: Form(
-            key: formKey,
-            //autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                buildTitleForm(),
-                const SizedBox(height: 16),
-                buildBodyForm()
-              ],
-            )));
+          )),
+    );
   }
 
   Widget buildTitleForm({bool enabled = true}) => TextFormField(
-        autofocus: true,
         decoration: const InputDecoration(
           labelText: 'Title',
           border: OutlineInputBorder(),
@@ -96,16 +78,14 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
             return null;
           }
         },
-        maxLength: 200,
-        minLines: 1,
-        maxLines: 3,
+        maxLength: 150,
         onChanged: (value) => setState(() => title = value),
         enabled: enabled,
       );
 
   Widget buildBodyForm({bool enabled = true}) => TextFormField(
       decoration: const InputDecoration(
-        hintText: "Enter (optional) body text...",
+        labelText: 'Body',
         border: OutlineInputBorder(),
         errorBorder:
             OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
@@ -120,16 +100,16 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
           return null;
         }
       },
-      maxLength: 1000,
-      minLines: 5,
-      maxLines: 5,
+      maxLength: 2000,
+      minLines: 15,
+      maxLines: 15,
       onChanged: (value) => setState(() => body = value),
       enabled: enabled);
 
   Widget buildSubmit({bool enabled = true}) => Builder(
       builder: (context) => Mutation(
           options: MutationOptions(
-              document: gql(createPostMutation),
+              document: gql(createPerkMutation),
               onCompleted: (dynamic resultData) {
                 widget.onCompleted();
                 Navigator.pop(context);
@@ -173,25 +153,4 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
                       }
                     : null,
               )));
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-            title: const Text("Create Post"),
-            actions: [
-              buildSubmit(
-                  enabled: (title != null &&
-                      title!.isNotEmpty &&
-                      body != null &&
-                      body!.isNotEmpty)),
-            ],
-            backgroundColor: Theme.of(context).backgroundColor,
-            elevation: 0),
-        body: Container(
-            padding: const EdgeInsets.only(bottom: 5),
-            alignment: AlignmentDirectional.topStart,
-            child: Stack(
-                children: [_buildBody(), _buildPostTypeSelection(context)])));
-  }
 }
