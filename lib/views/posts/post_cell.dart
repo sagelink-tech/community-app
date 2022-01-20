@@ -1,5 +1,6 @@
 import 'package:sagelink_communities/components/activity_badge.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/image_carousel.dart';
 import 'package:sagelink_communities/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/views/posts/post_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -66,6 +67,25 @@ class PostCell extends StatelessWidget {
     }
 
     _buildBody() {
+      Widget detail;
+      switch (post.type) {
+        case PostType.text:
+          detail = Text(post.body ?? "",
+              style: Theme.of(context).textTheme.bodyText1);
+          break;
+        case PostType.images:
+          detail = EmbeddedImageCarousel(
+            post.images ?? [],
+            height: 200,
+            showFullscreenButton: false,
+          );
+          break;
+        case PostType.link:
+          detail = Text(post.linkUrl ?? "",
+              style: Theme.of(context).textTheme.bodyText1);
+          break;
+      }
+      Text(post.body ?? "", style: Theme.of(context).textTheme.bodyText1);
       return Container(
           margin: const EdgeInsets.all(10),
           child: Column(
@@ -83,7 +103,7 @@ class PostCell extends StatelessWidget {
                   )
                 ],
               ),
-              Text(post.body, style: Theme.of(context).textTheme.bodyText1),
+              detail,
               OutlinedButton(
                   onPressed: () =>
                       _handleClick(context, post.id, withTextFocus: true),

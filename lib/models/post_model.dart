@@ -10,6 +10,15 @@ extension PostTypeManager on PostType {
     return toString().split('.').last;
   }
 
+  static PostType fromShortString(String type) {
+    for (var v in PostType.values) {
+      if (type == v.toShortString()) {
+        return v;
+      }
+    }
+    return PostType.text;
+  }
+
   Icon iconForPostType() {
     switch (this) {
       case PostType.text:
@@ -29,7 +38,10 @@ extension PostTypeManager on PostType {
 class PostModel extends ChangeNotifier {
   String id = "";
   String title = "";
-  String body = "";
+  String? body;
+  String? linkUrl;
+  List<String>? images;
+
   DateTime createdAt = DateTime(2020, 1, 1, 0, 0, 1);
   int commentCount = 0;
   PostType type = PostType.text;
@@ -64,7 +76,15 @@ class PostModel extends ChangeNotifier {
   PostModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
-    body = json['body'];
+    body = json.containsKey('body') ? json['body'] : null;
+    linkUrl = json.containsKey('linkUrl') ? json['linkUrl'] : null;
+    if (json.containsKey('images') && json['images'] != null) {
+      images = [];
+      for (var im in json["images"]) {
+        images!.add(im as String);
+      }
+    }
+
     commentCount = json['commentsAggregate']['count'];
     if (json.containsKey('createdAt')) {
       createdAt =
@@ -86,7 +106,28 @@ class PostModel extends ChangeNotifier {
     comments = commentList;
 
     //Need to serialize/deserialize properly
-    type = PostType.text;
+    var pType =
+        json.containsKey("type") ? json['type'] : PostType.text.toShortString();
+    type = PostTypeManager.fromShortString(pType);
   }
-  // Eventually other stuff would go here, notifications, friends, draft posts, etc
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> baseData = {
+      'id': id,
+      'title': title,
+      'type': type.toShortString(),
+    };
+    switch (type) {
+      case (PostType.text):
+        baseData['body'] = body;
+        break;
+      case (PostType.images):
+        baseData['images'] = images;
+        break;
+      case (PostType.link):
+        baseData['linkUrl'] = linkUrl;
+        break;
+    }
+    return baseData;
+  }
 }

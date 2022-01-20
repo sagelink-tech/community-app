@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/components/loading.dart';
 import 'package:sagelink_communities/components/universal_image_picker.dart';
+import 'package:sagelink_communities/models/logged_in_user.dart';
 import 'package:sagelink_communities/models/post_model.dart';
 import 'package:sagelink_communities/providers.dart';
 import 'package:collection/collection.dart';
@@ -10,8 +12,18 @@ import 'package:collection/collection.dart';
 String createPostMutation = """
 mutation CreatePosts(\$input: [PostCreateInput!]!) {
   createPosts(input: \$input) {
-    info {
-      nodesCreated
+    posts {
+      id
+    }
+  }
+}
+""";
+
+String updatePostMutation = """
+mutation UpdatePosts(\$where: PostWhere, \$update: PostUpdateInput) {
+  updatePosts(where: \$where, update: \$update) {
+    posts {
+      id
     }
   }
 }
@@ -38,6 +50,9 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   String? body;
   String? linkUrl;
   PostType selectedType = PostType.text;
+  late LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
+
+  bool isSaving = false;
 
   int maxImages = 4;
   List<File> selectedImageFiles = [];
@@ -56,6 +71,99 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
       case PostType.link:
         return hasTitle && linkUrl != null && linkUrl!.isNotEmpty;
     }
+  }
+
+  void complete() {
+    Navigator.of(context).pop();
+    widget.onCompleted();
+  }
+
+  Future<bool> updateWithImages(GraphQLClient client, String postId) async {
+    ImageUploadResult imageResults = await _imagePicker
+        .uploadImages("post/$postId/", context: context, client: client);
+    if (!imageResults.success) {
+      // Should delete post and/or retry
+      return false;
+    }
+    var variables = {
+      "where": {"id": postId},
+      "update": {"images": imageResults.locations}
+    };
+    QueryResult result = await client.mutate(MutationOptions(
+        document: gql(updatePostMutation), variables: variables));
+
+    if (result.hasException) {
+      // Should delete and/or retry
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  void createPost(GraphQLClient client) async {
+    setState(() {
+      isSaving = true;
+    });
+    QueryResult result = await client.mutate(MutationOptions(
+        document: gql(createPostMutation), variables: mutationVariables()));
+    if (result.hasException) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text("Error saving post, please try again."),
+          backgroundColor: Theme.of(context).colorScheme.error));
+    }
+    if (result.data != null) {
+      if (selectedType == PostType.images) {
+        bool uploadResult = await updateWithImages(
+            client, result.data!['createPosts']['posts'][0]['id']);
+
+        if (!uploadResult) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text("Error saving post, please try again."),
+              backgroundColor: Theme.of(context).colorScheme.error));
+        }
+      }
+    }
+    setState(() {
+      isSaving = false;
+    });
+    complete();
+  }
+
+  Map<String, dynamic> mutationVariables() {
+    Map<String, dynamic> variables = {
+      "title": title,
+      "type": selectedType.toShortString(),
+      "inBrandCommunity": {
+        "connect": {
+          "where": {
+            "node": {"id": widget.brandId}
+          }
+        }
+      },
+      "createdBy": {
+        "connect": {
+          "where": {
+            "node": {"id": loggedInUser.getUser().id}
+          }
+        }
+      }
+    };
+
+    switch (selectedType) {
+      case (PostType.text):
+        variables['body'] = body;
+        break;
+      case (PostType.images):
+        //CREATE FIRST THEN UPLOAD IMAGES WITH POST ID
+        break;
+      case (PostType.link):
+        variables['linkUrl'] = linkUrl;
+        break;
+    }
+
+    return {
+      "input": [variables]
+    };
   }
 
   Widget _buildPostTypeSelection(BuildContext context) {
@@ -243,53 +351,11 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     );
   }
 
-  Widget buildSubmit({bool enabled = true}) => Builder(
-      builder: (context) => Mutation(
-          options: MutationOptions(
-              document: gql(createPostMutation),
-              onCompleted: (dynamic resultData) {
-                widget.onCompleted();
-                Navigator.pop(context);
-              }),
-          builder: (RunMutation runMutation, result) => IconButton(
-                icon: const Icon(Icons.send),
-                onPressed: enabled
-                    ? () {
-                        if (formKey.currentState == null) return;
-                        final isValid = formKey.currentState!.validate();
-
-                        if (isValid) {
-                          runMutation({
-                            "input": [
-                              {
-                                "title": title,
-                                "body": body,
-                                "inBrandCommunity": {
-                                  "connect": {
-                                    "where": {
-                                      "node": {"id": widget.brandId}
-                                    }
-                                  }
-                                },
-                                "createdBy": {
-                                  "connect": {
-                                    "where": {
-                                      "node": {
-                                        "id": ref
-                                            .read(loggedInUserProvider)
-                                            .getUser()
-                                            .id
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            ]
-                          });
-                        }
-                      }
-                    : null,
-              )));
+  Widget buildSubmit({bool enabled = true}) => GraphQLConsumer(
+      builder: (client) => IconButton(
+            icon: const Icon(Icons.send),
+            onPressed: enabled ? () => createPost(client) : null,
+          ));
 
   @override
   Widget build(BuildContext context) {
@@ -304,7 +370,11 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
         body: Container(
             padding: const EdgeInsets.only(bottom: 5),
             alignment: AlignmentDirectional.topStart,
-            child: Stack(
-                children: [_buildBody(), _buildPostTypeSelection(context)])));
+            child: isSaving
+                ? const Loading()
+                : Stack(children: [
+                    _buildBody(),
+                    _buildPostTypeSelection(context)
+                  ])));
   }
 }

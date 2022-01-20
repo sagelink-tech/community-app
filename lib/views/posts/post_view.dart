@@ -15,6 +15,9 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
     id
     title
     body
+    type
+    images
+    linkUrl
     createdAt
     createdBy {
       id
@@ -86,7 +89,7 @@ class _PostViewState extends State<PostView> {
       const ListSpacer(),
       Text(_post.title, style: Theme.of(context).textTheme.headline4),
       const ListSpacer(),
-      Text(_post.body, style: Theme.of(context).textTheme.bodyText1),
+      Text(_post.body ?? "", style: Theme.of(context).textTheme.bodyText1),
       const ListSpacer(),
       Row(children: [
         ClickableAvatar(

@@ -25,6 +25,9 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
     id
     title
     body
+    linkUrl
+    images
+    type
     createdBy {
       id
       name

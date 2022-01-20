@@ -13,7 +13,10 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
   posts(options: \$options, where: \$where) {
     id
     title
+    type
     body
+    linkUrl
+    images
     createdBy {
       id
       name
