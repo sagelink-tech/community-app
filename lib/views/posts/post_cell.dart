@@ -5,7 +5,6 @@ import 'package:sagelink_communities/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/views/posts/post_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
-
 import 'package:sagelink_communities/models/post_model.dart';
 
 typedef OnDetailCallback = void Function(BuildContext context, String postId);
@@ -85,7 +84,7 @@ class PostCell extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyText1);
           break;
       }
-      Text(post.body ?? "", style: Theme.of(context).textTheme.bodyText1);
+
       return Container(
           margin: const EdgeInsets.all(10),
           child: Column(
