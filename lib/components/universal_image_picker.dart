@@ -85,7 +85,7 @@ class UniversalImagePicker {
   }
 
   void _imgFromSource(ImageSource source, int maxImages) async {
-    List<File> selection = images;
+    List<File> selection = maxImages > 1 ? images : [];
     if (source == ImageSource.gallery && maxImages > 1) {
       List<XFile>? xfiles = await ImagePicker().pickMultiImage();
       if (xfiles != null) {
@@ -101,7 +101,6 @@ class UniversalImagePicker {
         }
       }
     } else {
-      selection = [];
       XFile? xfile = await ImagePicker().pickImage(source: source);
       if (xfile != null) {
         selection.add(File(xfile.path));
@@ -131,7 +130,7 @@ class UniversalImagePicker {
                   leading: const Icon(Icons.photo_camera),
                   title: const Text('Camera'),
                   onTap: () {
-                    _imgFromSource(ImageSource.gallery, maxImages);
+                    _imgFromSource(ImageSource.camera, maxImages);
                     Navigator.of(context).pop();
                   },
                 ),

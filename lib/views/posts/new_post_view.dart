@@ -170,35 +170,47 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     return Align(
         alignment: Alignment.bottomCenter,
         child: Wrap(children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "select post type",
-                style: Theme.of(context).textTheme.caption,
-              ),
-              Wrap(
-                  children: PostType.values
-                      .map((e) => TextButton.icon(
-                            style: ButtonStyle(
-                                foregroundColor: MaterialStateProperty.all(
-                                    selectedType == e
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .secondary
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .primary)),
-                            onPressed: () => setState(() {
-                              selectedType = e;
-                            }),
-                            icon: e.iconForPostType(),
-                            label: Text(e.toShortString()),
-                          ))
-                      .toList())
-            ],
-          )
+          Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Colors.grey,
+                        offset: Offset(0, -1),
+                        blurRadius: 5.0)
+                  ],
+                  color: Theme.of(context).cardColor),
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "select post type",
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                  Wrap(
+                      children: PostType.values
+                          .map((e) => TextButton.icon(
+                                style: ButtonStyle(
+                                    foregroundColor: MaterialStateProperty.all(
+                                        selectedType == e
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .secondary
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .primary)),
+                                onPressed: () => setState(() {
+                                  selectedType = e;
+                                }),
+                                icon: e.iconForPostType(),
+                                label: Text(e.toShortString()),
+                              ))
+                          .toList())
+                ],
+              ))
         ]));
   }
 
@@ -240,6 +252,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
             return null;
           }
         },
+        textCapitalization: TextCapitalization.sentences,
         maxLength: 200,
         minLines: 1,
         maxLines: 3,
@@ -288,6 +301,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
           return null;
         }
       },
+      textCapitalization: TextCapitalization.sentences,
       maxLength: 1000,
       minLines: 5,
       maxLines: 5,
@@ -368,7 +382,6 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
             backgroundColor: Theme.of(context).backgroundColor,
             elevation: 0),
         body: Container(
-            padding: const EdgeInsets.only(bottom: 5),
             alignment: AlignmentDirectional.topStart,
             child: isSaving
                 ? const Loading()
