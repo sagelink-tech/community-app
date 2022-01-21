@@ -1,13 +1,12 @@
-import 'package:sagelink_communities/views/scaffold/admin_scaffold.dart';
-import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
+import 'package:sagelink_communities/ui/views/scaffold/admin_scaffold.dart';
+import 'package:sagelink_communities/ui/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import "package:graphql_flutter/graphql_flutter.dart";
-
-import 'providers.dart';
-import 'models/logged_in_user.dart';
-import 'theme.dart';
-import 'views/pages/login_page.dart';
+import 'package:sagelink_communities/data/providers.dart';
+import 'package:sagelink_communities/data/models/logged_in_user.dart';
+import 'package:sagelink_communities/ui/theme.dart';
+import 'package:sagelink_communities/ui/views/pages/login_page.dart';
 
 void main() async {
   await initHiveForFlutter();
