@@ -25,6 +25,9 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
     id
     title
     body
+    linkUrl
+    images
+    type
     createdBy {
       id
       name
@@ -132,9 +135,6 @@ class _HomePageState extends State<HomePage> {
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.hasData) {
                     brands = snapshot.data;
-                  }
-                  if (snapshot.hasError) {
-                    print(snapshot.error);
                   }
                   return ListView.separated(
                       padding: const EdgeInsets.all(5),

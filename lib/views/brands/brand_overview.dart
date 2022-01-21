@@ -1,3 +1,4 @@
+import 'package:sagelink_communities/components/causes_chips.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/components/list_spacer.dart';
@@ -7,8 +8,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 class BrandOverview extends StatelessWidget {
   final BrandModel brand;
+  final bool shrinkWrap;
+  final bool primary;
 
-  const BrandOverview(this.brand, {Key? key}) : super(key: key);
+  const BrandOverview(this.brand,
+      {this.shrinkWrap = false, this.primary = true, Key? key})
+      : super(key: key);
 
   // Navigation
   _goToAccount(BuildContext context, String userId) {
@@ -68,17 +73,21 @@ class BrandOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(padding: const EdgeInsets.all(10), children: [
-      Text("People", style: Theme.of(context).textTheme.headline4),
-      peopleList(context),
-      Text("Mission", style: Theme.of(context).textTheme.headline4),
-      Text(brand.description, style: Theme.of(context).textTheme.bodyLarge),
-      const ListSpacer(),
-      Text("Causes", style: Theme.of(context).textTheme.headline4),
-      causesList(context),
-      const ListSpacer(),
-      Text("Links", style: Theme.of(context).textTheme.headline4),
-      externalLinks(context),
-    ]);
+    return ListView(
+        shrinkWrap: shrinkWrap,
+        primary: primary,
+        padding: const EdgeInsets.all(10),
+        children: [
+          Text("People", style: Theme.of(context).textTheme.headline4),
+          peopleList(context),
+          Text("Mission", style: Theme.of(context).textTheme.headline4),
+          Text(brand.description, style: Theme.of(context).textTheme.bodyText1),
+          const ListSpacer(),
+          Text("Causes", style: Theme.of(context).textTheme.headline4),
+          CausesChips(causes: brand.causes),
+          const ListSpacer(),
+          Text("Links", style: Theme.of(context).textTheme.headline4),
+          externalLinks(context),
+        ]);
   }
 }

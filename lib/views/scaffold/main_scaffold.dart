@@ -1,4 +1,5 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/views/pages/account_page.dart';
 import 'package:sagelink_communities/views/pages/brands_page.dart';
 import 'package:sagelink_communities/views/pages/home_page.dart';
@@ -11,13 +12,23 @@ import 'package:sagelink_communities/providers.dart';
 import 'package:sagelink_communities/views/scaffold/nav_bar.dart';
 import 'package:sagelink_communities/views/scaffold/nav_bar_mobile.dart';
 
+typedef OnAction = void Function(BuildContext context);
+
 class TabItem {
   String title;
   String tabText;
   Icon icon;
   Widget body;
+  bool showFloatingAction;
+  OnAction? onAction;
+  Widget? scaffoldAction;
+  Widget? leading;
 
-  TabItem(this.title, this.tabText, this.icon, this.body);
+  TabItem(this.title, this.tabText, this.icon, this.body,
+      {this.showFloatingAction = true,
+      this.onAction,
+      this.scaffoldAction,
+      this.leading});
 }
 
 class MainScaffold extends ConsumerStatefulWidget {
@@ -29,32 +40,55 @@ class MainScaffold extends ConsumerStatefulWidget {
 
 class _MainScaffoldState extends ConsumerState<MainScaffold> {
   int _selectedIndex = 0;
+  late List<TabItem> pages;
+
+  late final loggedInUser = ref.watch(loggedInUserProvider);
 
   @override
   void initState() {
     super.initState();
-    //final loggedInUser = ref.read(loggedInUserProvider);
+  }
+
+  List<TabItem> consumerPageOptions = [
+    TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
+    TabItem("My Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
+        const PerksPage()),
+    TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
+        const BrandsPage(),
+        showFloatingAction: false),
+    TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
+        const SettingsPage(),
+        showFloatingAction: false)
+  ];
+
+  List<TabItem> _pageOptions() {
+    var _pages = [
+      TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
+      TabItem("My Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
+          const PerksPage()),
+      TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
+          const BrandsPage(),
+          showFloatingAction: false),
+      TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
+          const SettingsPage(),
+          showFloatingAction: false)
+    ];
+
+    if (loggedInUser.isAdmin) {
+      _pages.add(TabItem(
+          "",
+          "Admin",
+          const Icon(Icons.admin_panel_settings_outlined),
+          const GoToAdminPage(),
+          showFloatingAction: false));
+    }
+    return _pages;
   }
 
   @override
   Widget build(BuildContext context) {
     // Check for device size
-    MediaQueryData queryData;
-    queryData = MediaQuery.of(context);
-    bool showSmallScreenView = queryData.size.width < 600;
-
-    final loggedInUser = ref.watch(loggedInUserProvider);
-
-    // Navigation Options
-    final List<TabItem> pageOptions = [
-      TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
-      TabItem("My Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
-          const PerksPage()),
-      TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
-          const BrandsPage()),
-      TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
-          const SettingsPage())
-    ];
+    bool showSmallScreen = MediaQuery.of(context).size.shortestSide <= 550;
 
     void _handlePageSelection(int index) {
       setState(() {
@@ -69,7 +103,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(pageOptions[_selectedIndex].title),
+        title: Text(_pageOptions()[_selectedIndex].title),
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
@@ -86,8 +120,8 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           )
         ],
       ),
-      body: pageOptions[_selectedIndex].body,
-      floatingActionButton: _selectedIndex != 3
+      body: _pageOptions()[_selectedIndex].body,
+      floatingActionButton: _pageOptions()[_selectedIndex].showFloatingAction
           ? FloatingActionButton(
               onPressed: () {
                 Navigator.push(
@@ -100,16 +134,16 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
               backgroundColor: Theme.of(context).colorScheme.secondary,
             )
           : null,
-      drawer: showSmallScreenView
+      drawer: showSmallScreen
           ? null
           : HomeNavDrawerMenu(
               onSelect: _handlePageSelection,
-              tabItems: pageOptions,
+              tabItems: _pageOptions(),
               selectedIndex: _selectedIndex),
-      bottomNavigationBar: !showSmallScreenView
-          ? null
-          : HomeNavTabMenu(
-              onSelect: _handlePageSelection, tabItems: pageOptions),
+      bottomNavigationBar: showSmallScreen
+          ? HomeNavTabMenu(
+              onSelect: _handlePageSelection, tabItems: _pageOptions())
+          : null,
     );
   }
 }

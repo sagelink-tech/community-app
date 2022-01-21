@@ -6,6 +6,7 @@ typedef OnTapCallback = void Function();
 class ClickableAvatar extends StatelessWidget {
   final String avatarText;
   final String avatarURL;
+  final Image? avatarImage;
   final double radius;
   final EdgeInsets padding;
   final OnTapCallback? onTap;
@@ -15,11 +16,26 @@ class ClickableAvatar extends StatelessWidget {
       {Key? key,
       required this.avatarText,
       this.avatarURL = "",
+      this.avatarImage,
       this.radius = 20.0,
       this.onTap,
       this.backgroundColor,
       this.padding = const EdgeInsets.all(0.0)})
       : super(key: key);
+
+  ImageProvider? getImage() {
+    if (avatarImage != null) {
+      return avatarImage!.image;
+    } else {
+      return avatarURL.isNotEmpty ? NetworkImage(avatarURL) : null;
+    }
+  }
+
+  Widget? getText() {
+    return (avatarURL.isEmpty && avatarImage == null
+        ? Text(avatarText.isNotEmpty ? avatarText : "SL")
+        : null);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +51,7 @@ class ClickableAvatar extends StatelessWidget {
                     : Colors.white,
                 radius: radius,
                 backgroundColor: bgColor,
-                backgroundImage:
-                    avatarURL.isNotEmpty ? NetworkImage(avatarURL) : null,
-                child: (avatarURL.isEmpty
-                    ? Text(avatarText.isNotEmpty ? avatarText : "SL")
-                    : null))));
+                backgroundImage: getImage(),
+                child: getText())));
   }
 }

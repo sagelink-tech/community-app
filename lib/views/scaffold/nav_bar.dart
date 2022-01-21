@@ -1,8 +1,6 @@
 import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sagelink_communities/providers.dart';
-import 'package:sagelink_communities/views/pages/account_page.dart';
 
 class HomeNavDrawerMenu extends ConsumerStatefulWidget {
   const HomeNavDrawerMenu(
@@ -32,11 +30,6 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
     Navigator.pop(context);
   }
 
-  void _goToAccount(BuildContext context, String userId) async {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
-  }
-
   List<ListTile> _getItems() {
     List<ListTile> items = [];
 
@@ -44,7 +37,8 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
       items.add(ListTile(
         title: Text(item.tabText),
         leading: item.icon,
-        selectedTileColor: Theme.of(context).colorScheme.secondary,
+        selectedTileColor: Theme.of(context).colorScheme.primary,
+        selectedColor: Theme.of(context).colorScheme.onError,
         selected: (widget.selectedIndex == idx),
         onTap: () => {_onItemTapped(idx, context)},
       ));
@@ -54,17 +48,14 @@ class _HomeNavDrawerMenuState extends ConsumerState<HomeNavDrawerMenu> {
 
   @override
   Widget build(BuildContext context) {
-    final loggedInUser = ref.watch(loggedInUserProvider);
     return (Drawer(
       child: ListView(padding: EdgeInsets.zero, children: [
-        UserAccountsDrawerHeader(
-          accountName: const Text("Test"),
-          accountEmail: const Text("test@test.com"),
-          onDetailsPressed: () {
-            Navigator.pop(context);
-            _goToAccount(context, loggedInUser.getUser().id);
-          },
-        ),
+        SizedBox(
+            height: 100.0,
+            child: DrawerHeader(
+              child: Text('SAGELINK',
+                  style: Theme.of(context).textTheme.headline6),
+            )),
         ..._getItems()
       ]),
     ));

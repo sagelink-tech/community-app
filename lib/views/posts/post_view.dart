@@ -1,5 +1,6 @@
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/components/error_view.dart';
+import 'package:sagelink_communities/components/image_carousel.dart';
 import 'package:sagelink_communities/components/list_spacer.dart';
 import 'package:sagelink_communities/components/loading.dart';
 import 'package:sagelink_communities/views/comments/new_comment.dart';
@@ -15,6 +16,9 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
     id
     title
     body
+    type
+    images
+    linkUrl
     createdAt
     createdBy {
       id
@@ -70,7 +74,6 @@ class _PostViewState extends State<PostView> {
       showingThread = true;
       _threadId = commentId;
     });
-    print('should show thread for ' + commentId);
   }
 
   void completeReplyOnThread(String commentId) {
@@ -81,13 +84,31 @@ class _PostViewState extends State<PostView> {
   }
 
   List<Widget> _buildBodyView() {
+    Widget detail;
+    switch (_post.type) {
+      case PostType.text:
+        detail = Text(_post.body ?? "",
+            style: Theme.of(context).textTheme.bodyText1);
+        break;
+      case PostType.images:
+        detail = EmbeddedImageCarousel(
+          _post.images ?? [],
+          height: 200,
+        );
+        break;
+      case PostType.link:
+        detail = Text(_post.linkUrl ?? "",
+            style: Theme.of(context).textTheme.bodyText1);
+        break;
+    }
+
     return [
       const ListSpacer(),
       Text('ORIGINAL POST', style: Theme.of(context).textTheme.headline5),
       const ListSpacer(),
       Text(_post.title, style: Theme.of(context).textTheme.headline4),
       const ListSpacer(),
-      Text(_post.body, style: Theme.of(context).textTheme.bodyText1),
+      detail,
       const ListSpacer(),
       Row(children: [
         ClickableAvatar(
@@ -106,7 +127,8 @@ class _PostViewState extends State<PostView> {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-          padding: const EdgeInsets.all(20),
+          color: Theme.of(context).backgroundColor,
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
           child: NewComment(
               focused: widget.autofocusCommentField,
               parentId: showingThread ? _threadId! : widget.postId,

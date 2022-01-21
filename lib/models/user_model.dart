@@ -8,6 +8,7 @@ class UserModel extends ChangeNotifier {
   String name = "full name";
   String email = "email@email.com";
   String accountPictureUrl = "";
+  DateTime createdAt = DateTime(2020, 1, 1, 0, 0);
 
   List<String> _userPosts = [];
 
@@ -43,6 +44,10 @@ class UserModel extends ChangeNotifier {
         json.containsKey('description') ? json['description'] ?? "" : "";
     name = json.containsKey('name') ? json['name'] ?? "" : "";
     email = json.containsKey('email') ? json['email'] ?? "" : "";
+    if (json.containsKey('createdAt')) {
+      createdAt =
+          DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
+    }
     accountPictureUrl = json.containsKey('accountPictureUrl')
         ? json['accountPictureUrl'] ?? ""
         : "";
@@ -79,13 +84,21 @@ class EmployeeModel extends UserModel {
         json.containsKey('description') ? json['description'] ?? "" : "";
     name = json.containsKey('name') ? json['name'] ?? "" : "";
     email = json.containsKey('email') ? json['email'] ?? "" : "";
+    if (json.containsKey('createdAt')) {
+      createdAt =
+          DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
+    }
     accountPictureUrl = json.containsKey('accountPictureUrl')
         ? json['accountPictureUrl'] ?? ""
         : "";
-    roles = List<String>.from(json["roles"] ?? []);
-    founder = json['founder'];
-    owner = json['owner'];
-    jobTitle = json['jobTitle'];
+    Map<String, dynamic>? _employeeJson;
+    if (json.containsKey('employeeOfBrandsConnection')) {
+      _employeeJson = json["employeeOfBrandsConnection"]["edges"][0];
+    }
+    roles = List<String>.from(json["roles"] ?? _employeeJson?["roles"] ?? "");
+    founder = json['founder'] ?? _employeeJson?["founder"] ?? false;
+    owner = json['owner'] ?? _employeeJson?["owner"] ?? "";
+    jobTitle = json['jobTitle'] ?? _employeeJson?["jobTitle"] ?? "";
 
     if (json.containsKey('causes')) {
       List<CauseModel> _c = [];
@@ -103,6 +116,48 @@ class EmployeeModel extends UserModel {
     _json['founder'] = founder;
     _json['owner'] = owner;
     _json['jobTitle'] = jobTitle;
+    return _json;
+  }
+}
+
+class MemberModel extends UserModel {
+  String tier = "";
+  MemberModel() : super();
+
+  @override
+  MemberModel.fromJson(Map<String, dynamic> json) {
+    //UserModel.fromJson(json);
+    id = json['id'];
+    description =
+        json.containsKey('description') ? json['description'] ?? "" : "";
+    name = json.containsKey('name') ? json['name'] ?? "" : "";
+    email = json.containsKey('email') ? json['email'] ?? "" : "";
+    if (json.containsKey('createdAt')) {
+      createdAt =
+          DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
+    }
+    accountPictureUrl = json.containsKey('accountPictureUrl')
+        ? json['accountPictureUrl'] ?? ""
+        : "";
+    if (json.containsKey('tier')) {
+      tier = json['tier'] ?? "";
+    } else if (json.containsKey("memberOfBrandsConnection")) {
+      tier = json["memberOfBrandsConnection"]["edges"][0]["tier"] ?? "";
+    }
+
+    if (json.containsKey('causes')) {
+      List<CauseModel> _c = [];
+      for (var c in json['causes']) {
+        _c.add(CauseModel(c['id'], c['title']));
+      }
+      causes = _c;
+    }
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    var _json = super.toJson();
+    _json['tier'] = tier;
     return _json;
   }
 }

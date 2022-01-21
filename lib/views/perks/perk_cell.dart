@@ -82,18 +82,21 @@ class PerkCell extends StatelessWidget {
       ));
     }
 
-    return GestureDetector(
-        onTap: () => _handleClick(context, perk.id),
+    return Align(
+        alignment: Alignment.center,
         child: Container(
             padding: const EdgeInsets.all(10.0),
-            child: Card(
-                clipBehavior: Clip.antiAlias,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  children: [_buildBody(), const Divider()],
-                ))));
+            constraints: const BoxConstraints(minWidth: 200, maxWidth: 600),
+            child: GestureDetector(
+                onTap: () => _handleClick(context, perk.id),
+                child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [_buildBody(), const Divider()],
+                    )))));
   }
 }

@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 class EmbeddedImageCarousel extends StatefulWidget {
   final List<String> imageUrls;
   final double height;
-  const EmbeddedImageCarousel(this.imageUrls, {this.height = 100.0, Key? key})
+  final bool showFullscreenButton;
+  const EmbeddedImageCarousel(this.imageUrls,
+      {this.height = 100.0, this.showFullscreenButton = true, Key? key})
       : super(key: key);
 
   @override
@@ -53,7 +55,7 @@ class _EmbeddedImageCarouselState extends State<EmbeddedImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(alignment: Alignment.bottomRight, children: [
+    List<Widget> stackChildren = [
       CarouselSlider(
         items: _buildImages(),
         carouselController: _controller,
@@ -69,7 +71,10 @@ class _EmbeddedImageCarouselState extends State<EmbeddedImageCarousel> {
               });
             }),
       ),
-      Container(
+    ];
+
+    if (widget.showFullscreenButton) {
+      stackChildren.add(Container(
           padding: const EdgeInsets.all(10),
           child: ElevatedButton.icon(
             icon: const Icon(Icons.photo_camera),
@@ -81,8 +86,10 @@ class _EmbeddedImageCarouselState extends State<EmbeddedImageCarousel> {
             onPressed: widget.imageUrls.isNotEmpty
                 ? () => _showFullScreen(context)
                 : null,
-          ))
-    ]);
+          )));
+    }
+
+    return Stack(alignment: Alignment.bottomRight, children: stackChildren);
   }
 }
 

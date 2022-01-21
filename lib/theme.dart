@@ -124,6 +124,7 @@ class AppTheme {
           headline1: base.headline5!.copyWith(
             fontWeight: FontWeight.bold,
             fontSize: 27.0,
+            fontStyle: FontStyle.normal,
           ),
           headline2: base.headline5!.copyWith(
             fontWeight: FontWeight.w500,
@@ -164,10 +165,9 @@ class AppTheme {
       colorScheme: ColorScheme(
           brightness: isDark ? Brightness.dark : Brightness.light,
           primary: accent1,
-          primaryContainer: accent1Darker,
+          primaryVariant: accent1Darker,
           secondary: accent2,
-          secondaryContainer: ColorUtils.shiftHsl(accent2, -.2),
-          tertiary: accent3,
+          secondaryVariant: accent3,
           background: bg1,
           surface: surface,
           onBackground: txt,

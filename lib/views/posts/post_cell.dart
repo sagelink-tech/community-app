@@ -1,10 +1,10 @@
 import 'package:sagelink_communities/components/activity_badge.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
+import 'package:sagelink_communities/components/image_carousel.dart';
 import 'package:sagelink_communities/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/views/posts/post_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
-
 import 'package:sagelink_communities/models/post_model.dart';
 
 typedef OnDetailCallback = void Function(BuildContext context, String postId);
@@ -66,6 +66,25 @@ class PostCell extends StatelessWidget {
     }
 
     _buildBody() {
+      Widget detail;
+      switch (post.type) {
+        case PostType.text:
+          detail = Text(post.body ?? "",
+              style: Theme.of(context).textTheme.bodyText1);
+          break;
+        case PostType.images:
+          detail = EmbeddedImageCarousel(
+            post.images ?? [],
+            height: 200,
+            showFullscreenButton: false,
+          );
+          break;
+        case PostType.link:
+          detail = Text(post.linkUrl ?? "",
+              style: Theme.of(context).textTheme.bodyText1);
+          break;
+      }
+
       return Container(
           margin: const EdgeInsets.all(10),
           child: Column(
@@ -83,7 +102,7 @@ class PostCell extends StatelessWidget {
                   )
                 ],
               ),
-              Text(post.body, style: Theme.of(context).textTheme.bodyText1),
+              detail,
               OutlinedButton(
                   onPressed: () =>
                       _handleClick(context, post.id, withTextFocus: true),
@@ -117,19 +136,22 @@ class PostCell extends StatelessWidget {
           : ([_buildBody(), const Divider(), _buildDetail()]);
     }
 
-    return Container(
-        padding: const EdgeInsets.all(10.0),
-        child: Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10), // if you need this
-              side: BorderSide(
-                color: Colors.grey.withOpacity(0.4),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              children: _composeChildren(),
-            )));
+    return Align(
+        alignment: Alignment.center,
+        child: Container(
+            padding: const EdgeInsets.all(10.0),
+            constraints: const BoxConstraints(minWidth: 200, maxWidth: 600),
+            child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10), // if you need this
+                  side: BorderSide(
+                    color: Colors.grey.withOpacity(0.4),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  children: _composeChildren(),
+                ))));
   }
 }

@@ -45,7 +45,7 @@ class CommentCell extends StatelessWidget {
           )),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(comment.creator.name,
-            style: Theme.of(context).textTheme.titleSmall),
+            style: Theme.of(context).textTheme.headline3),
         const ListSpacer(),
         ExpandableText(
           comment.body,
@@ -53,7 +53,7 @@ class CommentCell extends StatelessWidget {
           collapseText: "show less",
           animation: true,
           linkEllipsis: true,
-          linkColor: Theme.of(context).colorScheme.tertiary,
+          linkColor: Theme.of(context).colorScheme.secondaryVariant,
           collapseOnTextTap: true,
           style: Theme.of(context).textTheme.bodyText1,
           maxLines: 3,
@@ -63,7 +63,7 @@ class CommentCell extends StatelessWidget {
   }
 
   Widget _buildReactButtons(BuildContext context) {
-    return Row(children: [
+    List<Widget> _buttons = [
       Text(timeago.format(comment.createdAt, locale: "en_short"),
           style: Theme.of(context).textTheme.caption),
       TextButton(
@@ -87,7 +87,14 @@ class CommentCell extends StatelessWidget {
         "reactions",
         style: Theme.of(context).textTheme.caption,
       )
-    ]);
+    ];
+
+    // If in thread view, remove the "reply" button option
+    if (inThreadView) {
+      _buttons.removeAt(2);
+    }
+
+    return Row(children: _buttons);
   }
 
   Widget _buildReplies(BuildContext context) {

@@ -32,6 +32,9 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
       title
       body
       id
+      linkUrl
+      images
+      type
       createdAt
     }
     employeesConnection(first: \$employeesFirst) {

@@ -156,8 +156,6 @@ class _AccountPageState extends ConsumerState<AccountPage>
               _user = snapshot.data;
             } else if (snapshot.hasError) {
               //TO DO: DEBUG THIS ERROR
-              print("RANDOM ERROR...");
-              print(snapshot.error);
             }
             return Scaffold(
                 appBar: AppBar(

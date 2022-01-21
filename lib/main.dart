@@ -1,3 +1,4 @@
+import 'package:sagelink_communities/views/scaffold/admin_scaffold.dart';
 import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // GraphQL Setup
     final HttpLink link = HttpLink(
-        "https://sl-gql-server.herokuapp.com/graphql"); //"http://localhost/graphql");
+        "http://localhost/graphql"); //"https://sl-gql-server.herokuapp.com/graphql");
 
     ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
         defaultPolicies: DefaultPolicies(
@@ -36,10 +37,6 @@ class MyApp extends StatelessWidget {
         cache: GraphQLCache(store: HiveStore()),
         link: link));
 
-    // Theme setup
-    ThemeType themeType = ThemeType.lightMode;
-    AppTheme theme = AppTheme.fromType(themeType);
-
     // Wrapper around scaffold
     return GraphQLProvider(
         client: client,
@@ -51,28 +48,42 @@ class MyApp extends StatelessWidget {
               currentFocus.focusedChild!.unfocus();
             }
           },
-          child: MaterialApp(theme: theme.themeData, home: const AppScaffold()),
+          child: const BaseApp(),
         ));
   }
 }
 
-class AppScaffold extends ConsumerWidget {
-  const AppScaffold({Key? key}) : super(key: key);
+class BaseApp extends ConsumerWidget {
+  const BaseApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Riverpod setup
     final loggedInUser = ref.watch(loggedInUserProvider);
+    final appState = ref.watch(appStateProvider);
 
-    if (loggedInUser.status == LoginState.isLoggedIn) {
-      return const MainScaffold();
+    ThemeData _theme() {
+      // Theme setup
+      ThemeType themeType =
+          appState.isDarkModeEnabled ? ThemeType.darkMode : ThemeType.lightMode;
+      return AppTheme.fromType(themeType).themeData;
     }
 
-    // Return the current view, based on the currentUser value:
-    else {
-      return const Scaffold(
-        body: LoginPage(),
-      );
+    Widget _home() {
+      if (loggedInUser.status == LoginState.isLoggedIn) {
+        return (appState.viewingAdminSite && loggedInUser.isAdmin)
+            ? const AdminScaffold()
+            : const MainScaffold();
+      }
+
+      // Return the current view, based on the currentUser value:
+      else {
+        return const Scaffold(
+          body: LoginPage(),
+        );
+      }
     }
+
+    return MaterialApp(theme: _theme(), home: _home());
   }
 }
