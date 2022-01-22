@@ -3,39 +3,29 @@ import 'package:sagelink_communities/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import "package:graphql_flutter/graphql_flutter.dart";
-
 import 'providers.dart';
 import 'models/logged_in_user.dart';
 import 'theme.dart';
 import 'views/pages/login_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   await initHiveForFlutter();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // GraphQL Setup
-    final HttpLink link = HttpLink(
-        "http://localhost/graphql"); //"https://sl-gql-server.herokuapp.com/graphql");
-
-    ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
-        defaultPolicies: DefaultPolicies(
-            watchQuery:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            watchMutation:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            query: Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            mutate:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            subscribe:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
-        cache: GraphQLCache(store: HiveStore()),
-        link: link));
+    ValueNotifier<GraphQLClient> client = (ref).watch(gqlClientProvider);
 
     // Wrapper around scaffold
     return GraphQLProvider(

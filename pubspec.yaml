@@ -40,6 +40,9 @@ dependencies:
   url_launcher: ^6.0.17
   image_picker: ^0.8.4+4
   dotted_border: ^2.0.0+2
+  firebase_core: ^1.11.0
+  firebase_auth: ^3.3.5
+  google_sign_in: ^5.2.3
 
 
 dev_dependencies:
