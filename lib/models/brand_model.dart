@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sagelink_communities/models/user_model.dart';
 import 'package:sagelink_communities/models/cause_model.dart';
 import 'package:sagelink_communities/utils/asset_utils.dart';
@@ -21,11 +22,25 @@ class BrandModel extends ChangeNotifier {
   Color mainColor = Colors.blueGrey;
 
   Image bannerImage() => backgroundImageUrl.isNotEmpty
-      ? Image.network(backgroundImageUrl, fit: BoxFit.fitWidth)
+      ? CachedNetworkImage(
+          imageUrl: backgroundImageUrl,
+          placeholderFadeInDuration: const Duration(milliseconds: 10),
+          placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
+                fit: BoxFit.fitWidth,
+                width: double.infinity,
+              ),
+          fit: BoxFit.fitWidth)
       : AssetUtils.defaultImage();
 
   Image logoImage() => logoUrl.isNotEmpty
-      ? Image.network(logoUrl, fit: BoxFit.cover)
+      ? CachedNetworkImage(
+          imageUrl: logoUrl,
+          placeholderFadeInDuration: const Duration(milliseconds: 10),
+          placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
+                fit: BoxFit.cover,
+                width: double.infinity,
+              ),
+          fit: BoxFit.cover)
       : AssetUtils.defaultImage();
 
   // Employees

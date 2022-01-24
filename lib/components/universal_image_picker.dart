@@ -87,7 +87,8 @@ class UniversalImagePicker {
   void _imgFromSource(ImageSource source, int maxImages) async {
     List<File> selection = maxImages > 1 ? images : [];
     if (source == ImageSource.gallery && maxImages > 1) {
-      List<XFile>? xfiles = await ImagePicker().pickMultiImage();
+      List<XFile>? xfiles = await ImagePicker()
+          .pickMultiImage(maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
       if (xfiles != null) {
         for (var xf in xfiles) {
           if (selection.length >= maxImages) {
@@ -101,7 +102,8 @@ class UniversalImagePicker {
         }
       }
     } else {
-      XFile? xfile = await ImagePicker().pickImage(source: source);
+      XFile? xfile = await ImagePicker().pickImage(
+          source: source, maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
       if (xfile != null) {
         selection.add(File(xfile.path));
       }

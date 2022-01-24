@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sagelink_communities/components/clickable_avatar.dart';
 import 'package:sagelink_communities/utils/asset_utils.dart';
 import 'package:sagelink_communities/views/brands/brand_home_page.dart';
@@ -43,7 +44,15 @@ class PerkCell extends StatelessWidget {
             width: double.infinity,
             child: perk.imageUrls.isEmpty
                 ? AssetUtils.defaultImage()
-                : Image.network(perk.imageUrls[0], fit: BoxFit.cover))
+                : CachedNetworkImage(
+                    imageUrl: perk.imageUrls[0],
+                    placeholderFadeInDuration: const Duration(milliseconds: 10),
+                    placeholder: (context, url) =>
+                        AssetUtils.wrappedDefaultImage(
+                          fit: BoxFit.fitWidth,
+                          width: double.infinity,
+                        ),
+                    fit: BoxFit.fitWidth))
       ]));
 
       // If showBrand, add brand details
