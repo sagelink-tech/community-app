@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 import 'package:decorated_icon/decorated_icon.dart';
@@ -36,8 +37,14 @@ class _EmbeddedImageCarouselState extends State<EmbeddedImageCarousel> {
         ? widget.imageUrls
             .map((imageUrl) => Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: Image.network(
-                  imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  placeholderFadeInDuration: const Duration(milliseconds: 10),
+                  placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: widget.height,
+                  ),
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: widget.height,
@@ -121,30 +128,36 @@ class _FullPageImageCarouselState extends State<FullPageImageCarousel> {
 
   List<Widget> _buildImages(height, width) {
     return widget.imageUrls
-        .map(
-            (imageUrl) => Stack(alignment: Alignment.center, children: <Widget>[
-                  Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: height,
-                  ),
-                  Container(
-                      height: height,
-                      width: width,
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Color(0x77000000),
-                            Color(0x00000000),
-                            Color(0x00000000),
-                            Color(0x77000000),
-                          ],
-                        ),
-                      ))
-                ]))
+        .map((imageUrl) =>
+            Stack(alignment: Alignment.center, children: <Widget>[
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                placeholderFadeInDuration: const Duration(milliseconds: 10),
+                placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: height,
+                ),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: height,
+              ),
+              Container(
+                  height: height,
+                  width: width,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0x77000000),
+                        Color(0x00000000),
+                        Color(0x00000000),
+                        Color(0x77000000),
+                      ],
+                    ),
+                  ))
+            ]))
         .toList();
   }
 

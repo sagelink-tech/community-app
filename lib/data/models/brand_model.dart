@@ -13,6 +13,7 @@ class BrandLink {
 
 class BrandModel extends ChangeNotifier {
   String id = "df487c75-7186-48ea-a507-25b80aa92c64";
+  String firebaseId = "df487c75-7186-48ea-a507-25b80aa92c64";
   String name = "brand name";
   String description = "brand description";
   String logoUrl = "";
@@ -21,11 +22,19 @@ class BrandModel extends ChangeNotifier {
   Color mainColor = Colors.blueGrey;
 
   Image bannerImage() => backgroundImageUrl.isNotEmpty
-      ? Image.network(backgroundImageUrl, fit: BoxFit.fitWidth)
+      ? Image.network(
+          backgroundImageUrl,
+          fit: BoxFit.fitWidth,
+          width: double.infinity,
+        )
       : AssetUtils.defaultImage();
 
   Image logoImage() => logoUrl.isNotEmpty
-      ? Image.network(logoUrl, fit: BoxFit.cover)
+      ? Image.network(
+          logoUrl,
+          fit: BoxFit.cover,
+          width: double.infinity,
+        )
       : AssetUtils.defaultImage();
 
   // Employees

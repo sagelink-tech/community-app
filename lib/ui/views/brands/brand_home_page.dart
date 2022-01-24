@@ -1,6 +1,7 @@
 import 'package:sagelink_communities/ui/components/stacked_avatars.dart';
 import 'package:sagelink_communities/data/models/perk_model.dart';
 import 'package:sagelink_communities/ui/utils/asset_utils.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
@@ -140,8 +141,16 @@ class _BrandHomepageState extends State<BrandHomepage>
               width: double.infinity,
               child: _brand.backgroundImageUrl.isEmpty
                   ? AssetUtils.defaultImage()
-                  : Image.network(_brand.backgroundImageUrl,
-                      fit: BoxFit.cover)),
+                  : CachedNetworkImage(
+                      imageUrl: _brand.backgroundImageUrl,
+                      placeholderFadeInDuration:
+                          const Duration(milliseconds: 10),
+                      placeholder: (context, url) =>
+                          AssetUtils.wrappedDefaultImage(
+                            fit: BoxFit.fitWidth,
+                            width: double.infinity,
+                          ),
+                      fit: BoxFit.fitWidth)),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Column(children: [

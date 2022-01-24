@@ -1,8 +1,8 @@
-import 'package:sagelink_communities/ui/views/scaffold/admin_scaffold.dart';
-import 'package:sagelink_communities/ui/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import "package:graphql_flutter/graphql_flutter.dart";
+import 'package:sagelink_communities/ui/views/scaffold/admin_scaffold.dart';
+import 'package:sagelink_communities/ui/views/scaffold/main_scaffold.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/ui/theme.dart';
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // GraphQL Setup
     final HttpLink link = HttpLink(
-        "http://localhost/graphql"); //"https://sl-gql-server.herokuapp.com/graphql");
+        "http://localhost/graphql"); //"https://sl-gql-server.herokuapp.com/graphql"); //"http://192.168.86.98/graphql");
 
     ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
         defaultPolicies: DefaultPolicies(
