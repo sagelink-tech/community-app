@@ -13,15 +13,15 @@ class FlutterAppConfig {
 
   static const appName =
       String.fromEnvironment('SL_APP_NAME', defaultValue: 'communityApp');
-  static const appId = String.fromEnvironment('SL_APP_SUFFIX');
+  static const appSuffix = String.fromEnvironment('SL_APP_SUFFIX');
   static const usesHttps =
       bool.fromEnvironment('SL_USES_HTTPS', defaultValue: false);
   static const apiBaseUrl =
       String.fromEnvironment('SL_API_URL', defaultValue: 'localhost/graphql');
   static const initializeCrashlytics =
       bool.fromEnvironment('SL_CRASHLYTICS_FLAG', defaultValue: true);
-  static const isDevelopment =
-      bool.fromEnvironment('SL_DEVELOPMENT_FLAG', defaultValue: true);
+  static const isProduction =
+      bool.fromEnvironment('SL_PRODUCTION_FLAG', defaultValue: true);
 
   // Future startCrashlytics() async {
   //   if (this.initializeCrashlytics) {
