@@ -60,7 +60,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '365461850788',
     projectId: 'sagelink-community-dev',
     storageBucket: 'sagelink-community-dev.appspot.com',
-    iosClientId: '365461850788-drvtlauvaqphth93l64bmdqrtfoq84ti.apps.googleusercontent.com',
+    iosClientId:
+        '365461850788-drvtlauvaqphth93l64bmdqrtfoq84ti.apps.googleusercontent.com',
     iosBundleId: 'com.sagelink.communityApp',
   );
 }
