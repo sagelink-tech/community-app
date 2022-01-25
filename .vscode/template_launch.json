@@ -13,7 +13,7 @@
                 "--dart-define", "SL_API_URL=localhost/graphql",
                 "--dart-define", "SL_CRASHLYTICS_FLAG=false",
                 "--dart-define", "SL_CONNECTIVITY_MONITOR_FLAG=false",
-                "--dart-define", "SL_DEVELOPMENT_FLAG=true"
+                "--dart-define", "SL_PRODUCTION_FLAG=false"
 			]
         },
         {
