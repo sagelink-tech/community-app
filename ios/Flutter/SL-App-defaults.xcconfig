@@ -1,0 +1,15 @@
+//
+//  SL-App-defaults.xcconfig
+//  Runner
+//
+//  Created by Evan Lee on 1/25/22.
+//
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+SL_APP_NAME=Sagelink
+SL_APP_SUFFIX=
+SL_USES_HTTPS=false
+SL_API_URL=localhost/graphql
+SL_CRASHLYTICS_FLAG=false
+SL_CONNECTIVITY_MONITOR_FLAG=false
+SL_DEVELOPMENT_FLAG=true
