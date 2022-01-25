@@ -6,29 +6,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'app.dart';
 
-enum AppEnvironment {
-  development,
-  staging,
-  production,
-  testing,
-}
-
 class FlutterAppConfig {
-  FlutterAppConfig({
-    required this.appName,
-    required this.environment,
-    required this.apiBaseUrl,
-    this.initializeCrashlytics = true,
-    this.monitorConnectivity = true,
-    this.enableCrashlyiticsInDevMode = true,
-  });
+  FlutterAppConfig();
 
-  final String appName;
-  final AppEnvironment environment;
-  final String apiBaseUrl;
-  final bool initializeCrashlytics,
-      monitorConnectivity,
-      enableCrashlyiticsInDevMode;
+  static const appName =
+      String.fromEnvironment('SL_APP_NAME', defaultValue: 'communityApp');
+  static const appId = String.fromEnvironment('SL_APP_SUFFIX');
+  static const usesHttps =
+      bool.fromEnvironment('SL_USES_HTTPS', defaultValue: false);
+  static const apiBaseUrl =
+      String.fromEnvironment('SL_API_URL', defaultValue: 'localhost/graphql');
+  static const initializeCrashlytics =
+      bool.fromEnvironment('SL_CRASHLYTICS_FLAG', defaultValue: true);
+  static const isDevelopment =
+      bool.fromEnvironment('SL_DEVELOPMENT_FLAG', defaultValue: true);
 
   // Future startCrashlytics() async {
   //   if (this.initializeCrashlytics) {
@@ -40,10 +31,11 @@ class FlutterAppConfig {
   // }
 
   Widget createApp() {
-    return ProviderScope(
+    const String baseUrl = (usesHttps ? "https://" : "http://") + apiBaseUrl;
+    return const ProviderScope(
         child: CommunityApp(
       appName: appName,
-      apiUrl: apiBaseUrl,
+      apiUrl: baseUrl,
     ));
   }
 

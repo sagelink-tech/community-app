@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "TEMPLATE",
+            "request": "launch",
+            "type": "dart",
+            "toolArgs":[
+				"--dart-define", "SL_APP_NAME=Sagelink Dev",
+                "--dart-define", "SL_APP_SUFFIX=.dev",
+                "--dart-define", "SL_USES_HTTPS=false",
+                "--dart-define", "SL_API_URL=localhost/graphql",
+                "--dart-define", "SL_CRASHLYTICS_FLAG=false",
+                "--dart-define", "SL_CONNECTIVITY_MONITOR_FLAG=false",
+                "--dart-define", "SL_DEVELOPMENT_FLAG=true"
+			]
+        },
+        {
+            "name": "community_app (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        }
+    ]
+}
