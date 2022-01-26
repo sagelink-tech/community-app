@@ -61,7 +61,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.example.community_app"
+        applicationId "com.sagelink.community_app"
         applicationIdSuffix dartEnvironmentVariables.SL_APP_SUFFIX
         minSdkVersion 16
         targetSdkVersion 30

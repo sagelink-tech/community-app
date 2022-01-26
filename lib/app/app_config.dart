@@ -5,8 +5,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/firebase_options.dart';
+import 'package:sagelink_communities/app/firebase_options.dart';
 import 'app.dart';
+
+enum AppEnvironment { dev, demo, prod }
 
 class FlutterAppConfig {
   FlutterAppConfig();
@@ -22,6 +24,14 @@ class FlutterAppConfig {
       bool.fromEnvironment('SL_CRASHLYTICS_FLAG', defaultValue: true);
   static const isProduction =
       bool.fromEnvironment('SL_PRODUCTION_FLAG', defaultValue: true);
+
+  static get environment {
+    return isProduction
+        ? AppEnvironment.prod
+        : appSuffix.contains('demo')
+            ? AppEnvironment.demo
+            : AppEnvironment.dev;
+  }
 
   // Future startCrashlytics() async {
   //   if (this.initializeCrashlytics) {

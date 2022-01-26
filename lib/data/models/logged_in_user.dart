@@ -94,6 +94,7 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
 
       if ((_userData['employeeOfBrandsConnection']['edges'] as List)
           .isNotEmpty) {
+        isAdmin = true;
         brandId =
             _userData['employeeOfBrandsConnection']['edges'][0]['node']['id'];
       }
