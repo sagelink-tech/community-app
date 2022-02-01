@@ -8,36 +8,20 @@ import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/ui/theme.dart';
 import 'package:sagelink_communities/ui/views/pages/login_page.dart';
 
-class CommunityApp extends StatefulWidget {
-  const CommunityApp({required this.appName, required this.apiUrl, Key? key})
-      : super(key: key);
+class CommunityApp extends ConsumerStatefulWidget {
+  const CommunityApp({required this.appName, Key? key}) : super(key: key);
 
   final String appName;
-  final String apiUrl;
 
   @override
   _CommunityAppState createState() => _CommunityAppState();
 }
 
-class _CommunityAppState extends State<CommunityApp> {
+class _CommunityAppState extends ConsumerState<CommunityApp> {
   @override
   Widget build(BuildContext context) {
     // GraphQL Setup
-    final HttpLink link = HttpLink(widget.apiUrl);
-
-    ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
-        defaultPolicies: DefaultPolicies(
-            watchQuery:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            watchMutation:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            query: Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            mutate:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            subscribe:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
-        cache: GraphQLCache(store: HiveStore()),
-        link: link));
+    ValueNotifier<GraphQLClient> client = (ref).watch(gqlClientProvider);
 
     // Wrapper around scaffold
     return GraphQLProvider(

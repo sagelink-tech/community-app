@@ -4,6 +4,7 @@ import 'package:sagelink_communities/data/models/cause_model.dart';
 
 class UserModel extends ChangeNotifier {
   String id = "123";
+  String firebaseId = "123";
   String description = "description";
   String name = "full name";
   String email = "email@email.com";
@@ -40,6 +41,7 @@ class UserModel extends ChangeNotifier {
 
   UserModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
+    firebaseId = json.containsKey('firebaseId') ? json['firebaseId'] ?? "" : "";
     description =
         json.containsKey('description') ? json['description'] ?? "" : "";
     name = json.containsKey('name') ? json['name'] ?? "" : "";
@@ -80,6 +82,7 @@ class EmployeeModel extends UserModel {
   EmployeeModel.fromJson(Map<String, dynamic> json) {
     //UserModel.fromJson(json);
     id = json['id'];
+    firebaseId = json.containsKey('firebaseId') ? json['firebaseId'] ?? "" : "";
     description =
         json.containsKey('description') ? json['description'] ?? "" : "";
     name = json.containsKey('name') ? json['name'] ?? "" : "";
@@ -128,6 +131,7 @@ class MemberModel extends UserModel {
   MemberModel.fromJson(Map<String, dynamic> json) {
     //UserModel.fromJson(json);
     id = json['id'];
+    firebaseId = json.containsKey('firebaseId') ? json['firebaseId'] ?? "" : "";
     description =
         json.containsKey('description') ? json['description'] ?? "" : "";
     name = json.containsKey('name') ? json['name'] ?? "" : "";

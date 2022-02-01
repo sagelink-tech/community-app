@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sagelink_communities/data/models/logged_in_user.dart';
+import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -14,19 +14,23 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final formKey = GlobalKey<FormState>();
   String? email;
+  String? password;
+  bool isLoggingIn = false;
 
-  final userId1 = "d01dee82-e65b-43b1-bc50-3a50b7c4fe33";
-  final userId2 = "cd329013-5cb6-4bea-882a-8b7a4591dd11";
-
-  void _handleLogin(GraphQLClient client, LoggedInUserStateNotifier notifier,
-      BuildContext context) {
-    if (email == null) {
+  void _handleLogin(Authentication auth, BuildContext context) async {
+    if (email == null || password == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text("Enter Email"),
+        content: const Text("Enter email and password"),
         backgroundColor: Theme.of(context).colorScheme.error,
       ));
     } else {
-      notifier.loginWithEmail(client, email!, context);
+      setState(() {
+        isLoggingIn = true;
+      });
+      await auth.signInWithEmailAndPassword(email!, password!, context);
+      setState(() {
+        isLoggingIn = false;
+      });
     }
   }
 
@@ -49,28 +53,42 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             return null;
           }
         },
-        maxLength: 50,
         onChanged: (value) => setState(() => email = value),
+        enabled: enabled,
+      ));
+  Widget buildPasswordForm({bool enabled = true}) => Container(
+      padding: const EdgeInsets.symmetric(horizontal: 50),
+      child: TextFormField(
+        decoration: const InputDecoration(
+          hintText: "Password",
+          border: OutlineInputBorder(),
+        ),
+        onChanged: (value) => setState(() => password = value),
         enabled: enabled,
       ));
 
   @override
   Widget build(BuildContext context) {
     final loggedInUser = ref.watch(loggedInUserProvider);
-    final notifier = ref.watch(loggedInUserProvider.notifier);
+    final auth = ref.watch(authProvider);
 
     return Scaffold(body: GraphQLConsumer(builder: (GraphQLClient client) {
       return Center(
-        child: loggedInUser.status == LoginState.isLoggingIn
+        child: isLoggingIn
             ? const CircularProgressIndicator()
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                     buildEmailForm(),
+                    buildPasswordForm(),
                     ElevatedButton(
-                        onPressed: () =>
-                            _handleLogin(client, notifier, context),
+                        onPressed: () => {
+                              _handleLogin(auth, context),
+                              setState(() {
+                                isLoggingIn = true;
+                              })
+                            },
                         child: const Text("Submit")),
                   ]),
       );

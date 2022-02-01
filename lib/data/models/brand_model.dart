@@ -79,7 +79,8 @@ class BrandModel extends ChangeNotifier {
   BrandModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    description = json.containsKey('description') ? json['description'] : "";
+    description =
+        json.containsKey('description') ? json['description'] ?? "" : "";
     logoUrl = json.containsKey('logoUrl') ? json['logoUrl'] ?? "" : "";
     backgroundImageUrl = json.containsKey('backgroundImageUrl')
         ? json['backgroundImageUrl'] ?? ""

@@ -1,4 +1,4 @@
-import 'package:sagelink_communities/data/models/logged_in_user.dart';
+import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
@@ -58,7 +58,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     super.dispose();
   }
 
-  _buildBody(BuildContext context, LoggedInUserStateNotifier userNotifier) {
+  _buildBody(BuildContext context, Authentication auth) {
     return TabBarView(
       controller: _tabController,
       children: [
@@ -87,9 +87,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           children: [
             const ListTile(title: Text("Privacy Policy")),
             const ListTile(title: Text("Terms and Conditions")),
-            ListTile(
-                title: const Text("Logout"),
-                onTap: () => userNotifier.logout()),
+            ListTile(title: const Text("Logout"), onTap: () => auth.signOut()),
           ],
         )
       ],
@@ -101,7 +99,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     final loggedInUser = ref.watch(loggedInUserProvider);
     _user = loggedInUser.getUser();
 
-    final notifier = ref.watch(loggedInUserProvider.notifier);
+    final auth = ref.watch(authProvider);
 
     return Scaffold(
         appBar: AppBar(
@@ -117,6 +115,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 ]),
             backgroundColor: Theme.of(context).backgroundColor,
             elevation: 0),
-        body: _buildBody(context, notifier));
+        body: _buildBody(context, auth));
   }
 }
