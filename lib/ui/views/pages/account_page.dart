@@ -1,3 +1,5 @@
+import 'package:sagelink_communities/ui/components/brand_chip.dart';
+import 'package:sagelink_communities/ui/components/causes_chips.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
@@ -9,13 +11,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 String getUserQuery = """
-query Users(\$where: UserWhere) {
-  users(where: \$where) {
-    id
-    email
-    description
+query UsersQuery(\$where: UserWhere, \$options: UserOptions) {
+  users(where: \$where, options: \$options) {
     name
+    id
+    description
     accountPictureUrl
+    memberOfBrands {
+      id
+      name
+      logoUrl
+      mainColor
+    }
+    causes {
+      title
+      id
+    }
+    employeeOfBrands {
+      id
+      name
+      logoUrl
+      mainColor  
+    }
   }
 }
 """;
@@ -42,39 +59,6 @@ class _AccountPageState extends ConsumerState<AccountPage>
     });
   }
 
-  bool _isCollapsed = false;
-  final double _headerSize = 50.0;
-
-  late ScrollController _scrollController;
-  late TabController _tabController;
-
-  _scrollListener() {
-    if (_scrollController.offset >= _headerSize) {
-      setState(() {
-        _isCollapsed = true;
-      });
-    } else {
-      setState(() {
-        _isCollapsed = false;
-      });
-    }
-  }
-
-  @override
-  initState() {
-    super.initState();
-    _scrollController = ScrollController(initialScrollOffset: 0.0);
-    _tabController = TabController(length: 3, vsync: this);
-    _scrollController.addListener(_scrollListener);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _tabController.dispose();
-    super.dispose();
-  }
-
   Future<UserModel?> _getUser(GraphQLClient client) async {
     //client.resetStore();
     Map<String, dynamic> variables = {
@@ -90,58 +74,75 @@ class _AccountPageState extends ConsumerState<AccountPage>
     return null;
   }
 
-  _buildHeader(BuildContext context, bool boxIsScrolled) {
-    return <Widget>[
-      SliverList(
-        delegate: SliverChildListDelegate([
-          Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Row(children: [
-                Column(children: [
-                  ClickableAvatar(
-                      avatarText: _user.name[0],
-                      avatarURL: _user.accountPictureUrl,
-                      radius: 40)
-                ]),
-                const ListSpacer(width: 20),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(_user.name,
-                      style: Theme.of(context).textTheme.headline3,
-                      textAlign: TextAlign.start),
-                ]),
-              ])),
-        ]),
-      ),
-      SliverAppBar(
-          toolbarHeight: 0.0,
-          automaticallyImplyLeading: false,
-          backgroundColor: Theme.of(context).backgroundColor,
-          elevation: 1,
-          snap: false,
-          floating: false,
-          pinned: true,
-          bottom: TabBar(
-              labelColor: Theme.of(context).colorScheme.onBackground,
-              controller: _tabController,
-              tabs: const [
-                Tab(text: "Overview"),
-                Tab(text: "Brands"),
-                Tab(text: "Activity")
-              ])),
-    ];
+  _buildHeader(BuildContext context) {
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ClickableAvatar(
+              avatarText: _user.name[0],
+              avatarURL: _user.accountPictureUrl,
+              radius: 60),
+          const ListSpacer(height: 20),
+          Text(_user.name,
+              style: Theme.of(context).textTheme.headline3,
+              textAlign: TextAlign.start),
+          const ListSpacer(height: 20),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                primary: Theme.of(context).colorScheme.secondary,
+                // onPrimary: Theme.of(context).colorScheme.onSecondary,
+                minimumSize: const Size.fromHeight(48)),
+            onPressed: () => {},
+            child: Text('Message',
+                style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16.0,
+                    color: Theme.of(context).colorScheme.onError)),
+          ),
+          const ListSpacer(height: 20),
+        ]);
   }
 
   _buildBody(BuildContext context) {
-    return Padding(
-        padding: EdgeInsets.only(top: _isCollapsed ? 45 : 0),
-        child: TabBarView(
-          controller: _tabController,
-          children: const [
-            Text("overview goes here"),
-            Text("brands go here"),
-            Text("activity goes here"),
-          ],
-        ));
+    List<Widget> _causeComponents = _user.causes.isNotEmpty
+        ? [
+            Text(
+              "Causes",
+              style: Theme.of(context).textTheme.headline4,
+            ),
+            CausesChips(causes: _user.causes),
+          ]
+        : [];
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Description",
+          style: Theme.of(context).textTheme.headline4,
+        ),
+        const ListSpacer(),
+        Text(
+          _user.description,
+          style: Theme.of(context).textTheme.caption,
+        ),
+        const ListSpacer(),
+        Text(
+          "Member at",
+          style: Theme.of(context).textTheme.headline4,
+        ),
+        Wrap(
+          spacing: 6.0,
+          runSpacing: 6.0,
+          children: _user.brands
+              .map((b) => BrandChip(brand: b, onTap: (brand) => {}))
+              .toList(),
+        ),
+        const ListSpacer(),
+        ..._causeComponents,
+      ],
+    );
   }
 
   @override
@@ -171,12 +172,10 @@ class _AccountPageState extends ConsumerState<AccountPage>
                     backgroundColor: Theme.of(context).backgroundColor,
                     elevation: 0),
                 body: (snapshot.hasData
-                    ? NestedScrollView(
-                        floatHeaderSlivers: false,
-                        controller: _scrollController,
-                        headerSliverBuilder: (context, innerBoxIsScrolled) =>
-                            _buildHeader(context, innerBoxIsScrolled),
-                        body: _buildBody(context))
+                    ? ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        children: [_buildHeader(context), _buildBody(context)],
+                      )
                     : snapshot.hasError
                         ? const ErrorView()
                         : const Loading()));

@@ -3,22 +3,25 @@ import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:flutter/material.dart';
 
 typedef OnSelectionCallback = void Function(BrandModel? brand, bool selected);
+typedef OnTapCallback = void Function(BrandModel? brand);
 
 class BrandChip extends StatelessWidget {
   final BrandModel? brand;
   final bool selected;
-  final OnSelectionCallback onSelection;
+  final OnSelectionCallback? onSelection;
+  final OnTapCallback? onTap;
 
   const BrandChip(
       {Key? key,
       required this.brand,
-      required this.onSelection,
+      this.onSelection,
+      this.onTap,
       this.selected = false})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return FilterChip(
+    return InputChip(
         avatar: brand != null
             ? ClickableAvatar(
                 avatarText: brand!.name[0],
@@ -37,6 +40,9 @@ class BrandChip extends StatelessWidget {
         backgroundColor: Colors.transparent,
         selectedColor: Colors.transparent,
         //shape: const StadiumBorder(side: BorderSide()),
-        onSelected: (bool value) => {onSelection(brand, value)});
+        onSelected: onSelection != null
+            ? (bool value) => {onSelection!(brand, value)}
+            : null,
+        onPressed: onTap != null ? () => {onTap!(brand)} : null);
   }
 }

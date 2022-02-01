@@ -61,6 +61,23 @@ class UserModel extends ChangeNotifier {
       }
       causes = _c;
     }
+
+    // add brands if their in the json
+    _brands = [];
+    if (json.containsKey('memberOfBrands')) {
+      List<BrandModel> _b = [];
+      for (var b in json['memberOfBrands']) {
+        _b.add(BrandModel.fromJson(b));
+      }
+      _brands.addAll(_b);
+    }
+    if (json.containsKey('employeeOfBrands')) {
+      List<BrandModel> _b = [];
+      for (var b in json['employeeOfBrands']) {
+        _b.add(BrandModel.fromJson(b));
+      }
+      _brands.addAll(_b);
+    }
   }
 
   Map<String, dynamic> toJson() => {
