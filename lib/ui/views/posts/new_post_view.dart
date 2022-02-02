@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/ui/components/link_preview.dart';
+import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/components/universal_image_picker.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
@@ -239,11 +241,6 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
         decoration: const InputDecoration(
           labelText: 'Title',
           border: OutlineInputBorder(),
-          errorBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-          focusedErrorBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-          errorStyle: TextStyle(color: Colors.purple),
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -256,43 +253,39 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
         maxLength: 200,
         minLines: 1,
         maxLines: 3,
+        initialValue: title,
         onChanged: (value) => setState(() => title = value),
         enabled: enabled,
       );
 
-  Widget buildLinkForm({bool enabled = true}) => TextFormField(
-        decoration: const InputDecoration(
-          hintText: "Enter a url...",
-          border: OutlineInputBorder(),
-          errorBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-          focusedErrorBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-          errorStyle: TextStyle(color: Colors.purple),
-        ),
-        validator: (value) {
-          if ((value != null && value.isEmpty) && Uri.parse(value).isAbsolute) {
-            return 'Please enter a valid url';
-          } else {
-            return null;
-          }
-        },
-        maxLength: 200,
-        minLines: 1,
-        maxLines: 1,
-        onChanged: (value) => setState(() => linkUrl = value),
-        enabled: enabled,
-      );
+  Widget buildLinkForm({bool enabled = true}) {
+    TextFormField form = TextFormField(
+      decoration: const InputDecoration(
+        hintText: "Enter a url...",
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.url,
+      autocorrect: false,
+      minLines: 1,
+      maxLines: 1,
+      initialValue: linkUrl,
+      onChanged: (value) => setState(() => linkUrl = value),
+      enabled: enabled,
+    );
+
+    Widget? preview = linkUrl != null ? LinkPreview(linkUrl) : null;
+
+    return Column(
+      children: preview != null
+          ? [form, const ListSpacer(height: 20), preview]
+          : [form],
+    );
+  }
 
   Widget buildBodyForm({bool enabled = true}) => TextFormField(
       decoration: const InputDecoration(
         hintText: "Enter (optional) body text...",
         border: OutlineInputBorder(),
-        errorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-        focusedErrorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-        errorStyle: TextStyle(color: Colors.purple),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -305,6 +298,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
       maxLength: 1000,
       minLines: 5,
       maxLines: 5,
+      initialValue: body,
       onChanged: (value) => setState(() => body = value),
       enabled: enabled);
 

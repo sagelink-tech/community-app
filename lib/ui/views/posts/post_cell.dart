@@ -1,6 +1,7 @@
 import 'package:sagelink_communities/ui/components/activity_badge.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
+import 'package:sagelink_communities/ui/components/link_preview.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/ui/views/posts/post_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -80,8 +81,7 @@ class PostCell extends StatelessWidget {
           );
           break;
         case PostType.link:
-          detail = Text(post.linkUrl ?? "",
-              style: Theme.of(context).textTheme.bodyText1);
+          detail = LinkPreview(post.linkUrl ?? "");
           break;
       }
 

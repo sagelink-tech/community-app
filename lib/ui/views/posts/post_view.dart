@@ -1,6 +1,7 @@
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
+import 'package:sagelink_communities/ui/components/link_preview.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/views/comments/new_comment.dart';
@@ -97,8 +98,7 @@ class _PostViewState extends State<PostView> {
         );
         break;
       case PostType.link:
-        detail = Text(_post.linkUrl ?? "",
-            style: Theme.of(context).textTheme.bodyText1);
+        detail = LinkPreview(_post.linkUrl ?? "");
         break;
     }
 
