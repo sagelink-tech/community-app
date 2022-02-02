@@ -49,7 +49,7 @@ class ImageUploadResult {
 
 class UniversalImagePicker {
   List<File> images = [];
-  dynamic picker;
+  final ImagePicker _picker = ImagePicker();
   int maxImages = 1;
   int targetIndex = 0;
   BuildContext context;
@@ -86,31 +86,36 @@ class UniversalImagePicker {
 
   void _imgFromSource(ImageSource source, int maxImages) async {
     List<File> selection = maxImages > 1 ? images : [];
-    if (source == ImageSource.gallery && maxImages > 1) {
-      List<XFile>? xfiles = await ImagePicker()
-          .pickMultiImage(maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
-      if (xfiles != null) {
-        for (var xf in xfiles) {
-          if (selection.length >= maxImages) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(
-                    "Selected too many photos. Adding the first $maxImages."),
-                backgroundColor: Theme.of(context).colorScheme.error));
-            break;
+    try {
+      if (source == ImageSource.gallery && maxImages > 1) {
+        List<XFile>? xfiles = await _picker.pickMultiImage(
+            maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
+        if (xfiles != null) {
+          for (var xf in xfiles) {
+            if (selection.length >= maxImages) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                      "Selected too many photos. Adding the first $maxImages."),
+                  backgroundColor: Theme.of(context).colorScheme.error));
+              break;
+            }
+            selection.add(File(xf.path));
           }
-          selection.add(File(xf.path));
+        }
+      } else {
+        XFile? xfile = await _picker.pickImage(
+            source: source, maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
+        if (xfile != null) {
+          selection.add(File(xfile.path));
         }
       }
-    } else {
-      XFile? xfile = await ImagePicker().pickImage(
-          source: source, maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
-      if (xfile != null) {
-        selection.add(File(xfile.path));
+    } catch (e) {
+      print(e);
+    } finally {
+      images = selection;
+      if (onSelected != null) {
+        onSelected!();
       }
-    }
-    images = selection;
-    if (onSelected != null) {
-      onSelected!();
     }
   }
 

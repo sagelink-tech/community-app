@@ -1,6 +1,7 @@
+import 'package:flutter/widgets.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
-import 'package:flutter/foundation.dart';
 import 'package:sagelink_communities/data/models/cause_model.dart';
+import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 
 class UserModel extends ChangeNotifier {
   String id = "123";
@@ -10,6 +11,14 @@ class UserModel extends ChangeNotifier {
   String email = "email@email.com";
   String accountPictureUrl = "";
   DateTime createdAt = DateTime(2020, 1, 1, 0, 0);
+
+  Image profileImage() => accountPictureUrl.isNotEmpty
+      ? Image.network(
+          accountPictureUrl,
+          fit: BoxFit.cover,
+          width: double.infinity,
+        )
+      : AssetUtils.defaultImage();
 
   List<String> _userPosts = [];
 
