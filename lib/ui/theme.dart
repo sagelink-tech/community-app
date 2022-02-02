@@ -28,6 +28,19 @@ class ColorUtils {
   }
 }
 
+class SLColorFields {
+  Color success;
+  Color info;
+  Color warning;
+  Color danger;
+
+  SLColorFields(
+      {this.success = const Color(0xFF28a745),
+      this.info = const Color(0xFF17a2b8),
+      this.warning = const Color(0xFFffc107),
+      this.danger = const Color(0xFFdc3545)});
+}
+
 class AppTheme {
   static ThemeType defaultTheme = ThemeType.lightMode;
 
@@ -45,6 +58,7 @@ class AppTheme {
   Color greyWeak;
   Color error;
   Color focus;
+  Color success;
 
   Color txt;
   Color accentTxt;
@@ -66,6 +80,7 @@ class AppTheme {
     required this.greyWeak,
     required this.error,
     required this.focus,
+    required this.success,
     required this.txt,
     required this.accentTxt,
     required this.errorTxt,
@@ -92,6 +107,7 @@ class AppTheme {
           grey: const Color(0xff333333),
           greyStrong: const Color(0xff252525),
           error: const Color(0xffE57777),
+          success: const Color(0xff5accaa),
           focus: Colors.blueGrey,
         );
 
@@ -113,6 +129,7 @@ class AppTheme {
           grey: const Color(0xffaaaaaa),
           greyStrong: const Color(0xffcccccc),
           error: const Color(0xffE57777),
+          success: const Color(0xff5accaa),
           focus: Colors.blueGrey,
         );
     }

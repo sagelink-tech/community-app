@@ -1,4 +1,6 @@
 import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:sagelink_communities/data/models/cause_model.dart';
 import 'package:sagelink_communities/ui/components/brand_chip.dart';
 import 'package:sagelink_communities/ui/components/causes_chips.dart';
@@ -41,8 +43,8 @@ query UsersQuery(\$where: UserWhere, \$options: UserOptions) {
 """;
 
 String updateUserMutation = """
-mutation UpdateUsers(\$where: UserWhere, \$update: UserUpdateInput, \$connectOrCreate: UserConnectOrCreateInput) {
-  updateUsers(where: \$where, update: \$update, connectOrCreate: \$connectOrCreate) {
+mutation UpdateUsers(\$where: UserWhere, \$update: UserUpdateInput, \$connectOrCreate: UserConnectOrCreateInput, \$disconnect: UserDisconnectInput) {
+  updateUsers(where: \$where, update: \$update, connectOrCreate: \$connectOrCreate, disconnect: \$disconnect) {
     users {
       id
     }
@@ -62,10 +64,17 @@ class AccountPage extends ConsumerStatefulWidget {
 
 class _AccountPageState extends ConsumerState<AccountPage> {
   UserModel _user = UserModel();
+  late final loggedInUser = ref.watch(loggedInUserProvider);
+  bool _isLoggedInUser() {
+    return _user.id == loggedInUser.getUser().id;
+  }
 
+  bool _isSaving = false;
   bool _isEditing = false;
-
   void _toggleEditing() {
+    if (!_isLoggedInUser()) {
+      return;
+    }
     setState(() {
       _isEditing = !_isEditing;
     });
@@ -110,6 +119,95 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     }
   }
 
+  // Save changes
+
+  Future<bool> _saveChanges(BuildContext context, GraphQLClient client) async {
+    // No changes to make
+    if (!_isLoggedInUser()) {
+      return false;
+    }
+
+    // Start saving
+    setState(() {
+      _isSaving = true;
+    });
+
+    var updateData = {
+      "description": newDescription,
+      "name": newName,
+    };
+
+    // parse causes
+    var newCausesSet = newCauses.toSet();
+    var oldCausesSet = _user.causes.toSet();
+    var causesToRemove = oldCausesSet.difference(newCausesSet).toList();
+    var causesToAdd = newCausesSet.difference(oldCausesSet).toList();
+
+    print(causesToAdd);
+    print(causesToRemove);
+
+    // initialize mutation variables
+    var mutationVariables = {
+      "where": {"id": _user.id},
+      "disconnect": {
+        "causes": causesToRemove
+            .map((e) => {
+                  "where": {
+                    "node": {"id": e.id}
+                  }
+                })
+            .toList()
+      },
+      "connectOrCreate": {
+        "causes": causesToAdd
+            .map((e) => {
+                  "where": {
+                    "node": {"title": e.title}
+                  },
+                  "onCreate": {
+                    "node": {"title": e.title}
+                  }
+                })
+            .toList()
+      }
+    };
+
+    if (newProfileImage != null) {
+      // upload logo image
+      var imageResult = await _profileImagePicker.uploadImages(
+          "users/${_user.id}/",
+          imageKeyPrefix: "logo",
+          context: context,
+          client: client);
+
+      if (!imageResult.success) {
+        setState(() {
+          _isSaving = false;
+          _isEditing = false;
+        });
+        return false;
+      } else {
+        updateData["accountPictureUrl"] = imageResult.locations[0];
+      }
+    }
+
+    mutationVariables["update"] = updateData;
+
+    // Update
+    MutationOptions options = MutationOptions(
+        document: gql(updateUserMutation), variables: mutationVariables);
+
+    QueryResult result = await client.mutate(options);
+
+    setState(() {
+      _isSaving = false;
+      _isEditing = false;
+    });
+
+    return !result.hasException &&
+        result.data!['updateUsers']['users'][0]['id'] == _user.id;
+  }
+
   TextEditingController causesTextController = TextEditingController();
   // Text controller functions
   void formatAndEnterCause(String value) {
@@ -121,8 +219,8 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     causesTextController.clear();
   }
 
-  // Build components
-  _buildProfileImage() {
+  // Build editable components
+  Widget _buildProfileImage() {
     Widget avatar = ClickableAvatar(
       avatarText: _user.name[0],
       avatarImage: _isEditing
@@ -146,6 +244,131 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         : avatar;
   }
 
+  Widget _buildNameText() {
+    return _isEditing
+        ? TextFormField(
+            decoration: const InputDecoration(
+              labelText: null,
+              border: OutlineInputBorder(),
+            ),
+            minLines: 1,
+            maxLines: 1,
+            initialValue: newName,
+            onChanged: (value) => setState(() => newName = value))
+        : Text(_user.name,
+            style: Theme.of(context).textTheme.headline3,
+            textAlign: TextAlign.start);
+  }
+
+  List<Widget> _buildDescriptionComponents() {
+    List<Widget> components = [
+      Text(
+        "Description",
+        style: Theme.of(context).textTheme.headline4,
+      ),
+      const ListSpacer(),
+      const ListSpacer()
+    ];
+    components.insert(
+        2,
+        _isEditing
+            ? TextFormField(
+                decoration: const InputDecoration(
+                  labelText: null,
+                  border: OutlineInputBorder(),
+                ),
+                minLines: 3,
+                maxLines: 5,
+                initialValue: newDescription,
+                onChanged: (value) => setState(() => newDescription = value))
+            : Text(
+                _user.description,
+                style: Theme.of(context).textTheme.caption,
+              ));
+    return components;
+  }
+
+  List<Widget> _buildCauseComponents() {
+    var causeInput = TextFormField(
+        decoration: const InputDecoration(
+          hintText: "Type a cause then hit enter",
+          border: OutlineInputBorder(),
+        ),
+        controller: causesTextController,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ \n]*"))
+        ],
+        maxLength: 20,
+        minLines: 1,
+        maxLines: 1,
+        textInputAction: TextInputAction.done,
+        onFieldSubmitted: formatAndEnterCause,
+        textCapitalization: TextCapitalization.none);
+
+    var causesDisplay = CausesChips(
+        causes: newCauses,
+        allowDeletion: true,
+        onCauseDeleted: (cause) =>
+            {newCauses.remove(cause), setState(() => newCauses = newCauses)});
+
+    List<Widget> components = _isEditing || _user.causes.isNotEmpty
+        ? [
+            Text(
+              "Causes",
+              style: Theme.of(context).textTheme.headline4,
+            )
+          ]
+        : [];
+
+    if (_isEditing) {
+      components.addAll([causeInput, causesDisplay]);
+    } else if (_user.causes.isNotEmpty) {
+      components.add(CausesChips(causes: _user.causes));
+    }
+    return components;
+  }
+
+  // Build uneditable components
+  List<Widget> _buildMessageButton() {
+    return _isLoggedInUser()
+        ? []
+        : [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  primary: Theme.of(context).colorScheme.secondary,
+                  // onPrimary: Theme.of(context).colorScheme.onSecondary,
+                  minimumSize: const Size.fromHeight(48)),
+              onPressed: () => {},
+              child: Text('Message',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16.0,
+                      color: Theme.of(context).colorScheme.onError)),
+            ),
+            const ListSpacer(height: 20)
+          ];
+  }
+
+  List<Widget> _buildMembershipComponents() {
+    return _isEditing
+        ? []
+        : [
+            Text(
+              "Member at",
+              style: Theme.of(context).textTheme.headline4,
+            ),
+            const ListSpacer(),
+            Wrap(
+              spacing: 6.0,
+              runSpacing: 6.0,
+              children: _user.brands
+                  .map((b) => BrandChip(brand: b, onTap: (brand) => {}))
+                  .toList(),
+            ),
+            const ListSpacer()
+          ];
+  }
+
   // Build main view
   _buildHeader(BuildContext context) {
     return Column(
@@ -154,82 +377,25 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         children: [
           _buildProfileImage(),
           const ListSpacer(height: 20),
-          Text(_user.name,
-              style: Theme.of(context).textTheme.headline3,
-              textAlign: TextAlign.start),
+          _buildNameText(),
           const ListSpacer(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                primary: Theme.of(context).colorScheme.secondary,
-                // onPrimary: Theme.of(context).colorScheme.onSecondary,
-                minimumSize: const Size.fromHeight(48)),
-            onPressed: () => {},
-            child: Text('Message',
-                style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.0,
-                    color: Theme.of(context).colorScheme.onError)),
-          ),
-          const ListSpacer(height: 20),
+          ..._buildMessageButton()
         ]);
   }
 
   _buildBody(BuildContext context) {
-    List<Widget> _causeComponents = _user.causes.isNotEmpty
-        ? [
-            Text(
-              "Causes",
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            CausesChips(causes: _user.causes),
-          ]
-        : [];
-
-    List<Widget> _descriptionComponents = [
-      Text(
-        "Description",
-        style: Theme.of(context).textTheme.headline4,
-      ),
-      const ListSpacer(),
-      Text(
-        _user.description,
-        style: Theme.of(context).textTheme.caption,
-      ),
-      const ListSpacer()
-    ];
-
-    List<Widget> _membershipComponents = [
-      Text(
-        "Member at",
-        style: Theme.of(context).textTheme.headline4,
-      ),
-      const ListSpacer(),
-      Wrap(
-        spacing: 6.0,
-        runSpacing: 6.0,
-        children: _user.brands
-            .map((b) => BrandChip(brand: b, onTap: (brand) => {}))
-            .toList(),
-      ),
-      const ListSpacer()
-    ];
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: _isEditing
-          ? [..._descriptionComponents, ..._causeComponents]
-          : [
-              ..._descriptionComponents,
-              ..._membershipComponents,
-              ..._causeComponents,
-            ],
-    );
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ..._buildDescriptionComponents(),
+          ..._buildMembershipComponents(),
+          ..._buildCauseComponents()
+        ]);
   }
 
   @override
   Widget build(BuildContext context) {
-    final loggedInUser = ref.watch(loggedInUserProvider);
-
     return GraphQLConsumer(builder: (GraphQLClient client) {
       return FutureBuilder(
           future: _getUser(client),
@@ -242,10 +408,12 @@ class _AccountPageState extends ConsumerState<AccountPage> {
             return Scaffold(
                 appBar: AppBar(
                     title: null,
-                    actions: loggedInUser.getUser().id == _user.id
+                    actions: _isLoggedInUser() && !_isSaving
                         ? [
                             IconButton(
-                              onPressed: _toggleEditing,
+                              onPressed: () => _isEditing
+                                  ? _saveChanges(context, client)
+                                  : _toggleEditing(),
                               icon: Icon(_isEditing ? Icons.done : Icons.edit),
                             )
                           ]
@@ -253,10 +421,15 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                     backgroundColor: Theme.of(context).backgroundColor,
                     elevation: 0),
                 body: (snapshot.hasData
-                    ? ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        children: [_buildHeader(context), _buildBody(context)],
-                      )
+                    ? _isSaving
+                        ? const Loading()
+                        : ListView(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            children: [
+                              _buildHeader(context),
+                              _buildBody(context)
+                            ],
+                          )
                     : snapshot.hasError
                         ? const ErrorView()
                         : const Loading()));

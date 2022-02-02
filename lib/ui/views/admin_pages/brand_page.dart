@@ -58,8 +58,8 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$membersFirst: Int, 
 """;
 
 String updateBrandMutation = """
-mutation UpdateBrands(\$where: BrandWhere, \$update: BrandUpdateInput, \$connectOrCreate: BrandConnectOrCreateInput) {
-  updateBrands(where: \$where, update: \$update, connectOrCreate: \$connectOrCreate) {
+mutation UpdateBrands(\$where: BrandWhere, \$update: BrandUpdateInput, \$connectOrCreate: BrandConnectOrCreateInput, \$disconnect: BrandDisconnectInput) {
+  updateBrands(where: \$where, update: \$update, connectOrCreate: \$connectOrCreate, disconnet: \$disconnect) {
     brands {
       id
     }
@@ -191,13 +191,8 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
       }
     };
 
-    List<Future<ImageUploadResult>> imageUploadFutures = [];
-
     if (newLogoImage != null) {
       // upload logo image
-      imageUploadFutures.add(_logoPicker.uploadImages("brands/${_brand.id}/",
-          imageKeyPrefix: "logo", context: context, client: client));
-
       var logoResult = await _logoPicker.uploadImages("brands/${_brand.id}/",
           imageKeyPrefix: "logo", context: context, client: client);
 
@@ -212,9 +207,6 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
     }
     if (newBannerImage != null) {
       // upload banner image
-      imageUploadFutures.add(_bannerPicker.uploadImages("brands/${_brand.id}/",
-          imageKeyPrefix: "banner", context: context, client: client));
-
       var bannerResult = await _bannerPicker.uploadImages(
           "brands/${_brand.id}/",
           imageKeyPrefix: "banner",
