@@ -1,5 +1,4 @@
 import 'package:dotted_border/dotted_border.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:sagelink_communities/data/models/cause_model.dart';
 import 'package:sagelink_communities/ui/components/brand_chip.dart';
@@ -142,9 +141,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     var oldCausesSet = _user.causes.toSet();
     var causesToRemove = oldCausesSet.difference(newCausesSet).toList();
     var causesToAdd = newCausesSet.difference(oldCausesSet).toList();
-
-    print(causesToAdd);
-    print(causesToRemove);
 
     // initialize mutation variables
     var mutationVariables = {

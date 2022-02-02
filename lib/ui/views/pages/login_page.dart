@@ -16,8 +16,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   String? email;
   String? password;
   bool isLoggingIn = false;
+  late final Authentication auth = ref.watch(authProvider);
 
-  void _handleLogin(Authentication auth, BuildContext context) async {
+  void _handleLogin(BuildContext context) async {
     if (email == null || password == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text("Enter email and password"),
@@ -69,9 +70,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loggedInUser = ref.watch(loggedInUserProvider);
-    final auth = ref.watch(authProvider);
-
     return Scaffold(body: GraphQLConsumer(builder: (GraphQLClient client) {
       return Center(
         child: isLoggingIn
@@ -84,7 +82,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     buildPasswordForm(),
                     ElevatedButton(
                         onPressed: () => {
-                              _handleLogin(auth, context),
+                              _handleLogin(context),
                               setState(() {
                                 isLoggingIn = true;
                               })

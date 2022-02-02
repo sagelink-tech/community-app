@@ -110,7 +110,7 @@ class UniversalImagePicker {
         }
       }
     } catch (e) {
-      print(e);
+      // log error
     } finally {
       images = selection;
       if (onSelected != null) {

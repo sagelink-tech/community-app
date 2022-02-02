@@ -20,14 +20,14 @@ class DefaultFirebaseOptions {
     AppEnvironment buildEnv = FlutterAppConfig.environment;
 
     if (kIsWeb) {
-      return buildEnv == AppEnvironment.dev ? web_dev : web_demo;
+      return buildEnv == AppEnvironment.dev ? webDev : webDemo;
     }
     // ignore: missing_enum_constant_in_switch
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return buildEnv == AppEnvironment.dev ? android_dev : android_demo;
+        return buildEnv == AppEnvironment.dev ? androidDev : androidDemo;
       case TargetPlatform.iOS:
-        return buildEnv == AppEnvironment.dev ? ios_dev : ios_demo;
+        return buildEnv == AppEnvironment.dev ? iosDev : iosDemo;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -41,7 +41,7 @@ class DefaultFirebaseOptions {
   }
 
   // Web options
-  static const FirebaseOptions web_demo = FirebaseOptions(
+  static const FirebaseOptions webDemo = FirebaseOptions(
     apiKey: 'AIzaSyCpFceloWPS9naiOYWNCIMQNoWk-iBXYaw',
     appId: '1:851337593328:web:2f04624f53e578d51f5d35',
     messagingSenderId: '851337593328',
@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
     measurementId: 'G-CFP19QCB9E',
   );
 
-  static const FirebaseOptions web_dev = FirebaseOptions(
+  static const FirebaseOptions webDev = FirebaseOptions(
     apiKey: 'AIzaSyAM0YIfLpy32yC2jyzgI-jFRu6cILrKcNs',
     appId: '1:365461850788:web:aa2304c666dd7e434f3431',
     messagingSenderId: '365461850788',
@@ -61,7 +61,7 @@ class DefaultFirebaseOptions {
   );
 
   // Android options
-  static const FirebaseOptions android_dev = FirebaseOptions(
+  static const FirebaseOptions androidDev = FirebaseOptions(
     apiKey: 'AIzaSyDAY0U7BEMoF_dwuR0bkDj5Svw-0L2Tg3s',
     appId: '1:365461850788:android:81e6363b097840c74f3431',
     messagingSenderId: '365461850788',
@@ -69,7 +69,7 @@ class DefaultFirebaseOptions {
     storageBucket: 'sagelink-community-dev.appspot.com',
   );
 
-  static const FirebaseOptions android_demo = FirebaseOptions(
+  static const FirebaseOptions androidDemo = FirebaseOptions(
     apiKey: 'AIzaSyAyCC3G1omr2-QSKLvzovCIG2B4GtS-O1o',
     appId: '1:851337593328:android:f7a541ab528b11291f5d35',
     messagingSenderId: '851337593328',
@@ -78,7 +78,7 @@ class DefaultFirebaseOptions {
   );
 
   // iOS options
-  static const FirebaseOptions ios_dev = FirebaseOptions(
+  static const FirebaseOptions iosDev = FirebaseOptions(
     apiKey: 'AIzaSyC4mVykrxd_9ARflIQTTXXCZf2SVkVNbJ8',
     appId: '1:365461850788:ios:f047368ed58edd154f3431',
     messagingSenderId: '365461850788',
@@ -89,7 +89,7 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.sagelink.communityApp.dev',
   );
 
-  static const FirebaseOptions ios_demo = FirebaseOptions(
+  static const FirebaseOptions iosDemo = FirebaseOptions(
     apiKey: 'AIzaSyBgPEfJltYUhqa2tHWNJp3Zl18x-HXj6Oo',
     appId: '1:851337593328:ios:04f88cb980c57ec81f5d35',
     messagingSenderId: '851337593328',
