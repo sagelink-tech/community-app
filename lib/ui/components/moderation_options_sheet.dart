@@ -5,17 +5,32 @@ import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
+import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+
+import 'list_spacer.dart';
 
 class ModerationOption {
   String title;
   Icon icon;
   VoidCallback onAction;
+  bool needsConfirmation;
+  String confirmationText;
+  String confirmationButtonText;
+  String confirmationCancelText;
+  bool showAvatar;
 
   ModerationOption(
-      {required this.title, required this.icon, required this.onAction});
+      {required this.title,
+      required this.icon,
+      required this.onAction,
+      this.needsConfirmation = true,
+      this.showAvatar = false,
+      this.confirmationText = "Are you sure you want to do this?",
+      this.confirmationButtonText = "Confirm",
+      this.confirmationCancelText = "Cancel"});
 }
 
-class ModerationOptionsSheet extends ConsumerWidget {
+class ModerationOptionsSheet extends ConsumerStatefulWidget {
   final PostModel? post;
   final CommentModel? comment;
   final String brandId;
@@ -24,8 +39,30 @@ class ModerationOptionsSheet extends ConsumerWidget {
       {required this.brandId, this.post, this.comment, Key? key})
       : super(key: key);
 
-  bool get _isPost => post != null;
-  bool get _isComment => comment != null;
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _ModerationOptionsSheetState();
+}
+
+class _ModerationOptionsSheetState
+    extends ConsumerState<ModerationOptionsSheet> {
+  bool get _isPost => widget.post != null;
+  bool get _isComment => widget.comment != null;
+
+  UserModel get _creatorDetails => _isPost
+      ? widget.post!.creator
+      : _isComment
+          ? widget.comment!.creator
+          : UserModel();
+  String get _parentId => _isPost
+      ? widget.post!.id
+      : _isComment
+          ? widget.comment!.id
+          : "";
+  late final LoggedInUser _user = ref.watch(loggedInUserProvider);
+
+  bool isConfirming = false;
+  ModerationOption? selectedOption;
 
   String get typeString => _isPost
       ? "post"
@@ -35,47 +72,49 @@ class ModerationOptionsSheet extends ConsumerWidget {
 
   bool _isValid() => _isPost || _isComment;
 
-  List<ModerationOption> getOptions(
-      LoggedInUser loggedInUser, BuildContext context) {
+  List<ModerationOption> getOptions() {
     if (!_isValid()) {
       return [];
     }
 
-    String parentId = _isPost
-        ? post!.id
-        : _isComment
-            ? comment!.id
-            : "";
-    UserModel parentCreator = _isPost
-        ? post!.creator
-        : _isComment
-            ? comment!.creator
-            : UserModel();
-
     ModerationOption editOption = ModerationOption(
         title: "Edit " + typeString,
         icon: const Icon(Icons.edit_outlined),
-        onAction: () => onEdit(context));
+        onAction: onEdit,
+        needsConfirmation: false);
     ModerationOption removeOption = ModerationOption(
         title: "Remove " + typeString,
         icon: const Icon(Icons.delete_outlined),
-        onAction: () => onRemove(context));
+        onAction: onRemove,
+        confirmationText:
+            "Are you sure you want to permanently remove this $typeString?",
+        confirmationButtonText: "Yes, remove");
     ModerationOption flagOption = ModerationOption(
         title: "Flag " + typeString,
         icon: const Icon(Icons.edit_outlined),
-        onAction: () => onFlag(context));
+        onAction: onFlag,
+        confirmationText:
+            "Are you sure you want to flag this $typeString to the moderators?",
+        confirmationButtonText: "Yes, flag");
     ModerationOption blockUserOption = ModerationOption(
-        title: "Block " + parentCreator.name,
+        title: "Block " + _creatorDetails.name,
         icon: const Icon(Icons.block_outlined),
-        onAction: () => onBlock(context));
+        onAction: onBlockUser,
+        showAvatar: true,
+        confirmationText:
+            "Are you sure you want to block ${_creatorDetails.name}?",
+        confirmationButtonText: "Yes, block");
     ModerationOption flagUserOption = ModerationOption(
-        title: "Flag " + parentCreator.name,
+        title: "Flag " + _creatorDetails.name,
         icon: const Icon(Icons.block_outlined),
-        onAction: () => onBlock(context));
+        onAction: onFlagUser,
+        showAvatar: true,
+        confirmationText:
+            "Are you sure you want to flag ${_creatorDetails.name}? You can view flagged users in the admin portal.",
+        confirmationButtonText: "Yes, flag");
 
-    bool isCreator = (loggedInUser.getUser().id == parentCreator.id);
-    bool isModerator =
-        (loggedInUser.isAdmin && loggedInUser.adminBrandId == brandId);
+    bool isCreator = (_user.getUser().id == _creatorDetails.id);
+    bool isModerator = (_user.isAdmin && _user.adminBrandId == widget.brandId);
 
     if (isCreator) {
       return [editOption, removeOption];
@@ -86,49 +125,139 @@ class ModerationOptionsSheet extends ConsumerWidget {
     return [flagOption, blockUserOption];
   }
 
-  void complete(BuildContext context) {
+  Widget _buildConfirmationPage() {
+    if (selectedOption == null) {
+      return Container();
+    }
+    ModerationOption option = selectedOption!;
+
+    List<Widget> headerWidgets = option.showAvatar
+        ? [
+            ClickableAvatar(
+              radius: 35,
+              avatarText: _creatorDetails.name[0],
+              avatarImage: _creatorDetails.profileImage(),
+            ),
+            const ListSpacer(height: 10),
+            Text(
+              option.confirmationText,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headline6,
+            )
+          ]
+        : [
+            Text(option.confirmationText,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headline6)
+          ];
+
+    List<Widget> buttonWidgets = [
+      ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            primary: Theme.of(context).colorScheme.secondary,
+            // onPrimary: Theme.of(context).colorScheme.onSecondary,
+            minimumSize: const Size.fromHeight(48),
+            elevation: 0),
+        onPressed: option.onAction,
+        child: Text(option.confirmationButtonText,
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16.0,
+                color: Theme.of(context).colorScheme.onError)),
+      ),
+      const ListSpacer(height: 20),
+      OutlinedButton(
+        style: OutlinedButton.styleFrom(
+            primary: Theme.of(context).colorScheme.primary,
+            minimumSize: const Size.fromHeight(48)),
+        onPressed: complete,
+        child: Text(option.confirmationCancelText),
+      ),
+    ];
+
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 25),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Align(
+                alignment: Alignment.topLeft,
+                child: (IconButton(
+                    onPressed: toggleConfirmation,
+                    icon: const Icon(Icons.arrow_back_outlined)))),
+            ...headerWidgets,
+            const ListSpacer(height: 20),
+            ...buttonWidgets
+          ],
+        ));
+  }
+
+  void toggleConfirmation() {
+    setState(() {
+      isConfirming = !isConfirming;
+    });
+  }
+
+  void complete() {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     }
   }
 
-  void onEdit(BuildContext context) {
+  void onEdit() {
     print('selected edit');
-    complete(context);
+    complete();
   }
 
-  void onFlag(BuildContext context) {
+  void onFlag() {
     print('selected flag');
-    complete(context);
+    complete();
   }
 
-  void onRemove(BuildContext context) {
+  void onRemove() {
     print('selected remove');
-    complete(context);
+    complete();
   }
 
-  void onBlock(BuildContext context) {
-    print('selected block');
-    complete(context);
+  void onBlockUser() {
+    print('selected block user');
+    complete();
+  }
+
+  void onFlagUser() {
+    print('selected flag user');
+    complete();
+  }
+
+  void selectOption(ModerationOption option) {
+    option.needsConfirmation
+        ? setState(() {
+            selectedOption = option;
+            isConfirming = true;
+          })
+        : option.onAction();
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final LoggedInUser _user = ref.watch(loggedInUserProvider);
+  Widget build(BuildContext context) {
     return _isValid()
         ? SafeArea(
-            child: Wrap(
-              children: getOptions(_user, context)
-                  .map((option) => ListTile(
-                        leading: option.icon,
-                        title: Text(
-                          option.title,
-                          style: Theme.of(context).textTheme.bodyText1,
-                        ),
-                        onTap: option.onAction,
-                      ))
-                  .toList(),
-            ),
+            child: isConfirming
+                ? _buildConfirmationPage()
+                : Wrap(
+                    children: getOptions()
+                        .map((option) => ListTile(
+                              leading: option.icon,
+                              title: Text(
+                                option.title,
+                                style: Theme.of(context).textTheme.bodyText1,
+                              ),
+                              onTap: () => {selectOption(option)},
+                            ))
+                        .toList(),
+                  ),
           )
         : throw NullThrownError();
   }
