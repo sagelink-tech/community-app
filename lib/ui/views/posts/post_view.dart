@@ -4,6 +4,7 @@ import 'package:sagelink_communities/ui/components/image_carousel.dart';
 import 'package:sagelink_communities/ui/components/link_preview.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
+import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/views/comments/new_comment.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
@@ -84,6 +85,17 @@ class _PostViewState extends State<PostView> {
     });
   }
 
+  void _showOptionsModal(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return ModerationOptionsSheet(
+            brandId: _post.brand.id,
+            post: _post,
+          );
+        });
+  }
+
   List<Widget> _buildBodyView() {
     Widget detail;
     switch (_post.type) {
@@ -103,13 +115,6 @@ class _PostViewState extends State<PostView> {
     }
 
     return [
-      const ListSpacer(),
-      Text('ORIGINAL POST', style: Theme.of(context).textTheme.headline5),
-      const ListSpacer(),
-      Text(_post.title, style: Theme.of(context).textTheme.headline4),
-      const ListSpacer(),
-      detail,
-      const ListSpacer(),
       Row(children: [
         ClickableAvatar(
           radius: 30,
@@ -117,9 +122,27 @@ class _PostViewState extends State<PostView> {
           avatarURL: _post.creator.accountPictureUrl,
         ),
         const ListSpacer(),
-        Text(_post.creator.name + " • " + timeago.format(_post.createdAt),
-            style: Theme.of(context).textTheme.caption),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_post.creator.name,
+                style: Theme.of(context).textTheme.bodyText1),
+            Text(timeago.format(_post.createdAt),
+                style: Theme.of(context).textTheme.caption),
+          ],
+        ),
+        const Spacer(),
+        IconButton(
+            onPressed: () => _showOptionsModal(context),
+            color: Theme.of(context).colorScheme.primary,
+            icon: const Icon(Icons.more_horiz_outlined))
       ]),
+      const ListSpacer(),
+      Text(_post.title, style: Theme.of(context).textTheme.headline4),
+      const ListSpacer(),
+      detail,
+      const ListSpacer(),
     ];
   }
 
@@ -169,7 +192,8 @@ class _PostViewState extends State<PostView> {
                       ? const Loading()
                       : Container(
                           alignment: AlignmentDirectional.topStart,
-                          padding: const EdgeInsets.symmetric(horizontal: 25),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 25, vertical: 10),
                           child: Stack(children: [
                             ListView(shrinkWrap: true, children: <Widget>[
                               ..._buildBodyView(),
@@ -181,6 +205,7 @@ class _PostViewState extends State<PostView> {
                               // Comment view
                               CommentListView(
                                 _post.comments,
+                                brandId: _post.brand.id,
                                 onAddReply: (commentId) => {
                                   completeReplyOnThread(commentId),
                                   if (refetch != null) refetch()

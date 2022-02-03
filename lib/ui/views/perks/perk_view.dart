@@ -171,6 +171,7 @@ class _PerkViewState extends State<PerkView>
             _perk.comments.isNotEmpty
                 ? CommentListView(
                     _perk.comments,
+                    brandId: _perk.brand.id,
                     onAddReply: (commentId) => {
                       completeReplyOnThread(commentId),
                       if (refetch != null) refetch()

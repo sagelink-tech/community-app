@@ -2,6 +2,7 @@ import 'package:expandable_text/expandable_text.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:flutter/material.dart';
+import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/views/pages/account_page.dart';
@@ -15,13 +16,15 @@ typedef AddReactionCallback = void Function(String commentId);
 class CommentCell extends StatelessWidget {
   final int itemNo;
   final CommentModel comment;
+  final String brandId;
   final ShowThreadCallback? onShowThread;
   final AddReplyCallback? onAddReply;
   final AddReactionCallback? onAddReaction;
   final bool inThreadView;
 
   const CommentCell(this.itemNo, this.comment,
-      {this.onAddReply,
+      {required this.brandId,
+      this.onAddReply,
       this.onShowThread,
       this.onAddReaction,
       this.inThreadView = false,
@@ -33,9 +36,21 @@ class CommentCell extends StatelessWidget {
         MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
   }
 
+  void _showOptionsModal(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return ModerationOptionsSheet(
+            brandId: brandId,
+            comment: comment,
+          );
+        });
+  }
+
   Widget _buildBody(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10),
+      width: double.infinity,
       decoration: BoxDecoration(
           color: Theme.of(context).selectedRowColor,
           borderRadius: const BorderRadius.only(
@@ -44,8 +59,15 @@ class CommentCell extends StatelessWidget {
             topRight: Radius.circular(10.0),
           )),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(comment.creator.name,
-            style: Theme.of(context).textTheme.headline3),
+        Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+          Text(comment.creator.name,
+              style: Theme.of(context).textTheme.bodyText1),
+          const Spacer(),
+          IconButton(
+              onPressed: () => _showOptionsModal(context),
+              color: Theme.of(context).colorScheme.primary,
+              icon: const Icon(Icons.more_horiz_outlined)),
+        ]),
         const ListSpacer(),
         ExpandableText(
           comment.body,
@@ -55,7 +77,7 @@ class CommentCell extends StatelessWidget {
           linkEllipsis: true,
           linkColor: Theme.of(context).colorScheme.secondaryVariant,
           collapseOnTextTap: true,
-          style: Theme.of(context).textTheme.bodyText1,
+          style: Theme.of(context).textTheme.bodyText2,
           maxLines: 3,
         )
       ]),

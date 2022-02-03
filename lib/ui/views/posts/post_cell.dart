@@ -2,6 +2,7 @@ import 'package:sagelink_communities/ui/components/activity_badge.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
 import 'package:sagelink_communities/ui/components/link_preview.dart';
+import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/ui/views/posts/post_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -46,6 +47,17 @@ class PostCell extends StatelessWidget {
     return;
   }
 
+  void _showOptionsModal(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return ModerationOptionsSheet(
+            brandId: post.brand.id,
+            post: post,
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     _buildTitle() {
@@ -61,7 +73,12 @@ class PostCell extends StatelessWidget {
                     backgroundColor: post.brand.mainColor,
                   ),
                   const SizedBox(width: 10),
-                  Text(post.brand.name)
+                  Text(post.brand.name),
+                  const Spacer(),
+                  IconButton(
+                      onPressed: () => _showOptionsModal(context),
+                      color: Theme.of(context).colorScheme.primary,
+                      icon: const Icon(Icons.more_horiz_outlined))
                 ],
               )));
     }

@@ -43,7 +43,7 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
 
 class CommentListView extends StatefulWidget {
   final List<CommentModel> comments;
-
+  final String brandId;
   final ShowThreadCallback? onShowThread;
   final CloseThreadCallback? onCloseThread;
   final AddReplyCallback? onAddReply;
@@ -52,7 +52,8 @@ class CommentListView extends StatefulWidget {
   final bool shrinkWrap;
 
   const CommentListView(this.comments,
-      {this.shouldReloadComments,
+      {required this.brandId,
+      this.shouldReloadComments,
       this.onShowThread,
       this.onCloseThread,
       this.onAddReply,
@@ -145,6 +146,7 @@ class _CommentListViewState extends State<CommentListView> {
       itemBuilder: (context, index) => CommentCell(
         index,
         showingComments[index],
+        brandId: widget.brandId,
         inThreadView: showingThread,
         onAddReply: widget.onAddReply,
         onShowThread: (commentId) =>
