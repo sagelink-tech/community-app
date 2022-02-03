@@ -7,26 +7,22 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/views/pages/account_page.dart';
 
-typedef ShowThreadCallback = void Function(String commentId);
-
-typedef AddReplyCallback = void Function(String commentId);
-
-typedef AddReactionCallback = void Function(String commentId);
+typedef VoidCommentCallback = void Function(String commentId);
 
 class CommentCell extends StatelessWidget {
   final int itemNo;
   final CommentModel comment;
   final String brandId;
-  final ShowThreadCallback? onShowThread;
-  final AddReplyCallback? onAddReply;
-  final AddReactionCallback? onAddReaction;
+  final VoidCommentCallback? onShowThread;
+  final VoidCommentCallback? onAddReply;
+  final VoidCommentCallback? onUpdate;
   final bool inThreadView;
 
   const CommentCell(this.itemNo, this.comment,
       {required this.brandId,
       this.onAddReply,
       this.onShowThread,
-      this.onAddReaction,
+      this.onUpdate,
       this.inThreadView = false,
       Key? key})
       : super(key: key);
@@ -43,6 +39,7 @@ class CommentCell extends StatelessWidget {
           return ModerationOptionsSheet(
             brandId: brandId,
             comment: comment,
+            onComplete: () => onUpdate != null ? onUpdate!(comment.id) : {},
           );
         });
   }
@@ -90,7 +87,7 @@ class CommentCell extends StatelessWidget {
           style: Theme.of(context).textTheme.caption),
       TextButton(
           onPressed: () => {
-                if (onAddReaction != null) {onAddReaction!(comment.id)}
+                if (onUpdate != null) {onUpdate!(comment.id)}
               },
           style: TextButton.styleFrom(
             primary: Theme.of(context).colorScheme.secondary,

@@ -176,6 +176,7 @@ class _PerkViewState extends State<PerkView>
                       completeReplyOnThread(commentId),
                       if (refetch != null) refetch()
                     },
+                    onUpdate: (commentId) => {refetch != null ? refetch() : {}},
                     onShowThread: _showCommentThread,
                     onCloseThread: () => {
                       setState(() {

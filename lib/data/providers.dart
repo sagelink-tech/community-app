@@ -7,6 +7,11 @@ import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
+import 'package:sagelink_communities/data/services/comment_service.dart';
+
+////////////////////////////////////////
+// API providers                      //
+////////////////////////////////////////
 
 final gqlClientProvider = ChangeNotifierProvider((ref) => ValueNotifier(
     GraphQLClient(
@@ -22,6 +27,14 @@ final gqlClientProvider = ChangeNotifierProvider((ref) => ValueNotifier(
                 Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
         cache: GraphQLCache(store: HiveStore()),
         link: HttpLink(FlutterAppConfig().apiUrl()))));
+
+final commentServiceProvider = Provider((ref) => CommentService(
+    client: ref.watch(gqlClientProvider).value,
+    user: ref.watch(loggedInUserProvider)));
+
+////////////////////////////////////////
+// Auth providers                     //
+////////////////////////////////////////
 
 final loggedInUserProvider =
     StateNotifierProvider<LoggedInUserStateNotifier, LoggedInUser>((ref) {
@@ -42,4 +55,7 @@ final authProvider = Provider((ref) => Authentication());
 final authStateChangesProvider =
     StreamProvider<User?>((ref) => Authentication().authStateChange);
 
+////////////////////////////////////////
+// App state providers                //
+////////////////////////////////////////
 final appStateProvider = ChangeNotifierProvider((ref) => AppState());

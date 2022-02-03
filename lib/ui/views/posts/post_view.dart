@@ -85,18 +85,19 @@ class _PostViewState extends State<PostView> {
     });
   }
 
-  void _showOptionsModal(context) {
+  void _showOptionsModal(context, VoidCallback? refetch) {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {
           return ModerationOptionsSheet(
             brandId: _post.brand.id,
             post: _post,
+            onComplete: refetch,
           );
         });
   }
 
-  List<Widget> _buildBodyView() {
+  List<Widget> _buildBodyView(VoidCallback? refetch) {
     Widget detail;
     switch (_post.type) {
       case PostType.text:
@@ -134,7 +135,7 @@ class _PostViewState extends State<PostView> {
         ),
         const Spacer(),
         IconButton(
-            onPressed: () => _showOptionsModal(context),
+            onPressed: () => _showOptionsModal(context, refetch),
             color: Theme.of(context).colorScheme.primary,
             icon: const Icon(Icons.more_horiz_outlined))
       ]),
@@ -196,7 +197,7 @@ class _PostViewState extends State<PostView> {
                               horizontal: 25, vertical: 10),
                           child: Stack(children: [
                             ListView(shrinkWrap: true, children: <Widget>[
-                              ..._buildBodyView(),
+                              ..._buildBodyView(refetch),
                               // Responses header
                               const ListSpacer(),
                               Text('RESPONSES',
@@ -210,6 +211,8 @@ class _PostViewState extends State<PostView> {
                                   completeReplyOnThread(commentId),
                                   if (refetch != null) refetch()
                                 },
+                                onUpdate: (commentId) =>
+                                    {refetch != null ? refetch() : {}},
                                 onShowThread: _showCommentThread,
                                 onCloseThread: () => {
                                   setState(() {

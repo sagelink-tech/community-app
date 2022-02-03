@@ -4,14 +4,7 @@ import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/views/comments/comment_cell.dart';
 import 'package:flutter/material.dart';
 
-typedef ShowThreadCallback = void Function(String commentId);
-
-typedef AddReplyCallback = void Function(String commentId);
-
-typedef AddReactionCallback = void Function(String commentId);
-
-typedef ReloadCommentsCallback = void Function();
-typedef CloseThreadCallback = void Function();
+typedef VoidCommentCallback = void Function(String commentId);
 
 String getCommentThreadQuery = """
 query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
@@ -44,11 +37,11 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
 class CommentListView extends StatefulWidget {
   final List<CommentModel> comments;
   final String brandId;
-  final ShowThreadCallback? onShowThread;
-  final CloseThreadCallback? onCloseThread;
-  final AddReplyCallback? onAddReply;
-  final AddReactionCallback? onAddReaction;
-  final ReloadCommentsCallback? shouldReloadComments;
+  final VoidCommentCallback? onShowThread;
+  final VoidCallback? onCloseThread;
+  final VoidCommentCallback? onAddReply;
+  final VoidCommentCallback? onUpdate;
+  final VoidCallback? shouldReloadComments;
   final bool shrinkWrap;
 
   const CommentListView(this.comments,
@@ -57,7 +50,7 @@ class CommentListView extends StatefulWidget {
       this.onShowThread,
       this.onCloseThread,
       this.onAddReply,
-      this.onAddReaction,
+      this.onUpdate,
       this.shrinkWrap = false,
       Key? key})
       : super(key: key);
@@ -151,7 +144,7 @@ class _CommentListViewState extends State<CommentListView> {
         onAddReply: widget.onAddReply,
         onShowThread: (commentId) =>
             shouldShowThread(client, context, showingComments[index]),
-        onAddReaction: widget.onAddReaction,
+        onUpdate: widget.onUpdate,
       ),
       separatorBuilder: (context, index) => const Divider(),
     );

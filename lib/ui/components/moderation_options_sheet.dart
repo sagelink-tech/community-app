@@ -5,6 +5,7 @@ import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
+import 'package:sagelink_communities/data/services/comment_service.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 
 import 'list_spacer.dart';
@@ -18,25 +19,32 @@ class ModerationOption {
   String confirmationButtonText;
   String confirmationCancelText;
   bool showAvatar;
+  VoidCallback? onComplete;
 
-  ModerationOption(
-      {required this.title,
-      required this.icon,
-      required this.onAction,
-      this.needsConfirmation = true,
-      this.showAvatar = false,
-      this.confirmationText = "Are you sure you want to do this?",
-      this.confirmationButtonText = "Confirm",
-      this.confirmationCancelText = "Cancel"});
+  ModerationOption({
+    required this.title,
+    required this.icon,
+    required this.onAction,
+    this.needsConfirmation = true,
+    this.showAvatar = false,
+    this.confirmationText = "Are you sure you want to do this?",
+    this.confirmationButtonText = "Confirm",
+    this.confirmationCancelText = "Cancel",
+  });
 }
 
 class ModerationOptionsSheet extends ConsumerStatefulWidget {
   final PostModel? post;
   final CommentModel? comment;
   final String brandId;
+  final VoidCallback? onComplete;
 
   const ModerationOptionsSheet(
-      {required this.brandId, this.post, this.comment, Key? key})
+      {required this.brandId,
+      this.onComplete,
+      this.post,
+      this.comment,
+      Key? key})
       : super(key: key);
 
   @override
@@ -60,6 +68,7 @@ class _ModerationOptionsSheetState
           ? widget.comment!.id
           : "";
   late final LoggedInUser _user = ref.watch(loggedInUserProvider);
+  late final CommentService commentService = ref.watch(commentServiceProvider);
 
   bool isConfirming = false;
   ModerationOption? selectedOption;
@@ -201,6 +210,10 @@ class _ModerationOptionsSheetState
   }
 
   void complete() {
+    print(widget.onComplete);
+    if (widget.onComplete != null) {
+      widget.onComplete!();
+    }
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     }
@@ -213,12 +226,25 @@ class _ModerationOptionsSheetState
 
   void onFlag() {
     print('selected flag');
+    if (_isComment) {
+      commentService.flagComment(
+        widget.comment!,
+        onComplete: (data) => complete(),
+      );
+    }
     complete();
   }
 
   void onRemove() {
-    print('selected remove');
-    complete();
+    if (_isComment) {
+      commentService.removeComment(
+        widget.comment!,
+        widget.brandId,
+        onComplete: (data) => complete(),
+      );
+    } else {
+      complete();
+    }
   }
 
   void onBlockUser() {

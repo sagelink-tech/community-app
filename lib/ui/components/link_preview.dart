@@ -1,16 +1,16 @@
 import 'package:any_link_preview/any_link_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/ui/components/empty_result.dart';
-import 'package:sagelink_communities/ui/components/error_view.dart';
 
 class LinkPreview extends StatelessWidget {
   final String? linkUrl;
-  bool showError = true;
+  final bool showError;
 
   LinkPreview(this.linkUrl, {this.showError = false, Key? key})
       : super(key: key);
 
-  late bool _validUrl = linkUrl != null && AnyLinkPreview.isValidLink(linkUrl!);
+  late final bool _validUrl =
+      linkUrl != null && AnyLinkPreview.isValidLink(linkUrl!);
 
   _buildPreview(BuildContext context) {
     return AnyLinkPreview(
