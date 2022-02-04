@@ -6,7 +6,8 @@ import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
-import 'package:sagelink_communities/data/services/post_queries.dart';
+import 'package:sagelink_communities/data/services/post_service.dart';
+import 'package:sagelink_communities/data/services/user_service.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 
 import 'list_spacer.dart';
@@ -73,6 +74,7 @@ class _ModerationOptionsSheetState
   late final LoggedInUser _user = ref.watch(loggedInUserProvider);
   late final CommentService commentService = ref.watch(commentServiceProvider);
   late final PostService postService = ref.watch(postServiceProvider);
+  late final UserService userService = ref.watch(userServiceProvider);
 
   bool isConfirming = false;
   ModerationOption? selectedOption;
@@ -261,15 +263,15 @@ class _ModerationOptionsSheetState
   }
 
   void onBlockUser() {
-    //TODO
-    print('selected block user');
-    complete();
+    userService.blockUser(_creatorDetails, onComplete: (data) => complete());
   }
 
   void onFlagUser() {
-    //TODO
-    print('selected flag user');
-    complete();
+    userService.unflagUser(
+      _creatorDetails,
+      widget.brandId,
+      onComplete: (data) => complete(),
+    );
   }
 
   void selectOption(ModerationOption option) {

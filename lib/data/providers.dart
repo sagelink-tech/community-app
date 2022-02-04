@@ -8,7 +8,8 @@ import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
-import 'package:sagelink_communities/data/services/post_queries.dart';
+import 'package:sagelink_communities/data/services/post_service.dart';
+import 'package:sagelink_communities/data/services/user_service.dart';
 
 ////////////////////////////////////////
 // API providers                      //
@@ -36,6 +37,10 @@ final commentServiceProvider = Provider((ref) => CommentService(
 final postServiceProvider = Provider((ref) => PostService(
     client: ref.watch(gqlClientProvider).value,
     user: ref.watch(loggedInUserProvider)));
+
+final userServiceProvider = Provider((ref) => UserService(
+    client: ref.watch(gqlClientProvider).value,
+    authUser: ref.watch(loggedInUserProvider)));
 
 ////////////////////////////////////////
 // Auth providers                     //
