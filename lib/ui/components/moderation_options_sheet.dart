@@ -100,7 +100,7 @@ class _ModerationOptionsSheetState
         confirmationButtonText: "Yes, remove");
     ModerationOption flagOption = ModerationOption(
         title: "Flag " + typeString,
-        icon: const Icon(Icons.edit_outlined),
+        icon: const Icon(Icons.flag_outlined),
         onAction: onFlag,
         confirmationText:
             "Are you sure you want to flag this $typeString to the moderators?",
@@ -115,7 +115,7 @@ class _ModerationOptionsSheetState
         confirmationButtonText: "Yes, block");
     ModerationOption flagUserOption = ModerationOption(
         title: "Flag " + _creatorDetails.name,
-        icon: const Icon(Icons.block_outlined),
+        icon: const Icon(Icons.report_problem_outlined),
         onAction: onFlagUser,
         showAvatar: true,
         confirmationText:
@@ -129,7 +129,7 @@ class _ModerationOptionsSheetState
       return [editOption, removeOption];
     }
     if (isModerator) {
-      return [removeOption, flagUserOption];
+      return [removeOption, flagUserOption, flagOption];
     }
     return [flagOption, blockUserOption];
   }
@@ -210,7 +210,6 @@ class _ModerationOptionsSheetState
   }
 
   void complete() {
-    print(widget.onComplete);
     if (widget.onComplete != null) {
       widget.onComplete!();
     }
@@ -225,14 +224,14 @@ class _ModerationOptionsSheetState
   }
 
   void onFlag() {
-    print('selected flag');
     if (_isComment) {
       commentService.flagComment(
         widget.comment!,
         onComplete: (data) => complete(),
       );
+    } else {
+      complete();
     }
-    complete();
   }
 
   void onRemove() {

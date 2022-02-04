@@ -15,8 +15,8 @@ mutation Mutation(\$delete: CommentDeleteInput, \$where: CommentWhere) {
 
 // ignore: constant_identifier_names
 const String UPDATE_COMMENT_MUTATION = '''
-mutation Mutation(\$update: CommentUpdateInput, \$where: CommentWhere) {
-  updateComments(update: \$update, where: \$where) {
+mutation Mutation(\$update: CommentUpdateInput, \$where: CommentWhere, \$connect: CommentConnectInput) {
+  updateComments(update: \$update, where: \$where, connect: \$connect) {
     comments {
       id
     }
@@ -74,9 +74,7 @@ class CommentService {
 
     MutationOptions options = MutationOptions(
         document: gql(REMOVE_COMMENT_MUTATION), variables: variables);
-    print(options);
     QueryResult result = await client.mutate(options);
-    print(result);
     if (result.hasException) {
       print(result.exception);
       return false;
@@ -104,6 +102,7 @@ class CommentService {
   Future<bool> flagComment(CommentModel comment,
       {OnMutationCompleted? onComplete}) async {
     Map<String, dynamic> variables = {
+      "where": {"id": comment.id},
       "connect": {
         "flaggedBy": {
           "where": {
@@ -122,7 +121,7 @@ class CommentService {
     }
 
     bool success = (result.data != null &&
-        result.data!['comments'][0]['id'] == comment.id);
+        result.data!['updateComments']['comments'][0]['id'] == comment.id);
 
     if (success && onComplete != null) {
       onComplete(result.data);
