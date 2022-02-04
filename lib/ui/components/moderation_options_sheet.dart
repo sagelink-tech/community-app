@@ -6,6 +6,7 @@ import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
+import 'package:sagelink_communities/data/services/post_queries.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 
 import 'list_spacer.dart';
@@ -38,12 +39,14 @@ class ModerationOptionsSheet extends ConsumerStatefulWidget {
   final CommentModel? comment;
   final String brandId;
   final VoidCallback? onComplete;
+  final VoidCallback? onDelete;
 
   const ModerationOptionsSheet(
       {required this.brandId,
       this.onComplete,
       this.post,
       this.comment,
+      this.onDelete,
       Key? key})
       : super(key: key);
 
@@ -69,6 +72,7 @@ class _ModerationOptionsSheetState
           : "";
   late final LoggedInUser _user = ref.watch(loggedInUserProvider);
   late final CommentService commentService = ref.watch(commentServiceProvider);
+  late final PostService postService = ref.watch(postServiceProvider);
 
   bool isConfirming = false;
   ModerationOption? selectedOption;
@@ -209,9 +213,12 @@ class _ModerationOptionsSheetState
     });
   }
 
-  void complete() {
-    if (widget.onComplete != null) {
+  void complete({bool isDeleting = false}) {
+    if (widget.onComplete != null && !isDeleting) {
       widget.onComplete!();
+    }
+    if (widget.onDelete != null && isDeleting) {
+      widget.onDelete!();
     }
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
@@ -219,6 +226,7 @@ class _ModerationOptionsSheetState
   }
 
   void onEdit() {
+    //TODO
     print('selected edit');
     complete();
   }
@@ -230,7 +238,10 @@ class _ModerationOptionsSheetState
         onComplete: (data) => complete(),
       );
     } else {
-      complete();
+      postService.flagPost(
+        widget.post!,
+        onComplete: (data) => complete(),
+      );
     }
   }
 
@@ -239,19 +250,24 @@ class _ModerationOptionsSheetState
       commentService.removeComment(
         widget.comment!,
         widget.brandId,
-        onComplete: (data) => complete(),
+        onComplete: (data) => complete(isDeleting: true),
       );
     } else {
-      complete();
+      postService.removePost(
+        widget.post!,
+        onComplete: (data) => complete(isDeleting: true),
+      );
     }
   }
 
   void onBlockUser() {
+    //TODO
     print('selected block user');
     complete();
   }
 
   void onFlagUser() {
+    //TODO
     print('selected flag user');
     complete();
   }

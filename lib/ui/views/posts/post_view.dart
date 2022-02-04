@@ -93,6 +93,8 @@ class _PostViewState extends State<PostView> {
             brandId: _post.brand.id,
             post: _post,
             onComplete: refetch,
+            onDelete: () =>
+                {Navigator.canPop(context) ? Navigator.pop(context) : {}},
           );
         });
   }

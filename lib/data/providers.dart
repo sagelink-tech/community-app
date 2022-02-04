@@ -8,6 +8,7 @@ import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
+import 'package:sagelink_communities/data/services/post_queries.dart';
 
 ////////////////////////////////////////
 // API providers                      //
@@ -29,6 +30,10 @@ final gqlClientProvider = ChangeNotifierProvider((ref) => ValueNotifier(
         link: HttpLink(FlutterAppConfig().apiUrl()))));
 
 final commentServiceProvider = Provider((ref) => CommentService(
+    client: ref.watch(gqlClientProvider).value,
+    user: ref.watch(loggedInUserProvider)));
+
+final postServiceProvider = Provider((ref) => PostService(
     client: ref.watch(gqlClientProvider).value,
     user: ref.watch(loggedInUserProvider)));
 
