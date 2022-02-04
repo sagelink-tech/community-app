@@ -22,6 +22,17 @@ class Authentication {
   //  Read this to know more about futures.
   //  Trust me it will really clear all your concepts about futures
 
+  // Get JWT for signing requests
+  Future<String?> getJWT() async {
+    try {
+      String token = await authInstance.currentUser!.getIdToken(true);
+      return token;
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
   //  SigIn the user using Email and Password
   Future<void> signInWithEmailAndPassword(
       String email, String password, BuildContext context) async {

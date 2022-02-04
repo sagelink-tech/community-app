@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/app/app_config.dart';
+import 'package:sagelink_communities/app/graphql_config.dart';
 import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
@@ -15,20 +16,20 @@ import 'package:sagelink_communities/data/services/user_service.dart';
 // API providers                      //
 ////////////////////////////////////////
 
-final gqlClientProvider = ChangeNotifierProvider((ref) => ValueNotifier(
-    GraphQLClient(
-        defaultPolicies: DefaultPolicies(
-            watchQuery:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            watchMutation:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            query: Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            mutate:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            subscribe:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
-        cache: GraphQLCache(store: HiveStore()),
-        link: HttpLink(FlutterAppConfig().apiUrl()))));
+final gqlClientProvider = ChangeNotifierProvider((ref) {
+  final Authentication auth = ref.watch(authProvider);
+  auth.authInstance.authStateChanges().listen((User? user) async {
+    if (user != null) {
+      String? token = await auth.getJWT();
+      token != null
+          ? GraphQLConfiguration.setToken(token)
+          : GraphQLConfiguration.removeToken();
+    } else {
+      GraphQLConfiguration.removeToken();
+    }
+  });
+  return GraphQLConfiguration().client;
+});
 
 final commentServiceProvider = Provider((ref) => CommentService(
     client: ref.watch(gqlClientProvider).value,
