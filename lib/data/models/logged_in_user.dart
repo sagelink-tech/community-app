@@ -62,6 +62,10 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
     }
   }
 
+  void setIsLoading() {
+    state = LoggedInUser(user: UserModel(), status: LoginState.isLoggingIn);
+  }
+
   // Fetch logged in user's data from the SL backend
   Future<Object?> fetchUserData(
       {String userId = "", String email = "", String firebaseId = ""}) async {

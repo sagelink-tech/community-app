@@ -11,6 +11,7 @@ class UserModel extends ChangeNotifier {
   String email = "email@email.com";
   String accountPictureUrl = "";
   DateTime createdAt = DateTime(2020, 1, 1, 0, 0);
+  bool isBlockedByUser = false;
 
   Image profileImage() => accountPictureUrl.isNotEmpty
       ? Image.network(
@@ -58,6 +59,9 @@ class UserModel extends ChangeNotifier {
     if (json.containsKey('createdAt')) {
       createdAt =
           DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
+    }
+    if (json.containsKey('isBlockedByUser')) {
+      isBlockedByUser = json['isBlockedByUser'];
     }
     accountPictureUrl = json.containsKey('accountPictureUrl')
         ? json['accountPictureUrl'] ?? ""
@@ -117,6 +121,9 @@ class EmployeeModel extends UserModel {
       createdAt =
           DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
     }
+    if (json.containsKey('isBlockedByUser')) {
+      isBlockedByUser = json['isBlockedByUser'];
+    }
     accountPictureUrl = json.containsKey('accountPictureUrl')
         ? json['accountPictureUrl'] ?? ""
         : "";
@@ -165,6 +172,9 @@ class MemberModel extends UserModel {
     if (json.containsKey('createdAt')) {
       createdAt =
           DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
+    }
+    if (json.containsKey('isBlockedByUser')) {
+      isBlockedByUser = json['isBlockedByUser'];
     }
     accountPictureUrl = json.containsKey('accountPictureUrl')
         ? json['accountPictureUrl'] ?? ""

@@ -7,6 +7,7 @@ class CommentModel extends ChangeNotifier {
   String body = "";
   DateTime createdAt = DateTime(2020, 1, 1, 0, 0, 1);
   int replyCount = 0;
+  bool isFlaggedByUser = false;
 
   UserModel _creator = UserModel();
 
@@ -37,7 +38,9 @@ class CommentModel extends ChangeNotifier {
     replyCount = json.containsKey('repliesAggregate')
         ? replyCount = json['repliesAggregate']['count']
         : 0;
-
+    if (json.containsKey('isFlaggedByUser')) {
+      isFlaggedByUser = json['isFlaggedByUser'];
+    }
     List<CommentModel> replyList = [];
     if (json.containsKey('replies')) {
       for (var c in json['replies']) {

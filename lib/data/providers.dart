@@ -1,7 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/app/app_config.dart';
 import 'package:sagelink_communities/app/graphql_config.dart';
 import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/models/app_state_model.dart';
@@ -15,20 +13,27 @@ import 'package:sagelink_communities/data/services/user_service.dart';
 ////////////////////////////////////////
 // API providers                      //
 ////////////////////////////////////////
+final gqlConfigProvider = ChangeNotifierProvider((ref) {
+  var gqlConfig = GraphQLConfiguration();
+  final authState = ref.watch(authStateChangesProvider);
+  final auth = ref.watch(authProvider);
+  authState.when(
+      data: (user) async {
+        if (user != null) {
+          var token = await auth.getJWT();
+          token != null ? gqlConfig.setToken(token) : gqlConfig.removeToken();
+        } else {
+          gqlConfig.removeToken();
+        }
+      },
+      error: (e, trace) => gqlConfig.removeToken(),
+      loading: () => {});
+  return gqlConfig;
+});
 
-final gqlClientProvider = ChangeNotifierProvider((ref) {
-  final Authentication auth = ref.watch(authProvider);
-  auth.authInstance.authStateChanges().listen((User? user) async {
-    if (user != null) {
-      String? token = await auth.getJWT();
-      token != null
-          ? GraphQLConfiguration.setToken(token)
-          : GraphQLConfiguration.removeToken();
-    } else {
-      GraphQLConfiguration.removeToken();
-    }
-  });
-  return GraphQLConfiguration().client;
+final gqlClientProvider = Provider((ref) {
+  final config = ref.watch(gqlConfigProvider);
+  return ValueNotifier(config.client);
 });
 
 final commentServiceProvider = Provider((ref) => CommentService(
@@ -49,15 +54,20 @@ final userServiceProvider = Provider((ref) => UserService(
 
 final loggedInUserProvider =
     StateNotifierProvider<LoggedInUserStateNotifier, LoggedInUser>((ref) {
-  final auth = ref.watch(authProvider);
   final client = ref.watch(gqlClientProvider);
+  final gqlConfig = ref.watch(gqlConfigProvider);
+  final authState = ref.watch(authStateChangesProvider);
 
   var notifier = LoggedInUserStateNotifier(LoggedInUser(user: UserModel()),
       client: client.value);
 
-  auth.authInstance.userChanges().listen((User? user) {
-    notifier.updateUserWithState(user);
-  });
+  authState.when(
+      data: (user) {
+        gqlConfig.isAuthenticated ? notifier.updateUserWithState(user) : {};
+      },
+      error: (e, trace) => notifier.updateUserWithState(null),
+      loading: () => notifier.setIsLoading());
+
   return notifier;
 });
 

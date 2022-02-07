@@ -1,3 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/models/logged_in_user.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/brand_chip.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
@@ -28,10 +31,12 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
     linkUrl
     images
     type
+    isFlaggedByUser
     createdBy {
       id
       name
       accountPictureUrl
+      isBlockedByUser
     }
     commentsAggregate {
       count
@@ -47,7 +52,7 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
 }
 ''';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   static const routeName = '/home';
@@ -56,10 +61,11 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   List<String> selectedBrandIds = [];
   List<PostModel> posts = [];
   List<BrandModel?> brands = [];
+  late final LoggedInUser _user = ref.watch(loggedInUserProvider);
 
   void _handleBrandFilter(BrandModel? brand, bool selected) {
     List<String> updatedIds = selectedBrandIds;
@@ -89,15 +95,12 @@ class _HomePageState extends State<HomePage> {
         "sort": [
           {"createdAt": "DESC"}
         ]
-      }
+      },
+      "where": {}
     };
 
     if (selectedBrandIds.isNotEmpty) {
-      variables['where'] = {
-        "inBrandCommunityConnection": {
-          "node": {"id_IN": selectedBrandIds}
-        }
-      };
+      variables['where']['inBrandCommunity'] = {"id_IN": selectedBrandIds};
     }
 
     QueryResult result = await client.query(QueryOptions(

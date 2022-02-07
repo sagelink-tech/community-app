@@ -1,27 +1,46 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/app/app_config.dart';
 
-class GraphQLConfiguration {
-  static Link? link;
-  static HttpLink httpLink = HttpLink(FlutterAppConfig().apiUrl());
+class GraphQLConfiguration extends ChangeNotifier {
+  Link? link;
+  HttpLink httpLink = HttpLink(FlutterAppConfig().apiUrl());
 
-  static void setToken(String token) {
-    AuthLink alink = AuthLink(getToken: () async => 'Bearer ' + token);
-    GraphQLConfiguration.link = alink.concat(GraphQLConfiguration.httpLink);
+  bool get isAuthenticated => link != null;
+
+  void updateClient() {
+    client = GraphQLClient(
+        defaultPolicies: DefaultPolicies(
+            watchQuery:
+                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+            watchMutation:
+                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+            query: Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+            mutate:
+                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+            subscribe:
+                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
+        cache: GraphQLCache(store: HiveStore()),
+        link: getLink());
+    notifyListeners();
   }
 
-  static void removeToken() {
-    GraphQLConfiguration.link = null;
+  void setToken(String token) {
+    AuthLink alink = AuthLink(getToken: () => 'Bearer ' + token);
+    link = alink.concat(httpLink);
+    updateClient();
   }
 
-  static Link getLink() {
-    return GraphQLConfiguration.link != null
-        ? GraphQLConfiguration.link!
-        : GraphQLConfiguration.httpLink;
+  void removeToken() {
+    link = null;
+    updateClient();
   }
 
-  ValueNotifier<GraphQLClient> client = ValueNotifier(GraphQLClient(
+  Link getLink() {
+    return link != null ? link! : httpLink;
+  }
+
+  late GraphQLClient client = GraphQLClient(
       defaultPolicies: DefaultPolicies(
           watchQuery:
               Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
@@ -32,5 +51,5 @@ class GraphQLConfiguration {
           subscribe:
               Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
       cache: GraphQLCache(store: HiveStore()),
-      link: getLink()));
+      link: getLink());
 }
