@@ -107,7 +107,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     if (result.data != null && (result.data!['posts'] as List).isNotEmpty) {
       List postJsons = result.data!['posts'] as List;
-      return postJsons.map((e) => PostModel.fromJson(e)).toList();
+      List<PostModel> posts =
+          postJsons.map((e) => PostModel.fromJson(e)).toList();
+      posts.removeWhere(
+          (p) => p.isFlaggedByUser || p.creator.queryUserHasBlocked);
+      return posts;
     }
     return [];
   }

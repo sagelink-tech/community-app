@@ -27,6 +27,9 @@ class CommentCell extends StatelessWidget {
       Key? key})
       : super(key: key);
 
+  bool get _isHidden =>
+      comment.isFlaggedByUser || comment.creator.queryUserHasBlocked;
+
   void _goToAccount(BuildContext context, String userId) async {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
@@ -144,23 +147,6 @@ class CommentCell extends StatelessWidget {
           ))
     ];
 
-    // if (comment.replyCount == 0) {
-    //   _widgets.add(
-    //     Container(
-    //       constraints: const BoxConstraints(
-    //           minWidth: 20, maxWidth: 30, minHeight: 25, maxHeight: 120),
-    //       margin: const EdgeInsets.only(left: 20, bottom: 20),
-    //       decoration: const BoxDecoration(
-    //           color: Colors.transparent,
-    //           borderRadius:
-    //               BorderRadius.only(bottomLeft: Radius.circular(10.0)),
-    //           border: Border(
-    //             left: BorderSide(color: Colors.black),
-    //             bottom: BorderSide(color: Colors.black),
-    //           )),
-    //     ),
-    //   );
-    // }
     return Column(
         children: _widgets, crossAxisAlignment: CrossAxisAlignment.start);
   }

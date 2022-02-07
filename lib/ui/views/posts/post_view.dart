@@ -22,10 +22,12 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
     images
     linkUrl
     createdAt
+    isFlaggedByUser
     createdBy {
       id
       name
       accountPictureUrl
+      queryUserHasBlocked
     }
     inBrandCommunity {
       id
@@ -40,10 +42,12 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
       id
       body
       createdAt
+      isFlaggedByUser
       createdBy {
         id
         name
         accountPictureUrl
+        queryUserHasBlocked
       }
       repliesAggregate {
         count

@@ -29,9 +29,11 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
         id
         name
         accountPictureUrl
+        queryUserHasBlocked
       }
       title
       body
+      isFlaggedByUser
       id
       linkUrl
       images
@@ -229,7 +231,9 @@ class _BrandHomepageState extends State<BrandHomepage>
             for (var p in result.data?['brands'][0]['posts']) {
               PostModel post = PostModel.fromJson(p);
               post.brand = _brand;
-              posts.add(post);
+              if (!post.isFlaggedByUser && !post.creator.queryUserHasBlocked) {
+                posts.add(post);
+              }
             }
             _posts = posts;
             List<PerkModel> perks = [];

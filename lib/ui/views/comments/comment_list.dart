@@ -13,10 +13,12 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
       id
       body
       createdAt
+      isFlaggedByUser
       createdBy {
         id
         name
         accountPictureUrl
+        queryUserHasBlocked
       }
     }
     repliesAggregate {
@@ -25,10 +27,12 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
     id
     body
     createdAt
+    isFlaggedByUser
     createdBy {
       id
       name
       accountPictureUrl
+      queryUserHasBlocked
     }
   }
 }
@@ -70,6 +74,8 @@ class _CommentListViewState extends State<CommentListView> {
   void initState() {
     super.initState();
     initialComments = widget.comments;
+    initialComments
+        .removeWhere((c) => c.isFlaggedByUser || c.creator.queryUserHasBlocked);
     showingComments = initialComments;
   }
 
@@ -96,6 +102,8 @@ class _CommentListViewState extends State<CommentListView> {
       widget.onShowThread!(parentComment.id);
     }
     var updatedComments = await _fetchThread(client, parentComment);
+    updatedComments
+        .removeWhere((c) => c.isFlaggedByUser || c.creator.queryUserHasBlocked);
     setState(() {
       fetching = false;
       showingThread = true;
