@@ -90,6 +90,7 @@ class _PostViewState extends State<PostView> {
         context: context,
         builder: (BuildContext bc) {
           return ModerationOptionsSheet(
+            ModerationOptionSheetType.post,
             brandId: _post.brand.id,
             post: _post,
             onComplete: refetch,

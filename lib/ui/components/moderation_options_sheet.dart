@@ -12,6 +12,8 @@ import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 
 import 'list_spacer.dart';
 
+enum ModerationOptionSheetType { post, comment, user }
+
 class ModerationOption {
   String title;
   Icon icon;
@@ -36,17 +38,20 @@ class ModerationOption {
 }
 
 class ModerationOptionsSheet extends ConsumerStatefulWidget {
+  final ModerationOptionSheetType type;
   final PostModel? post;
   final CommentModel? comment;
-  final String brandId;
+  final UserModel? user;
+  final String? brandId;
   final VoidCallback? onComplete;
   final VoidCallback? onDelete;
 
-  const ModerationOptionsSheet(
-      {required this.brandId,
+  const ModerationOptionsSheet(this.type,
+      {this.brandId,
       this.onComplete,
       this.post,
       this.comment,
+      this.user,
       this.onDelete,
       Key? key})
       : super(key: key);
@@ -58,19 +63,17 @@ class ModerationOptionsSheet extends ConsumerStatefulWidget {
 
 class _ModerationOptionsSheetState
     extends ConsumerState<ModerationOptionsSheet> {
-  bool get _isPost => widget.post != null;
-  bool get _isComment => widget.comment != null;
+  UserModel get _relatedUserDetails {
+    switch (widget.type) {
+      case ModerationOptionSheetType.post:
+        return widget.post!.creator;
+      case ModerationOptionSheetType.comment:
+        return widget.comment!.creator;
+      case ModerationOptionSheetType.user:
+        return widget.user!;
+    }
+  }
 
-  UserModel get _creatorDetails => _isPost
-      ? widget.post!.creator
-      : _isComment
-          ? widget.comment!.creator
-          : UserModel();
-  String get _parentId => _isPost
-      ? widget.post!.id
-      : _isComment
-          ? widget.comment!.id
-          : "";
   late final LoggedInUser _user = ref.watch(loggedInUserProvider);
   late final CommentService commentService = ref.watch(commentServiceProvider);
   late final PostService postService = ref.watch(postServiceProvider);
@@ -79,13 +82,27 @@ class _ModerationOptionsSheetState
   bool isConfirming = false;
   ModerationOption? selectedOption;
 
-  String get typeString => _isPost
-      ? "post"
-      : _isComment
-          ? "comment"
-          : "";
+  String get typeString {
+    switch (widget.type) {
+      case ModerationOptionSheetType.post:
+        return "post";
+      case ModerationOptionSheetType.comment:
+        return "comment";
+      case ModerationOptionSheetType.user:
+        return "user";
+    }
+  }
 
-  bool _isValid() => _isPost || _isComment;
+  bool _isValid() {
+    switch (widget.type) {
+      case ModerationOptionSheetType.post:
+        return widget.post != null;
+      case ModerationOptionSheetType.comment:
+        return widget.comment != null;
+      case ModerationOptionSheetType.user:
+        return widget.user != null;
+    }
+  }
 
   List<ModerationOption> getOptions() {
     if (!_isValid()) {
@@ -112,32 +129,60 @@ class _ModerationOptionsSheetState
             "Are you sure you want to flag this $typeString to the moderators?",
         confirmationButtonText: "Yes, flag");
     ModerationOption blockUserOption = ModerationOption(
-        title: "Block " + _creatorDetails.name,
+        title: "Block " + _relatedUserDetails.name,
         icon: const Icon(Icons.block_outlined),
         onAction: onBlockUser,
         showAvatar: true,
         confirmationText:
-            "Are you sure you want to block ${_creatorDetails.name}?",
+            "Are you sure you want to block ${_relatedUserDetails.name}?",
         confirmationButtonText: "Yes, block");
-    ModerationOption flagUserOption = ModerationOption(
-        title: "Flag " + _creatorDetails.name,
-        icon: const Icon(Icons.report_problem_outlined),
-        onAction: onFlagUser,
+    ModerationOption unblockUserOption = ModerationOption(
+        title: "Unblock " + _relatedUserDetails.name,
+        icon: const Icon(Icons.check_circle_outline_outlined),
+        onAction: onUnblockUser,
         showAvatar: true,
         confirmationText:
-            "Are you sure you want to flag ${_creatorDetails.name}? You can view flagged users in the admin portal.",
+            "Are you sure you want to unblock ${_relatedUserDetails.name}?",
+        confirmationButtonText: "Yes, unblock");
+    ModerationOption flagUserOption = ModerationOption(
+        title: "Flag " + _relatedUserDetails.name,
+        icon: const Icon(Icons.report_problem_outlined),
+        onAction: onFlag,
+        showAvatar: true,
+        confirmationText:
+            "Are you sure you want to flag ${_relatedUserDetails.name}? You can view flagged users in the admin portal.",
         confirmationButtonText: "Yes, flag");
 
-    bool isCreator = (_user.getUser().id == _creatorDetails.id);
-    bool isModerator = (_user.isAdmin && _user.adminBrandId == widget.brandId);
+    bool isCreator = (_user.getUser().id == _relatedUserDetails.id);
+    bool isModerator = (_user.isAdmin &&
+        widget.brandId != null &&
+        _user.adminBrandId == widget.brandId);
 
-    if (isCreator) {
-      return [editOption, removeOption];
+    switch (widget.type) {
+      case ModerationOptionSheetType.user:
+        {
+          return [
+            _relatedUserDetails.queryUserHasBlocked
+                ? unblockUserOption
+                : blockUserOption
+          ];
+        }
+      default:
+        {
+          if (isCreator) {
+            return [editOption, removeOption];
+          }
+          if (isModerator) {
+            return [removeOption, flagUserOption, flagOption];
+          }
+          return [
+            flagOption,
+            _relatedUserDetails.queryUserHasBlocked
+                ? unblockUserOption
+                : blockUserOption
+          ];
+        }
     }
-    if (isModerator) {
-      return [removeOption, flagUserOption, flagOption];
-    }
-    return [flagOption, blockUserOption];
   }
 
   Widget _buildConfirmationPage() {
@@ -150,8 +195,8 @@ class _ModerationOptionsSheetState
         ? [
             ClickableAvatar(
               radius: 35,
-              avatarText: _creatorDetails.name[0],
-              avatarImage: _creatorDetails.profileImage(),
+              avatarText: _relatedUserDetails.name[0],
+              avatarImage: _relatedUserDetails.profileImage(),
             ),
             const ListSpacer(height: 10),
             Text(
@@ -234,44 +279,57 @@ class _ModerationOptionsSheetState
   }
 
   void onFlag() {
-    if (_isComment) {
-      commentService.flagComment(
-        widget.comment!,
-        onComplete: (data) => complete(),
-      );
-    } else {
-      postService.flagPost(
-        widget.post!,
-        onComplete: (data) => complete(),
-      );
+    switch (widget.type) {
+      case ModerationOptionSheetType.post:
+        postService.flagPost(
+          widget.post!,
+          onComplete: (data) => complete(),
+        );
+        break;
+      case ModerationOptionSheetType.comment:
+        commentService.flagComment(
+          widget.comment!,
+          onComplete: (data) => complete(),
+        );
+        break;
+      case ModerationOptionSheetType.user:
+        userService.flagUser(
+          _relatedUserDetails,
+          _user.adminBrandId!,
+          onComplete: (data) => complete(),
+        );
+        break;
     }
   }
 
   void onRemove() {
-    if (_isComment) {
-      commentService.removeComment(
-        widget.comment!,
-        widget.brandId,
-        onComplete: (data) => complete(isDeleting: true),
-      );
-    } else {
-      postService.removePost(
-        widget.post!,
-        onComplete: (data) => complete(isDeleting: true),
-      );
+    switch (widget.type) {
+      case ModerationOptionSheetType.post:
+        postService.removePost(
+          widget.post!,
+          onComplete: (data) => complete(isDeleting: true),
+        );
+        break;
+      case ModerationOptionSheetType.comment:
+        commentService.removeComment(
+          widget.comment!,
+          widget.brandId!,
+          onComplete: (data) => complete(isDeleting: true),
+        );
+        break;
+      case ModerationOptionSheetType.user:
+        break;
     }
   }
 
   void onBlockUser() {
-    userService.blockUser(_creatorDetails, onComplete: (data) => complete());
+    userService.blockUser(_relatedUserDetails,
+        onComplete: (data) => complete());
   }
 
-  void onFlagUser() {
-    userService.unflagUser(
-      _creatorDetails,
-      widget.brandId,
-      onComplete: (data) => complete(),
-    );
+  void onUnblockUser() {
+    userService.unblockUser(_relatedUserDetails,
+        onComplete: (data) => complete());
   }
 
   void selectOption(ModerationOption option) {

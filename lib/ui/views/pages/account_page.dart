@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/components/universal_image_picker.dart';
 
 String getUserQuery = """
@@ -21,6 +22,8 @@ query UsersQuery(\$where: UserWhere, \$options: UserOptions) {
     id
     description
     accountPictureUrl
+    queryUserHasBlocked
+    queryUserIsBlocked
     memberOfBrands {
       id
       name
@@ -116,6 +119,18 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         newProfileImage = null;
       });
     }
+  }
+
+  void _showOptionsModal(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return ModerationOptionsSheet(
+            ModerationOptionSheetType.user,
+            user: _user,
+            onComplete: () => setState(() {}),
+          );
+        });
   }
 
   // Save changes
@@ -325,10 +340,13 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   }
 
   // Build uneditable components
+  bool canMessage() => !(_isLoggedInUser() ||
+      _user.queryUserHasBlocked ||
+      _user.queryUserIsBlocked);
+
   List<Widget> _buildMessageButton() {
-    return _isLoggedInUser()
-        ? []
-        : [
+    return canMessage()
+        ? [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                   primary: Theme.of(context).colorScheme.secondary,
@@ -342,7 +360,8 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                       color: Theme.of(context).colorScheme.onError)),
             ),
             const ListSpacer(height: 20)
-          ];
+          ]
+        : [];
   }
 
   List<Widget> _buildMembershipComponents() {
@@ -413,7 +432,11 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                               icon: Icon(_isEditing ? Icons.done : Icons.edit),
                             )
                           ]
-                        : null,
+                        : [
+                            IconButton(
+                                onPressed: () => _showOptionsModal(context),
+                                icon: const Icon(Icons.more_horiz_outlined))
+                          ],
                     backgroundColor: Theme.of(context).backgroundColor,
                     elevation: 0),
                 body: (snapshot.hasData

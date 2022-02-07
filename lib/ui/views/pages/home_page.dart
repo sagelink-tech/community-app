@@ -1,6 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sagelink_communities/data/models/logged_in_user.dart';
-import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/brand_chip.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
@@ -36,7 +34,7 @@ query GetPostsQuery(\$options: PostOptions, \$where: PostWhere) {
       id
       name
       accountPictureUrl
-      isBlockedByUser
+      queryUserHasBlocked
     }
     commentsAggregate {
       count
@@ -65,7 +63,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   List<String> selectedBrandIds = [];
   List<PostModel> posts = [];
   List<BrandModel?> brands = [];
-  late final LoggedInUser _user = ref.watch(loggedInUserProvider);
 
   void _handleBrandFilter(BrandModel? brand, bool selected) {
     List<String> updatedIds = selectedBrandIds;

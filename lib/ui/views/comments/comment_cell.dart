@@ -37,6 +37,7 @@ class CommentCell extends StatelessWidget {
         context: context,
         builder: (BuildContext bc) {
           return ModerationOptionsSheet(
+            ModerationOptionSheetType.comment,
             brandId: brandId,
             comment: comment,
             onComplete: () => onUpdate != null ? onUpdate!(comment.id) : {},

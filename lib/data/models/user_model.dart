@@ -11,7 +11,8 @@ class UserModel extends ChangeNotifier {
   String email = "email@email.com";
   String accountPictureUrl = "";
   DateTime createdAt = DateTime(2020, 1, 1, 0, 0);
-  bool isBlockedByUser = false;
+  bool queryUserIsBlocked = false;
+  bool queryUserHasBlocked = false;
 
   Image profileImage() => accountPictureUrl.isNotEmpty
       ? Image.network(
@@ -60,8 +61,11 @@ class UserModel extends ChangeNotifier {
       createdAt =
           DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
     }
-    if (json.containsKey('isBlockedByUser')) {
-      isBlockedByUser = json['isBlockedByUser'];
+    if (json.containsKey('queryUserHasBlocked')) {
+      queryUserHasBlocked = json['queryUserHasBlocked'];
+    }
+    if (json.containsKey('queryUserIsBlocked')) {
+      queryUserIsBlocked = json['queryUserIsBlocked'];
     }
     accountPictureUrl = json.containsKey('accountPictureUrl')
         ? json['accountPictureUrl'] ?? ""
@@ -121,8 +125,11 @@ class EmployeeModel extends UserModel {
       createdAt =
           DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
     }
-    if (json.containsKey('isBlockedByUser')) {
-      isBlockedByUser = json['isBlockedByUser'];
+    if (json.containsKey('queryUserHasBlocked')) {
+      queryUserHasBlocked = json['queryUserHasBlocked'];
+    }
+    if (json.containsKey('queryUserIsBlocked')) {
+      queryUserIsBlocked = json['queryUserIsBlocked'];
     }
     accountPictureUrl = json.containsKey('accountPictureUrl')
         ? json['accountPictureUrl'] ?? ""
@@ -173,8 +180,11 @@ class MemberModel extends UserModel {
       createdAt =
           DateTime.tryParse(json["createdAt"]) ?? DateTime(2020, 1, 1, 0, 0, 1);
     }
-    if (json.containsKey('isBlockedByUser')) {
-      isBlockedByUser = json['isBlockedByUser'];
+    if (json.containsKey('queryUserHasBlocked')) {
+      queryUserHasBlocked = json['queryUserHasBlocked'];
+    }
+    if (json.containsKey('queryUserIsBlocked')) {
+      queryUserIsBlocked = json['queryUserIsBlocked'];
     }
     accountPictureUrl = json.containsKey('accountPictureUrl')
         ? json['accountPictureUrl'] ?? ""

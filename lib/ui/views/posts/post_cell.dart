@@ -52,6 +52,7 @@ class PostCell extends StatelessWidget {
         context: context,
         builder: (BuildContext bc) {
           return ModerationOptionsSheet(
+            ModerationOptionSheetType.post,
             brandId: post.brand.id,
             post: post,
           );
