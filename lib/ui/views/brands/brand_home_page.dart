@@ -10,6 +10,7 @@ import 'package:sagelink_communities/ui/views/brands/brand_overview.dart';
 import 'package:sagelink_communities/ui/views/perks/perk_list.dart';
 import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/ui/views/posts/post_list.dart';
+import 'package:sagelink_communities/ui/views/users/user_list.dart';
 
 String getBrandQuery = """
 query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions, \$perksOptions: PerkOptions, \$membersFirst: Int, \$employeesFirst: Int) {
@@ -157,10 +158,19 @@ class _BrandHomepageState extends State<BrandHomepage>
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Column(children: [
                 Text(_brand.name, style: Theme.of(context).textTheme.headline3),
-                StackedAvatars(
-                  [..._brand.employees, ..._brand.members],
-                  showOverflow: (_brand.totalCommunityCount > 3),
-                ),
+                InkWell(
+                    onTap: () => {
+                          showModalBottomSheet(
+                              context: context,
+                              builder: (BuildContext bc) {
+                                return UserListView(
+                                    [..._brand.employees, ..._brand.members]);
+                              })
+                        },
+                    child: StackedAvatars(
+                      [..._brand.employees, ..._brand.members],
+                      showOverflow: (_brand.totalCommunityCount > 3),
+                    )),
                 const Text("VIP Community"),
               ])),
         ]),

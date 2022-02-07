@@ -5,7 +5,7 @@ import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/ui/views/pages/account_page.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 
 String getEmployeesQuery = """
 query Users(\$where: UserWhere, \$options: UserOptions) {

@@ -9,7 +9,7 @@ import 'package:sagelink_communities/ui/views/admin_pages/home_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/members_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/perks_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/team_page.dart';
-import 'package:sagelink_communities/ui/views/pages/account_page.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:sagelink_communities/ui/views/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

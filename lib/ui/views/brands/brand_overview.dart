@@ -3,7 +3,7 @@ import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
-import 'package:sagelink_communities/ui/views/pages/account_page.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BrandOverview extends StatelessWidget {

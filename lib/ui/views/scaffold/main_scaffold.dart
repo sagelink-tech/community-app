@@ -1,6 +1,6 @@
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/go_to_admin_page.dart';
-import 'package:sagelink_communities/ui/views/pages/account_page.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:sagelink_communities/ui/views/pages/brands_page.dart';
 import 'package:sagelink_communities/ui/views/pages/home_page.dart';
 import 'package:sagelink_communities/ui/views/pages/perks_page.dart';

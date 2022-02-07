@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:sagelink_communities/data/models/comment_model.dart';
-import 'package:sagelink_communities/ui/views/pages/account_page.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 
 typedef VoidCommentCallback = void Function(String commentId);
 
