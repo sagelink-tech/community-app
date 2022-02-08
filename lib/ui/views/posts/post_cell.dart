@@ -4,6 +4,7 @@ import 'package:sagelink_communities/ui/components/image_carousel.dart';
 import 'package:sagelink_communities/ui/components/link_preview.dart';
 import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
+import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/ui/views/posts/post_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
@@ -55,6 +56,14 @@ class PostCell extends StatelessWidget {
             ModerationOptionSheetType.post,
             brandId: post.brand.id,
             post: post,
+            onEdit: () => {
+              print('push'),
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) => NewPostPage(
+                      brandId: post.brand.id,
+                      onCompleted: () => {},
+                      post: post)))
+            },
           );
         });
   }

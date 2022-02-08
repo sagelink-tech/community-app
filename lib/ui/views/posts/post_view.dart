@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/ui/views/comments/comment_list.dart';
+import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 String getPostQuery = """
@@ -111,14 +112,22 @@ class _PostViewState extends State<PostView> {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {
-          return ModerationOptionsSheet(
-            ModerationOptionSheetType.post,
-            brandId: _post.brand.id,
-            post: _post,
-            onComplete: refetch,
-            onDelete: () =>
-                {Navigator.canPop(context) ? Navigator.pop(context) : {}},
-          );
+          return ModerationOptionsSheet(ModerationOptionSheetType.post,
+              brandId: _post.brand.id,
+              post: _post,
+              onComplete: refetch,
+              onDelete: () =>
+                  {Navigator.canPop(context) ? Navigator.pop(context) : {}},
+              onEdit: () => {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) => NewPostPage(
+                            brandId: _post.brand.id,
+                            onCompleted: () => {
+                                  if (Navigator.of(context).canPop())
+                                    {Navigator.of(context).pop()}
+                                },
+                            post: _post)))
+                  });
         });
   }
 

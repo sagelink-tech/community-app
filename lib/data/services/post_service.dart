@@ -152,8 +152,8 @@ class PostService {
       return false;
     }
 
-    bool success =
-        (result.data != null && result.data!['posts'][0]['id'] == post.id);
+    bool success = (result.data != null &&
+        result.data!['updatePosts']['posts'][0]['id'] == post.id);
 
     if (success && onComplete != null) {
       onComplete(result.data);

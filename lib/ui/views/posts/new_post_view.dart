@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/data/services/post_service.dart';
 import 'package:sagelink_communities/ui/components/link_preview.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
@@ -10,6 +11,7 @@ import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:collection/collection.dart';
+import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 
 String createPostMutation = """
 mutation CreatePosts(\$input: [PostCreateInput!]!) {
@@ -35,10 +37,11 @@ typedef OnCompletionCallback = void Function();
 
 class NewPostPage extends ConsumerStatefulWidget {
   const NewPostPage(
-      {Key? key, required this.brandId, required this.onCompleted})
+      {Key? key, required this.brandId, required this.onCompleted, this.post})
       : super(key: key);
   final String brandId;
   final OnCompletionCallback onCompleted;
+  final PostModel? post;
 
   static const routeName = '/posts';
 
@@ -52,11 +55,46 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   String? body;
   String? linkUrl;
   PostType selectedType = PostType.text;
+  bool get isUpdating => widget.post != null;
+
+  late PostService postService = ref.watch(postServiceProvider);
   late LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    if (isUpdating) {
+      selectedType = widget.post!.type;
+      title = widget.post!.title;
+      switch (selectedType) {
+        case (PostType.text):
+          body = widget.post!.body;
+          break;
+        case (PostType.link):
+          linkUrl = widget.post!.linkUrl;
+          break;
+        case (PostType.images):
+          imageFilesFromPost();
+          break;
+      }
+    }
+  }
+
+  void imageFilesFromPost() async {
+    List<File> files = [];
+    for (String url in widget.post!.images!) {
+      files.add(await AssetUtils.urlToFile(url));
+    }
+    setState(() {
+      originalImageFiles = files;
+      selectedImageFiles = files;
+    });
+  }
 
   bool isSaving = false;
 
   int maxImages = 4;
+  List<File> originalImageFiles = [];
   List<File> selectedImageFiles = [];
   late final UniversalImagePicker _imagePicker = UniversalImagePicker(context,
       maxImages: maxImages,
@@ -129,6 +167,27 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
       isSaving = false;
     });
     complete();
+  }
+
+  void updatePost() {
+    var updateData = {
+      "title": title,
+    };
+    switch (selectedType) {
+      case PostType.text:
+        updateData['body'] = body;
+        break;
+      case PostType.link:
+        updateData['linkUrl'] = linkUrl;
+        break;
+      case PostType.images:
+        // upload new images
+        // replace old URLs with new URLs
+        // add to dict
+        break;
+    }
+    postService.updatePost(widget.post!, updateData,
+        onComplete: (data) => complete());
   }
 
   Map<String, dynamic> mutationVariables() {
@@ -362,14 +421,18 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   Widget buildSubmit({bool enabled = true}) => GraphQLConsumer(
       builder: (client) => IconButton(
             icon: const Icon(Icons.send),
-            onPressed: enabled ? () => createPost(client) : null,
+            onPressed: enabled
+                ? () => isUpdating ? updatePost() : createPost(client)
+                : null,
           ));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-            title: const Text("Create Post"),
+            title: isUpdating
+                ? const Text("Update Post")
+                : const Text("Create Post"),
             actions: [
               buildSubmit(enabled: canSubmit()),
             ],
@@ -379,9 +442,9 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
             alignment: AlignmentDirectional.topStart,
             child: isSaving
                 ? const Loading()
-                : Stack(children: [
-                    _buildBody(),
-                    _buildPostTypeSelection(context)
-                  ])));
+                : Stack(
+                    children: isUpdating
+                        ? [_buildBody()]
+                        : [_buildBody(), _buildPostTypeSelection(context)])));
   }
 }
