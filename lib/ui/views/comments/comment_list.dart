@@ -4,8 +4,6 @@ import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/views/comments/comment_cell.dart';
 import 'package:flutter/material.dart';
 
-typedef VoidCommentCallback = void Function(String commentId);
-
 String getCommentThreadQuery = """
 query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
   comments(where: \$where, options: \$options) {
@@ -41,20 +39,24 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
 class CommentListView extends StatefulWidget {
   final List<CommentModel> comments;
   final String brandId;
-  final VoidCommentCallback? onShowThread;
+  final VoidCommentIDCallback onShowThread;
   final VoidCallback? onCloseThread;
-  final VoidCommentCallback? onAddReply;
-  final VoidCommentCallback? onUpdate;
+  final VoidCallback onShouldReply;
+  final VoidCommentIDCallback? onAddReply;
+  final VoidCommentIDCallback? onUpdate;
+  final VoidCommentCallback? onShouldEdit;
   final VoidCallback? shouldReloadComments;
   final bool shrinkWrap;
 
   const CommentListView(this.comments,
       {required this.brandId,
+      required this.onShouldReply,
+      required this.onShowThread,
       this.shouldReloadComments,
-      this.onShowThread,
       this.onCloseThread,
       this.onAddReply,
       this.onUpdate,
+      this.onShouldEdit,
       this.shrinkWrap = false,
       Key? key})
       : super(key: key);
@@ -98,9 +100,8 @@ class _CommentListViewState extends State<CommentListView> {
     setState(() {
       fetching = true;
     });
-    if (widget.onShowThread != null) {
-      widget.onShowThread!(parentComment.id);
-    }
+    widget.onShowThread(parentComment.id);
+
     var updatedComments = await _fetchThread(client, parentComment);
     updatedComments
         .removeWhere((c) => c.isFlaggedByUser || c.creator.queryUserHasBlocked);
@@ -150,9 +151,11 @@ class _CommentListViewState extends State<CommentListView> {
         brandId: widget.brandId,
         inThreadView: showingThread,
         onAddReply: widget.onAddReply,
+        onShouldReply: widget.onShouldReply,
         onShowThread: (commentId) =>
             shouldShowThread(client, context, showingComments[index]),
         onUpdate: widget.onUpdate,
+        onShouldEdit: widget.onShouldEdit,
       ),
       separatorBuilder: (context, index) => const Divider(),
     );

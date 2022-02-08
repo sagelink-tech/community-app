@@ -150,7 +150,7 @@ class CommentService {
     }
 
     bool success = (result.data != null &&
-        result.data!['comments'][0]['id'] == comment.id);
+        result.data!['updateComments']['comments'][0]['id'] == comment.id);
 
     if (success && onComplete != null) {
       onComplete(result.data);
@@ -163,7 +163,7 @@ class CommentService {
   /////////////////////////////////////////////////////////////
 
   // Reply to a comment
-  Future<bool> replyToComment(CommentModel comment, String replyBody,
+  Future<bool> replyToCommentWithID(String commentId, String replyBody,
       {OnMutationCompleted? onComplete}) async {
     Map<String, dynamic> variables = {
       "input": [
@@ -179,7 +179,7 @@ class CommentService {
           "onComment": {
             "connect": {
               "where": {
-                "node": {"id": comment.id}
+                "node": {"id": commentId}
               }
             }
           }
@@ -195,8 +195,8 @@ class CommentService {
       return false;
     }
 
-    bool success =
-        (result.data != null && (result.data!['comments'] as List).length == 1);
+    bool success = (result.data != null &&
+        (result.data!['createComments']['comments'] as List).length == 1);
     if (success && onComplete != null) {
       onComplete(result.data);
     }
@@ -204,7 +204,7 @@ class CommentService {
   }
 
   // Comment on a post
-  Future<bool> commentOnPost(PostModel post, String commentBody,
+  Future<bool> commentOnPostWithID(String postId, String commentBody,
       {OnMutationCompleted? onComplete}) async {
     Map<String, dynamic> variables = {
       "input": [
@@ -220,7 +220,7 @@ class CommentService {
           "onPost": {
             "connect": {
               "where": {
-                "node": {"id": post.id}
+                "node": {"id": postId}
               }
             }
           }
@@ -236,8 +236,8 @@ class CommentService {
       return false;
     }
 
-    bool success =
-        (result.data != null && (result.data!['comments'] as List).length == 1);
+    bool success = (result.data != null &&
+        (result.data!['createComments']['comments'] as List).length == 1);
 
     if (success && onComplete != null) {
       onComplete(result.data);
@@ -246,7 +246,7 @@ class CommentService {
   }
 
   // Comment on a perk
-  Future<bool> commentOnPerk(PerkModel perk, String commentBody,
+  Future<bool> commentOnPerkWithID(String perkId, String commentBody,
       {OnMutationCompleted? onComplete}) async {
     Map<String, dynamic> variables = {
       "input": [
@@ -262,7 +262,7 @@ class CommentService {
           "onPerk": {
             "connect": {
               "where": {
-                "node": {"id": perk.id}
+                "node": {"id": perkId}
               }
             }
           }
@@ -278,8 +278,8 @@ class CommentService {
       return false;
     }
 
-    bool success =
-        (result.data != null && (result.data!['comments'] as List).length == 1);
+    bool success = (result.data != null &&
+        (result.data!['createComments']['comments'] as List).length == 1);
 
     if (success && onComplete != null) {
       onComplete(result.data);

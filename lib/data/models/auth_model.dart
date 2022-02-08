@@ -9,6 +9,7 @@ class Authentication {
   //  This getter will be returning a Stream of User object.
   //  It will be used to check if the user is logged in or not.
   Stream<User?> get authStateChange => authInstance.authStateChanges();
+  Stream<User?> get idTokenChanges => authInstance.idTokenChanges();
 
   // Now This Class Contains 3 Functions currently
   // 1. signInWithGoogle

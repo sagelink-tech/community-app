@@ -1,3 +1,4 @@
+import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
@@ -73,7 +74,18 @@ class PostView extends StatefulWidget {
 class _PostViewState extends State<PostView> {
   PostModel _post = PostModel();
   String? _threadId;
+  CommentModel? editingComment;
   bool showingThread = false;
+  late bool addingComment = widget.autofocusCommentField;
+
+  void setAddingComment(bool addCommentFlag) {
+    setState(() {
+      addingComment = addCommentFlag;
+      if (!addCommentFlag) {
+        editingComment = null;
+      }
+    });
+  }
 
   void _showCommentThread(String commentId) {
     setState(() {
@@ -86,6 +98,12 @@ class _PostViewState extends State<PostView> {
     setState(() {
       showingThread = false;
       _threadId = null;
+    });
+  }
+
+  void shouldEditCommentWithID(CommentModel comment) {
+    setState(() {
+      editingComment = comment;
     });
   }
 
@@ -154,19 +172,33 @@ class _PostViewState extends State<PostView> {
     ];
   }
 
-  _buildCommentField(VoidCallback? refetch) {
+  Widget _buildCommentButton() {
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+          primary: Theme.of(context).colorScheme.primary,
+          minimumSize: const Size.fromHeight(48)),
+      onPressed: () => setAddingComment(true),
+      child: const Text('Comment'),
+    );
+  }
+
+  Widget _buildCommentField(VoidCallback? refetch) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
           color: Theme.of(context).backgroundColor,
           padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
           child: NewComment(
-              focused: widget.autofocusCommentField,
-              parentId: showingThread ? _threadId! : widget.postId,
-              isReply: showingThread,
-              onCompleted: () => {
-                    if (refetch != null) {refetch()}
-                  })),
+            focused: true,
+            parentId: showingThread ? _threadId! : widget.postId,
+            isReply: showingThread,
+            comment: editingComment,
+            onCompleted: () => {
+              setAddingComment(false),
+              if (refetch != null) {refetch()}
+            },
+            onLostFocus: () => setAddingComment(false),
+          )),
     );
   }
 
@@ -198,40 +230,53 @@ class _PostViewState extends State<PostView> {
                   ? const ErrorView()
                   : result.isLoading
                       ? const Loading()
-                      : Container(
-                          alignment: AlignmentDirectional.topStart,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 25, vertical: 10),
-                          child: Stack(children: [
-                            ListView(shrinkWrap: true, children: <Widget>[
-                              ..._buildBodyView(refetch),
-                              // Responses header
-                              const ListSpacer(),
-                              Text('RESPONSES',
-                                  style: Theme.of(context).textTheme.headline5),
-                              const ListSpacer(),
-                              // Comment view
-                              CommentListView(
-                                _post.comments,
-                                brandId: _post.brand.id,
-                                onAddReply: (commentId) => {
-                                  completeReplyOnThread(commentId),
-                                  if (refetch != null) refetch()
-                                },
-                                onUpdate: (commentId) =>
-                                    {refetch != null ? refetch() : {}},
-                                onShowThread: _showCommentThread,
-                                onCloseThread: () => {
-                                  setState(() {
-                                    showingThread = false;
+                      : Stack(children: [
+                          Container(
+                              alignment: AlignmentDirectional.topStart,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 10),
+                              child:
+                                  ListView(shrinkWrap: true, children: <Widget>[
+                                ..._buildBodyView(refetch),
+                                _buildCommentButton(),
+                                // Responses header
+                                const ListSpacer(),
+                                Text('RESPONSES',
+                                    style:
+                                        Theme.of(context).textTheme.headline5),
+                                const ListSpacer(),
+                                // Comment view
+                                CommentListView(
+                                  _post.comments,
+                                  brandId: _post.brand.id,
+                                  onAddReply: (commentId) => {
+                                    completeReplyOnThread(commentId),
+                                    if (refetch != null) refetch()
+                                  },
+                                  onUpdate: (commentId) => setState(() {}),
+                                  onShowThread: _showCommentThread,
+                                  onShouldReply: () => setAddingComment(true),
+                                  onCloseThread: () => {
+                                    setState(() {
+                                      showingThread = false;
+                                    }),
+                                    setAddingComment(false),
+                                    if (refetch != null) refetch()
+                                  },
+                                  onShouldEdit: (comment) => setState(() {
+                                    editingComment = comment;
+                                    addingComment = true;
                                   }),
-                                  if (refetch != null) refetch()
-                                },
-                              ),
-                              const ListSpacer(height: 60)
-                            ]),
-                            _buildCommentField(refetch)
-                          ]))));
+                                ),
+                                const ListSpacer(height: 120)
+                              ])),
+                          addingComment
+                              ? _buildCommentField(refetch)
+                              : const SizedBox(
+                                  width: 1,
+                                  height: 1,
+                                )
+                        ])));
         });
   }
 }

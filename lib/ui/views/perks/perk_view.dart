@@ -1,3 +1,4 @@
+import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/components/empty_result.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
@@ -71,6 +72,8 @@ class _PerkViewState extends State<PerkView>
   bool _isCollapsed = false;
   final double _headerSize = 200.0;
   int _currentIndex = 0;
+  bool addingComment = false;
+  CommentModel? editingComment;
 
   late ScrollController _scrollController;
   late TabController _tabController;
@@ -90,6 +93,15 @@ class _PerkViewState extends State<PerkView>
   _tabListener() {
     setState(() {
       _currentIndex = _tabController.index;
+    });
+  }
+
+  void setAddingComment(bool addCommentFlag) {
+    setState(() {
+      addingComment = addCommentFlag;
+      if (!addCommentFlag) {
+        editingComment = null;
+      }
     });
   }
 
@@ -176,14 +188,20 @@ class _PerkViewState extends State<PerkView>
                       completeReplyOnThread(commentId),
                       if (refetch != null) refetch()
                     },
-                    onUpdate: (commentId) => {refetch != null ? refetch() : {}},
+                    onUpdate: (commentId) => setState(() {}),
                     onShowThread: _showCommentThread,
+                    onShouldReply: () => setAddingComment(true),
                     onCloseThread: () => {
                       setState(() {
                         showingThread = false;
                       }),
+                      setAddingComment(false),
                       if (refetch != null) refetch()
                     },
+                    onShouldEdit: (comment) => setState(() {
+                      editingComment = comment;
+                      addingComment = true;
+                    }),
                   )
                 : const EmptyResult(text: "No conversation started yet!")
           ],
@@ -195,19 +213,34 @@ class _PerkViewState extends State<PerkView>
       return Container(
           color: Theme.of(context).backgroundColor,
           padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-          child: NewComment(
-            parentId: showingThread ? _threadId! : _perk.id,
-            onCompleted: () => refetch != null ? refetch() : null,
-            isOnPerk: true,
-            isReply: showingThread,
-          ));
+          child: addingComment
+              ? NewComment(
+                  parentId: showingThread ? _threadId! : _perk.id,
+                  isOnPerk: true,
+                  focused: true,
+                  isReply: showingThread,
+                  comment: editingComment,
+                  onCompleted: () => {
+                    setAddingComment(false),
+                    if (refetch != null) {refetch()}
+                  },
+                  onLostFocus: () => setAddingComment(false),
+                )
+              : OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                      primary: Theme.of(context).colorScheme.primary,
+                      minimumSize: const Size.fromHeight(48)),
+                  onPressed: () => setAddingComment(true),
+                  child: const Text('Comment')));
     } else {
-      return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+      return Container(
+          color: Theme.of(context).backgroundColor,
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
           child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                   primary: Theme.of(context).colorScheme.secondary,
-                  onPrimary: Theme.of(context).colorScheme.onError),
+                  onPrimary: Theme.of(context).colorScheme.onError,
+                  minimumSize: const Size.fromHeight(48)),
               onPressed: () => {},
               child: const Text("Redeem")));
     }

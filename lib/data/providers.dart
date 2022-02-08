@@ -74,7 +74,7 @@ final loggedInUserProvider =
 final authProvider = Provider((ref) => Authentication());
 
 final authStateChangesProvider =
-    StreamProvider<User?>((ref) => Authentication().authStateChange);
+    StreamProvider<User?>((ref) => Authentication().idTokenChanges);
 
 ////////////////////////////////////////
 // App state providers                //

@@ -23,7 +23,6 @@ class ModerationOption {
   String confirmationButtonText;
   String confirmationCancelText;
   bool showAvatar;
-  VoidCallback? onComplete;
 
   ModerationOption({
     required this.title,
@@ -45,6 +44,7 @@ class ModerationOptionsSheet extends ConsumerStatefulWidget {
   final String? brandId;
   final VoidCallback? onComplete;
   final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
 
   const ModerationOptionsSheet(this.type,
       {this.brandId,
@@ -53,6 +53,7 @@ class ModerationOptionsSheet extends ConsumerStatefulWidget {
       this.comment,
       this.user,
       this.onDelete,
+      this.onEdit,
       Key? key})
       : super(key: key);
 
@@ -112,7 +113,7 @@ class _ModerationOptionsSheetState
     ModerationOption editOption = ModerationOption(
         title: "Edit " + typeString,
         icon: const Icon(Icons.edit_outlined),
-        onAction: onEdit,
+        onAction: onEditSelected,
         needsConfirmation: false);
     ModerationOption removeOption = ModerationOption(
         title: "Remove " + typeString,
@@ -308,9 +309,10 @@ class _ModerationOptionsSheetState
     }
   }
 
-  void onEdit() {
-    //TODO
-    print('selected edit');
+  void onEditSelected() {
+    if (widget.onEdit != null) {
+      widget.onEdit!();
+    }
     complete();
   }
 

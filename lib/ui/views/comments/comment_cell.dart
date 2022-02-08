@@ -7,22 +7,27 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
 
-typedef VoidCommentCallback = void Function(String commentId);
+typedef VoidCommentIDCallback = void Function(String commentId);
+typedef VoidCommentCallback = void Function(CommentModel comment);
 
 class CommentCell extends StatelessWidget {
   final int itemNo;
   final CommentModel comment;
   final String brandId;
-  final VoidCommentCallback? onShowThread;
-  final VoidCommentCallback? onAddReply;
-  final VoidCommentCallback? onUpdate;
+  final VoidCommentIDCallback? onShowThread;
+  final VoidCallback? onShouldReply;
+  final VoidCommentIDCallback? onAddReply;
+  final VoidCommentIDCallback? onUpdate;
+  final VoidCommentCallback? onShouldEdit;
   final bool inThreadView;
 
   const CommentCell(this.itemNo, this.comment,
       {required this.brandId,
+      required this.onShouldReply,
       this.onAddReply,
       this.onShowThread,
       this.onUpdate,
+      this.onShouldEdit,
       this.inThreadView = false,
       Key? key})
       : super(key: key);
@@ -43,7 +48,9 @@ class CommentCell extends StatelessWidget {
             ModerationOptionSheetType.comment,
             brandId: brandId,
             comment: comment,
+            onDelete: () => onUpdate != null ? onUpdate!(comment.id) : {},
             onComplete: () => onUpdate != null ? onUpdate!(comment.id) : {},
+            onEdit: () => onShouldEdit != null ? onShouldEdit!(comment) : {},
           );
         });
   }
@@ -99,7 +106,8 @@ class CommentCell extends StatelessWidget {
           child: const Text("React")),
       TextButton(
           onPressed: () => {
-                if (onShowThread != null) {onShowThread!(comment.id)}
+                if (onShowThread != null) {onShowThread!(comment.id)},
+                if (onShouldReply != null) {onShouldReply!()}
               },
           style: TextButton.styleFrom(
             primary: Theme.of(context).colorScheme.secondary,
