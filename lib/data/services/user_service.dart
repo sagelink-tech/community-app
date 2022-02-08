@@ -38,9 +38,77 @@ class UserService {
   }
 
   // Remove a user from a community
-  //TODO
-  Future<bool> removeUserFromCommunity(UserModel user, String brandId,
+  // This actually bans the user from the community
+  Future<bool> banUserFromCommunity(UserModel user, String brandId,
       {OnMutationCompleted? onComplete}) async {
+    if (authUser.adminBrandId != brandId) {
+      // can only ban users in your own community
+      return false;
+    }
+
+    Map<String, dynamic> variables = {
+      "where": {"id": user.id},
+      "connect": {
+        "bannedFromBrands": {
+          "where": {
+            "node": {"id": authUser.adminBrandId},
+          }
+        }
+      }
+    };
+
+    MutationOptions options = MutationOptions(
+        document: gql(UPDATE_USER_MUTATION), variables: variables);
+    QueryResult result = await client.mutate(options);
+    if (result.hasException) {
+      print(result.exception);
+      return false;
+    }
+
+    bool success = (result.data != null &&
+        result.data!['updateUsers']['users'][0]['id'] == user.id);
+
+    if (success && onComplete != null) {
+      onComplete(result.data);
+    }
+    return true;
+  }
+
+  // Remove a user from a community
+  // This actually bans the user from the community
+  //TODO
+  Future<bool> unbanUserFromCommunity(UserModel user, String brandId,
+      {OnMutationCompleted? onComplete}) async {
+    if (authUser.adminBrandId != brandId) {
+      // can only ban users in your own community
+      return false;
+    }
+
+    Map<String, dynamic> variables = {
+      "where": {"id": user.id},
+      "disconnect": {
+        "bannedFromBrands": {
+          "where": {
+            "node": {"id": authUser.adminBrandId},
+          }
+        }
+      }
+    };
+
+    MutationOptions options = MutationOptions(
+        document: gql(UPDATE_USER_MUTATION), variables: variables);
+    QueryResult result = await client.mutate(options);
+    if (result.hasException) {
+      print(result.exception);
+      return false;
+    }
+
+    bool success = (result.data != null &&
+        result.data!['updateUsers']['users'][0]['id'] == user.id);
+
+    if (success && onComplete != null) {
+      onComplete(result.data);
+    }
     return true;
   }
 

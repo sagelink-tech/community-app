@@ -5,6 +5,7 @@ import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -17,6 +18,12 @@ query Users(\$where: UserWhere, \$options: UserOptions) {
     name
     accountPictureUrl
     createdAt
+    flaggedInBrands {
+      id
+    }
+    bannedFromBrands {
+      id
+    }
     memberOfBrandsConnection {
       edges {
         tier
@@ -63,10 +70,32 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
           QueryOptions(document: gql(getMembersQuery), variables: variables));
       if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
         members = (result.data!['users'] as List)
-            .map((u) => MemberModel.fromJson(u))
+            .map((u) => MemberModel.fromJson(u, loggedInUser.adminBrandId!))
             .toList();
       }
       return members;
+    }
+
+    Widget _buildStatusButton(MemberModel member) {
+      Icon icon = Icon(member.isBanned
+          ? Icons.block_outlined
+          : member.isFlagged
+              ? Icons.flag_outlined
+              : Icons.check_circle_outline_outlined);
+      return IconButton(
+          icon: icon,
+          onPressed: () => {
+                showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext bc) {
+                      return ModerationOptionsSheet(
+                        ModerationOptionSheetType.user,
+                        brandId: loggedInUser.adminBrandId,
+                        user: member,
+                        onComplete: () => {setState(() => {})},
+                      );
+                    })
+              });
     }
 
     Widget _buildUserTable() {
@@ -102,6 +131,12 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                     ),
+                    DataColumn(
+                      label: Text(
+                        'Status',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                    ),
                   ], rows: <DataRow>[
                     ..._members.map((e) => DataRow(cells: <DataCell>[
                           DataCell(
@@ -118,6 +153,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                           DataCell(Text(e.email)),
                           DataCell(Text(timeago.format(e.createdAt))),
                           DataCell(Text(e.tier)),
+                          DataCell(_buildStatusButton(e))
                         ]))
                   ]))));
     }

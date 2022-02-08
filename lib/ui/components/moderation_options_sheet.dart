@@ -117,10 +117,28 @@ class _ModerationOptionsSheetState
     ModerationOption removeOption = ModerationOption(
         title: "Remove " + typeString,
         icon: const Icon(Icons.delete_outlined),
+        showAvatar: widget.type == ModerationOptionSheetType.user,
+        onAction: onRemove,
+        confirmationText: "Are you sure you want to remove this $typeString?",
+        confirmationButtonText: "Yes, remove");
+    ModerationOption banOption = ModerationOption(
+        title: "Ban " + _relatedUserDetails.name,
+        icon: const Icon(Icons.block_outlined),
+        showAvatar: true,
         onAction: onRemove,
         confirmationText:
-            "Are you sure you want to permanently remove this $typeString?",
-        confirmationButtonText: "Yes, remove");
+            "Are you sure you want to ban ${_relatedUserDetails.name} from this community?",
+        confirmationButtonText: "Yes, ban");
+
+    ModerationOption unbanOption = ModerationOption(
+        title: "Unban " + _relatedUserDetails.name,
+        icon: const Icon(Icons.check_circle_outline_outlined),
+        showAvatar: true,
+        onAction: onUnbanUser,
+        confirmationText:
+            "Are you sure you want to welcome ${_relatedUserDetails.name} back to this community?",
+        confirmationButtonText: "Yes, unban");
+
     ModerationOption flagOption = ModerationOption(
         title: "Flag " + typeString,
         icon: const Icon(Icons.flag_outlined),
@@ -147,11 +165,20 @@ class _ModerationOptionsSheetState
     ModerationOption flagUserOption = ModerationOption(
         title: "Flag " + _relatedUserDetails.name,
         icon: const Icon(Icons.report_problem_outlined),
-        onAction: onFlag,
+        onAction: onFlagUser,
         showAvatar: true,
         confirmationText:
             "Are you sure you want to flag ${_relatedUserDetails.name}? You can view flagged users in the admin portal.",
         confirmationButtonText: "Yes, flag");
+
+    ModerationOption unflagUserOption = ModerationOption(
+        title: "Unflag " + _relatedUserDetails.name,
+        icon: const Icon(Icons.check_circle_outline_outlined),
+        onAction: onUnflagUser,
+        showAvatar: true,
+        confirmationText:
+            "Are you sure you want to unflag ${_relatedUserDetails.name}? You can view flagged users in the admin portal.",
+        confirmationButtonText: "Yes, unflag");
 
     bool isCreator = (_user.getUser().id == _relatedUserDetails.id);
     bool isModerator = (_user.isAdmin &&
@@ -161,11 +188,20 @@ class _ModerationOptionsSheetState
     switch (widget.type) {
       case ModerationOptionSheetType.user:
         {
-          return [
-            _relatedUserDetails.queryUserHasBlocked
-                ? unblockUserOption
-                : blockUserOption
-          ];
+          return (isModerator && widget.user.runtimeType == MemberModel)
+              ? [
+                  (widget.user! as MemberModel).isFlagged
+                      ? unflagUserOption
+                      : flagUserOption,
+                  (widget.user! as MemberModel).isBanned
+                      ? unbanOption
+                      : banOption
+                ]
+              : [
+                  _relatedUserDetails.queryUserHasBlocked
+                      ? unblockUserOption
+                      : blockUserOption
+                ];
         }
       default:
         {
@@ -293,13 +329,24 @@ class _ModerationOptionsSheetState
         );
         break;
       case ModerationOptionSheetType.user:
-        userService.flagUser(
-          _relatedUserDetails,
-          _user.adminBrandId!,
-          onComplete: (data) => complete(),
-        );
         break;
     }
+  }
+
+  void onFlagUser() {
+    userService.flagUser(
+      _relatedUserDetails,
+      _user.adminBrandId!,
+      onComplete: (data) => complete(),
+    );
+  }
+
+  void onUnflagUser() {
+    userService.unflagUser(
+      _relatedUserDetails,
+      _user.adminBrandId!,
+      onComplete: (data) => complete(),
+    );
   }
 
   void onRemove() {
@@ -318,8 +365,15 @@ class _ModerationOptionsSheetState
         );
         break;
       case ModerationOptionSheetType.user:
+        userService.banUserFromCommunity(widget.user!, _user.adminBrandId!,
+            onComplete: (data) => complete(isDeleting: true));
         break;
     }
+  }
+
+  void onUnbanUser() {
+    userService.unbanUserFromCommunity(widget.user!, _user.adminBrandId!,
+        onComplete: (data) => complete());
   }
 
   void onBlockUser() {

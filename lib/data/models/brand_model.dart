@@ -122,7 +122,7 @@ class BrandModel extends ChangeNotifier {
             _json[key] = e[key];
           }
         }
-        _membs.add(MemberModel.fromJson(e['node']));
+        _membs.add(MemberModel.fromJson(e['node'], id));
       }
       members = _membs;
     }

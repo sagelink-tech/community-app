@@ -165,10 +165,12 @@ class EmployeeModel extends UserModel {
 
 class MemberModel extends UserModel {
   String tier = "";
+  bool isFlagged = false;
+  bool isBanned = false;
   MemberModel() : super();
 
   @override
-  MemberModel.fromJson(Map<String, dynamic> json) {
+  MemberModel.fromJson(Map<String, dynamic> json, String brandId) {
     //UserModel.fromJson(json);
     id = json['id'];
     firebaseId = json.containsKey('firebaseId') ? json['firebaseId'] ?? "" : "";
@@ -193,6 +195,28 @@ class MemberModel extends UserModel {
       tier = json['tier'] ?? "";
     } else if (json.containsKey("memberOfBrandsConnection")) {
       tier = json["memberOfBrandsConnection"]["edges"][0]["tier"] ?? "";
+    }
+    // check if flagged
+    if (json.containsKey('flaggedInBrands')) {
+      if ((json['flaggedInBrands'] as List).isNotEmpty) {
+        for (var b in (json['flaggedInBrands'] as List)) {
+          if (b['id'] == brandId) {
+            isFlagged = true;
+            break;
+          }
+        }
+      }
+    }
+    // check if banned
+    if (json.containsKey('bannedFromBrands')) {
+      if ((json['bannedFromBrands'] as List).isNotEmpty) {
+        for (var b in (json['bannedFromBrands'] as List)) {
+          if (b['id'] == brandId) {
+            isBanned = true;
+            break;
+          }
+        }
+      }
     }
 
     if (json.containsKey('causes')) {
