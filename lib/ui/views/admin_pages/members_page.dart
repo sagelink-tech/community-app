@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/models/invite_model.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
@@ -10,7 +11,7 @@ import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 String getMembersQuery = """
-query Users(\$where: UserWhere, \$options: UserOptions) {
+query Users(\$where: UserWhere, \$options: UserOptions, \$inviteWhere: InviteWhere, \$inviteOptions: InviteOptions) {
   users(where: \$where, options: \$options) {
     id
     email
@@ -30,6 +31,17 @@ query Users(\$where: UserWhere, \$options: UserOptions) {
       }
     }
   }
+  invites(where: \$inviteWhere, options: \$inviteOptions) {
+    id
+    verificationCode
+    userEmail
+    memberTier
+    isAdmin
+    createdAt
+    forBrand {
+      id
+    }
+  }
 }
 """;
 
@@ -42,39 +54,75 @@ class AdminMembersPage extends ConsumerStatefulWidget {
 
 class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
   List<MemberModel> _members = [];
+  List<MemberInviteModel> _invites = [];
+
+  late final loggedInUser = ref.watch(loggedInUserProvider);
+  late final userService = ref.watch(userServiceProvider);
 
   void _goToAccount(String userId) async {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
   }
 
+  void inviteUsers() {
+    List<String> emails = ['1', '2', '3', '4', '5', '6'];
+    List<MemberInviteModel> invites = emails
+        .map((e) => MemberInviteModel(
+            id: "id",
+            userEmail: e,
+            isAdmin: false,
+            memberTier: "VIP",
+            brandId: loggedInUser.adminBrandId))
+        .toList();
+    userService.inviteUsersToCommunity(invites);
+  }
+
+  Future<dynamic> fetchMembersAndInvites(GraphQLClient client) async {
+    Map<String, dynamic> variables = {
+      "where": {
+        "memberOfBrands": {"id": loggedInUser.adminBrandId}
+      },
+      "options": {
+        "sort": [
+          {"createdAt": "ASC", "name": "ASC"}
+        ]
+      },
+      "inviteWhere": {
+        "forBrand": {"id": loggedInUser.adminBrandId},
+        "isAdmin": false
+      },
+      "inviteOptions": {
+        "sort": [
+          {"createdAt": "ASC", "userEmail": "ASC"}
+        ]
+      }
+    };
+
+    List<MemberModel> members = [];
+    List<MemberInviteModel> invites = [];
+    QueryResult result = await client.query(
+        QueryOptions(document: gql(getMembersQuery), variables: variables));
+
+    if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
+      members = (result.data!['users'] as List)
+          .map((u) => MemberModel.fromJson(u, loggedInUser.adminBrandId!))
+          .toList();
+    }
+    if (result.data != null && (result.data!['invites'] as List).isNotEmpty) {
+      invites = (result.data!['invites'] as List)
+          .map((u) => MemberInviteModel.fromJson(u))
+          .toList();
+    }
+
+    setState(() {
+      _members = members;
+      _invites = invites;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final loggedInUser = ref.watch(loggedInUserProvider);
     //String? searchText;
-
-    Future<List<MemberModel>> fetchMembers(GraphQLClient client) async {
-      Map<String, dynamic> variables = {
-        "where": {
-          "memberOfBrands": {"id": loggedInUser.adminBrandId}
-        },
-        "options": {
-          "sort": [
-            {"createdAt": "ASC", "name": "ASC"}
-          ]
-        }
-      };
-
-      List<MemberModel> members = [];
-      QueryResult result = await client.query(
-          QueryOptions(document: gql(getMembersQuery), variables: variables));
-      if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
-        members = (result.data!['users'] as List)
-            .map((u) => MemberModel.fromJson(u, loggedInUser.adminBrandId!))
-            .toList();
-      }
-      return members;
-    }
 
     Widget _buildStatusButton(MemberModel member) {
       Icon icon = Icon(member.isBanned
@@ -158,12 +206,56 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                   ]))));
     }
 
+    Widget _buildInvitesTable() {
+      return Container(
+          padding: const EdgeInsets.all(20),
+          alignment: Alignment.topCenter,
+          child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(columns: const <DataColumn>[
+                    DataColumn(
+                      label: Text(
+                        'Email',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Invite sent',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Tier',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Invite Code',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                  ], rows: <DataRow>[
+                    ..._invites.map((e) => DataRow(cells: <DataCell>[
+                          DataCell(Text(e.userEmail)),
+                          DataCell(Text(timeago.format(e.createdAt!))),
+                          DataCell(Text(e.memberTier!)),
+                          DataCell(Text(e.verificationCode!))
+                        ]))
+                  ]))));
+    }
+
     return GraphQLConsumer(builder: (GraphQLClient client) {
       return FutureBuilder(
-          future: fetchMembers(client),
+          future: fetchMembersAndInvites(client),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
-              _members = snapshot.data;
+              _members = snapshot.data['members'];
+              _invites = snapshot.data['invites'];
             } else if (snapshot.hasError) {
               //TO DO: DEBUG THIS ERROR
             }
@@ -194,7 +286,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                                         Theme.of(context).colorScheme.secondary,
                                     onPrimary:
                                         Theme.of(context).colorScheme.onError),
-                                onPressed: () => {},
+                                onPressed: inviteUsers,
                                 child: const Text("Invite")))
                       ],
                     ),
@@ -203,6 +295,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                       _members.length.toString() + " results",
                       style: Theme.of(context).textTheme.caption,
                     )),
+                    _buildInvitesTable(),
                     Expanded(
                       child: _buildUserTable(),
                     ),

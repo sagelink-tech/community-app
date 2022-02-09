@@ -1,4 +1,5 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/data/models/invite_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 
@@ -7,6 +8,26 @@ const String UPDATE_USER_MUTATION = '''
 mutation Mutation(\$update: UserUpdateInput, \$where: UserWhere, \$connect: UserConnectInput, \$disconnect: UserDisconnectInput) {
   updateUsers(update: \$update, where: \$where, connect: \$connect, disconnect: \$disconnect) {
     users {
+      id
+    }
+  }
+}
+''';
+
+// ignore: constant_identifier_names
+const String FETCH_INVITE_CODES_QUERY = '''
+query Query{
+  invites {
+    verificationCode
+  }
+}
+''';
+
+// ignore: constant_identifier_names
+const String CREATE_INVITES_NUTATION = '''
+mutation CreateInvites(\$input: [InviteCreateInput!]!) {
+  createInvites(input: \$input) {
+    invites {
       id
     }
   }
@@ -29,6 +50,58 @@ class UserService {
   /////////////////////////////////////////////////////////////
   /// Manage members and team
   /////////////////////////////////////////////////////////////
+
+  // Generate invites to a community
+  Future<bool> inviteUsersToCommunity(List<MemberInviteModel> invites,
+      {OnMutationCompleted? onComplete}) async {
+    // get all outstanding invites and add to comparison code
+    QueryResult res = await client
+        .query(QueryOptions(document: gql(FETCH_INVITE_CODES_QUERY)));
+    if (res.hasException || res.data == null) {
+      return false;
+    }
+
+    List<String> compareCodes = (res.data!['invites'] as List)
+        .map((e) => e['verificationCode'] as String)
+        .toList();
+
+    // generate first pass of codes
+    for (InviteModel invite in invites) {
+      invite.generateCode(comparisonCodes: compareCodes);
+      compareCodes.add(invite.verificationCode!);
+    }
+
+    // save to database
+    // (note server should handle code generation in the future to avoid race conditions)
+    Map<String, dynamic> variables = {
+      "input": invites
+          .map((e) => {
+                "verificationCode": e.verificationCode,
+                "userEmail": e.userEmail,
+                "isAdmin": e.isAdmin,
+                "memberTier": e.memberTier,
+                "forBrand": {
+                  "connect": {
+                    "where": {
+                      "node": {"id": e.brandId}
+                    }
+                  }
+                }
+              })
+          .toList()
+    };
+    QueryResult response = await client.mutate(MutationOptions(
+        document: gql(CREATE_INVITES_NUTATION), variables: variables));
+
+    // return status
+    if (response.hasException || response.data == null) {
+      return false;
+    }
+    if (onComplete != null) {
+      onComplete(response.data);
+    }
+    return true;
+  }
 
   // Add a user to a community
   //TODO
