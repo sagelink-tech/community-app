@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'dart:io';
-import 'dart:math';
 
 class AssetUtils {
   static defaultImage(
@@ -27,8 +26,6 @@ class AssetUtils {
           ));
 
   static Future<File> urlToFile(String imageUrl) async {
-    // generate random number.
-    var rng = Random();
     // get temporary directory of device.
     Directory tempDir = await getTemporaryDirectory();
     // get temporary path from temporary directory.
