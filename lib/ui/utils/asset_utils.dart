@@ -34,8 +34,7 @@ class AssetUtils {
     // get temporary path from temporary directory.
     String tempPath = tempDir.path;
     // create a new file in temporary path with random file name.
-    File file =
-        File(tempPath + (rng.nextInt(100)).toString() + extension(imageUrl));
+    File file = File(tempPath + basename(imageUrl).split("?")[0]);
     // call http.get method and pass imageUrl into it to get response.
     http.Response response = await http.get(Uri.parse(imageUrl));
     // write bodyBytes received in response to file.

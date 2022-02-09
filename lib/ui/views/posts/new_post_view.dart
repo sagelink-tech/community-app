@@ -60,6 +60,15 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   late PostService postService = ref.watch(postServiceProvider);
   late LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
 
+  bool isDisposed = false;
+
+  @override
+  void dispose() {
+    isDisposed = true;
+    _imagePicker.clearImages();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +83,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
           linkUrl = widget.post!.linkUrl;
           break;
         case (PostType.images):
+          isLoading = true;
           imageFilesFromPost();
           break;
       }
@@ -82,24 +92,39 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
 
   void imageFilesFromPost() async {
     List<File> files = [];
-    for (String url in widget.post!.images!) {
-      files.add(await AssetUtils.urlToFile(url));
+    if (widget.post!.images != null) {
+      for (String url in widget.post!.images!) {
+        files.add(await AssetUtils.urlToFile(url));
+      }
+      setState(() {
+        originalImageFiles = files;
+        selectedImageFiles = files;
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        originalImageFiles = [];
+        selectedImageFiles = [];
+        isLoading = false;
+      });
     }
-    setState(() {
-      originalImageFiles = files;
-      selectedImageFiles = files;
-    });
   }
 
   bool isSaving = false;
+  bool isLoading = false;
 
   int maxImages = 4;
   List<File> originalImageFiles = [];
   List<File> selectedImageFiles = [];
-  late final UniversalImagePicker _imagePicker = UniversalImagePicker(context,
-      maxImages: maxImages,
-      onSelected: () =>
-          setState(() => selectedImageFiles = _imagePicker.images));
+  late final UniversalImagePicker _imagePicker =
+      UniversalImagePicker(context, maxImages: maxImages, onSelected: () {
+    if (!isDisposed) {
+      setState(() => selectedImageFiles = _imagePicker.images);
+    }
+  },
+          originalUrls: isUpdating && widget.post!.images != null
+              ? widget.post!.images!
+              : []);
 
   bool canSubmit() {
     bool hasTitle = title != null && title!.isNotEmpty;
@@ -118,7 +143,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     widget.onCompleted();
   }
 
-  Future<bool> updateWithImages(GraphQLClient client, String postId) async {
+  Future<bool> setImagesOnCreate(GraphQLClient client, String postId) async {
     ImageUploadResult imageResults = await _imagePicker
         .uploadImages("post/$postId/", context: context, client: client);
     if (!imageResults.success) {
@@ -153,7 +178,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     }
     if (result.data != null) {
       if (selectedType == PostType.images) {
-        bool uploadResult = await updateWithImages(
+        bool uploadResult = await setImagesOnCreate(
             client, result.data!['createPosts']['posts'][0]['id']);
 
         if (!uploadResult) {
@@ -169,8 +194,8 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     complete();
   }
 
-  void updatePost() {
-    var updateData = {
+  void updatePost(GraphQLClient client) async {
+    Map<String, dynamic> updateData = {
       "title": title,
     };
     switch (selectedType) {
@@ -181,12 +206,19 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
         updateData['linkUrl'] = linkUrl;
         break;
       case PostType.images:
-        // upload new images
-        // replace old URLs with new URLs
-        // add to dict
+        ImageUploadResult imageResults = await _imagePicker.updateImages(
+            "post/${widget.post!.id}/",
+            context: context,
+            client: client);
+        if (!imageResults.success) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text("Error saving post, please try again."),
+              backgroundColor: Theme.of(context).colorScheme.error));
+        }
+        updateData["images"] = imageResults.locations;
         break;
     }
-    postService.updatePost(widget.post!, updateData,
+    await postService.updatePost(widget.post!, updateData,
         onComplete: (data) => complete());
   }
 
@@ -422,7 +454,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
       builder: (client) => IconButton(
             icon: const Icon(Icons.send),
             onPressed: enabled
-                ? () => isUpdating ? updatePost() : createPost(client)
+                ? () => isUpdating ? updatePost(client) : createPost(client)
                 : null,
           ));
 
@@ -440,7 +472,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
             elevation: 0),
         body: Container(
             alignment: AlignmentDirectional.topStart,
-            child: isSaving
+            child: isSaving || isLoading
                 ? const Loading()
                 : Stack(
                     children: isUpdating

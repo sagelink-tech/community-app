@@ -9,7 +9,6 @@ import 'package:sagelink_communities/data/services/comment_service.dart';
 import 'package:sagelink_communities/data/services/post_service.dart';
 import 'package:sagelink_communities/data/services/user_service.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
-import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 
 import 'list_spacer.dart';
 

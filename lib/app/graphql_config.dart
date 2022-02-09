@@ -5,6 +5,20 @@ import 'package:sagelink_communities/app/app_config.dart';
 class GraphQLConfiguration extends ChangeNotifier {
   Link? link;
   HttpLink httpLink = HttpLink(FlutterAppConfig().apiUrl());
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
 
   bool get isAuthenticated => link != null;
 
