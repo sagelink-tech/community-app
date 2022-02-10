@@ -23,11 +23,11 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
     if (inviteCode == null) {
       return;
     }
-    String? brandName = await userService.acceptInvitationWithCode(inviteCode!);
-    if (brandName != null) {
+    bool success = await userService.acceptInvitationWithCode(inviteCode!);
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         behavior: SnackBarBehavior.floating,
-        content: Text("Welcome to the $brandName community!"),
+        content: const Text("Check your email to verify"),
         backgroundColor: Theme.of(context).primaryColor,
       ));
       widget.onComplete();

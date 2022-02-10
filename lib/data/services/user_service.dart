@@ -36,10 +36,8 @@ mutation CreateInvites(\$input: [InviteCreateInput!]!) {
 
 //ignore: constant_identifier_names
 const String ACCEPT_INVITE_MUTATION = '''
-mutation Mutation(\$verificationCode: String!, \$userId: String!) {
-  acceptInvite(verificationCode: \$verificationCode, userId: \$userId) {
-    id
-  }
+mutation Mutation(\$verificationCode: String!) {
+  acceptInvite(verificationCode: \$verificationCode)
 }
 ''';
 
@@ -113,20 +111,17 @@ class UserService {
   }
 
   // Add a user to a community
-  Future<String?> acceptInvitationWithCode(String inviteCode,
+  Future<bool> acceptInvitationWithCode(String inviteCode,
       {OnMutationCompleted? onComplete}) async {
-    Map<String, dynamic> variables = {
-      "verificationCode": inviteCode,
-      "userId": authUser.getUser().id
-    };
+    Map<String, dynamic> variables = {"verificationCode": inviteCode};
 
     QueryResult result = await client.mutate(MutationOptions(
         document: gql(ACCEPT_INVITE_MUTATION), variables: variables));
 
     if (result.hasException || result.data == null) {
-      return null;
+      return false;
     }
-    return result.data!['acceptInvite']["name"];
+    return result.data!['acceptInvite'];
   }
 
   // Remove a user from a community
