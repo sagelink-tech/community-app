@@ -167,6 +167,8 @@ class MemberModel extends UserModel {
   String tier = "";
   bool isFlagged = false;
   bool isBanned = false;
+  DateTime memberSince = DateTime(2020);
+  String customerId = "";
   MemberModel() : super();
 
   @override
@@ -194,7 +196,13 @@ class MemberModel extends UserModel {
     if (json.containsKey('tier')) {
       tier = json['tier'] ?? "";
     } else if (json.containsKey("memberOfBrandsConnection")) {
-      tier = json["memberOfBrandsConnection"]["edges"][0]["tier"] ?? "";
+      Map<String, dynamic> memberInfo =
+          json['memberOfBrandsConnection']['edges'][0];
+      // parse membership info
+      tier = memberInfo["tier"] ?? "";
+      customerId = memberInfo["customerId"] ?? "";
+      memberSince =
+          DateTime.tryParse(memberInfo["createdAt"]) ?? DateTime(2020);
     }
     // check if flagged
     if (json.containsKey('flaggedInBrands')) {

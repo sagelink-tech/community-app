@@ -28,6 +28,9 @@ query Users(\$where: UserWhere, \$options: UserOptions, \$inviteWhere: InviteWhe
     memberOfBrandsConnection {
       edges {
         tier
+        customerId
+        createdAt
+        updatedAt
       }
     }
   }
@@ -199,7 +202,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                               ]),
                               onTap: () => {_goToAccount(e.id)}),
                           DataCell(Text(e.email)),
-                          DataCell(Text(timeago.format(e.createdAt))),
+                          DataCell(Text(timeago.format(e.memberSince))),
                           DataCell(Text(e.tier)),
                           DataCell(_buildStatusButton(e))
                         ]))

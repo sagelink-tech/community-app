@@ -34,6 +34,11 @@ mutation CreateInvites(\$input: [InviteCreateInput!]!) {
 }
 ''';
 
+//ignore: constant_identifier_names
+const String ACCEPT_INVITE_MUTATION = '''
+mutation AcceptInvites(\$connect: UserConnectInput, \$)
+''';
+
 class UserService {
   final GraphQLClient client;
   final LoggedInUser authUser;
@@ -105,7 +110,7 @@ class UserService {
 
   // Add a user to a community
   //TODO
-  Future<bool> addUserToCommunity(UserModel user, String brandId,
+  Future<bool> acceptInvitationWithCode(String inviteCode,
       {OnMutationCompleted? onComplete}) async {
     return true;
   }
