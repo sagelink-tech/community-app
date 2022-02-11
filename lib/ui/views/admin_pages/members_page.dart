@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/invite_model.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -59,6 +61,8 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
   List<MemberModel> _members = [];
   List<MemberInviteModel> _invites = [];
 
+  bool _isInviting = false;
+
   late final loggedInUser = ref.watch(loggedInUserProvider);
   late final userService = ref.watch(userServiceProvider);
 
@@ -67,7 +71,10 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
         MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
   }
 
-  void inviteUsers() {
+  void inviteUsers() async {
+    setState(() {
+      _isInviting = true;
+    });
     List<String> emails = ['1', '2', '3', '4', '5', '6'];
     List<MemberInviteModel> invites = emails
         .map((e) => MemberInviteModel(
@@ -77,7 +84,10 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
             memberTier: "VIP",
             brandId: loggedInUser.adminBrandId))
         .toList();
-    userService.inviteUsersToCommunity(invites);
+    await userService.inviteUsersToCommunity(invites);
+    setState(() {
+      _isInviting = false;
+    });
   }
 
   Future<dynamic> fetchMembersAndInvites(GraphQLClient client) async {
@@ -116,11 +126,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
           .map((u) => MemberInviteModel.fromJson(u))
           .toList();
     }
-
-    setState(() {
-      _members = members;
-      _invites = invites;
-    });
+    return {"members": members, "invites": invites};
   }
 
   @override
@@ -247,7 +253,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                           DataCell(Text(e.userEmail)),
                           DataCell(Text(timeago.format(e.createdAt!))),
                           DataCell(Text(e.memberTier!)),
-                          DataCell(Text(e.verificationCode!))
+                          DataCell(Text(e.verificationCode ?? ""))
                         ]))
                   ]))));
     }
@@ -256,11 +262,14 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
       return FutureBuilder(
           future: fetchMembersAndInvites(client),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasError) {
+              return const ErrorView();
+            } else if (!snapshot.hasData || _isInviting) {
+              return const Loading();
+            }
             if (snapshot.hasData) {
               _members = snapshot.data['members'];
               _invites = snapshot.data['invites'];
-            } else if (snapshot.hasError) {
-              //TO DO: DEBUG THIS ERROR
             }
             return Container(
                 alignment: Alignment.topLeft,

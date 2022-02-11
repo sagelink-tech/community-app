@@ -34,6 +34,15 @@ mutation CreateInvites(\$input: [InviteCreateInput!]!) {
 }
 ''';
 
+// ignore: constant_identifier_names
+const String GENERATE_INVITE_CODES_MUTATION = '''
+mutation GenerateCodesForInvites(\$inviteIds: [String!]!) {
+  generateCodesForInvites(inviteIds: \$inviteIds) {
+    id
+  }
+}
+''';
+
 //ignore: constant_identifier_names
 const String ACCEPT_INVITE_MUTATION = '''
 mutation Mutation(\$verificationCode: String!) {
@@ -61,29 +70,11 @@ class UserService {
   // Generate invites to a community
   Future<bool> inviteUsersToCommunity(List<MemberInviteModel> invites,
       {OnMutationCompleted? onComplete}) async {
-    // get all outstanding invites and add to comparison code
-    QueryResult res = await client
-        .query(QueryOptions(document: gql(FETCH_INVITE_CODES_QUERY)));
-    if (res.hasException || res.data == null) {
-      return false;
-    }
-
-    List<String> compareCodes = (res.data!['invites'] as List)
-        .map((e) => e['verificationCode'] as String)
-        .toList();
-
-    // generate first pass of codes
-    for (InviteModel invite in invites) {
-      invite.generateCode(comparisonCodes: compareCodes);
-      compareCodes.add(invite.verificationCode!);
-    }
-
-    // save to database
-    // (note server should handle code generation in the future to avoid race conditions)
+    // First generate the invite entitites
     Map<String, dynamic> variables = {
       "input": invites
           .map((e) => {
-                "verificationCode": e.verificationCode,
+                //"verificationCode": e.verificationCode,
                 "userEmail": e.userEmail,
                 "isAdmin": e.isAdmin,
                 "memberTier": e.memberTier,
@@ -100,10 +91,25 @@ class UserService {
     QueryResult response = await client.mutate(MutationOptions(
         document: gql(CREATE_INVITES_NUTATION), variables: variables));
 
-    // return status
+    // If success, generate codes for the new invites
     if (response.hasException || response.data == null) {
       return false;
     }
+
+    Map<String, dynamic> input = {
+      "inviteIds": response.data!['createInvites']['invites']
+          .map((inv) => inv['id'])
+          .toList()
+    };
+
+    response = await client.mutate(MutationOptions(
+        document: gql(GENERATE_INVITE_CODES_MUTATION), variables: input));
+
+    // Return
+    if (response.hasException || response.data == null) {
+      return false;
+    }
+
     if (onComplete != null) {
       onComplete(response.data);
     }
