@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/app/app_config.dart';
+import 'package:sagelink_communities/data/models/auth_model.dart';
 
 class GraphQLConfiguration extends ChangeNotifier {
   Link? link;
-  HttpLink httpLink = HttpLink(FlutterAppConfig().apiUrl());
+  HttpLink httpLink = HttpLink(FlutterAppConfig.apiUrl());
   bool _disposed = false;
 
   @override
@@ -39,14 +40,18 @@ class GraphQLConfiguration extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setToken(String token) {
-    AuthLink alink = AuthLink(getToken: () => 'Bearer ' + token);
-    link = alink.concat(httpLink);
-    updateClient();
-  }
-
-  void removeToken() {
-    link = null;
+  void setAuthenticator(Authentication auth) async {
+    if (!auth.isAuthenticated) {
+      link = null;
+    } else {
+      AuthLink alink = AuthLink(getToken: () async {
+        if (auth.tokenExpiryDate!.isBefore(DateTime.now())) {
+          await auth.updateToken();
+        }
+        return 'Bearer ${auth.token}';
+      });
+      link = alink.concat(httpLink);
+    }
     updateClient();
   }
 

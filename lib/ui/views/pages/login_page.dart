@@ -35,6 +35,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
+  void _handleSignup(BuildContext context) async {
+    if (email == null || password == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text("Enter email and password"),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ));
+    } else {
+      setState(() {
+        isLoggingIn = true;
+      });
+      await auth.signUpWithEmailAndPassword(email!, password!, context);
+      setState(() {
+        isLoggingIn = false;
+      });
+    }
+  }
+
   Widget buildEmailForm({bool enabled = true}) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 50),
       child: TextFormField(
@@ -87,7 +104,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 isLoggingIn = true;
                               })
                             },
-                        child: const Text("Submit")),
+                        child: const Text("Login")),
+                    ElevatedButton(
+                        onPressed: () => {
+                              _handleSignup(context),
+                              setState(() {
+                                isLoggingIn = true;
+                              })
+                            },
+                        child: const Text("Signup")),
                   ]),
       );
     }));

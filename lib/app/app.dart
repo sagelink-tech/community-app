@@ -1,3 +1,4 @@
+import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/views/scaffold/admin_scaffold.dart';
 import 'package:sagelink_communities/ui/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +61,10 @@ class BaseApp extends ConsumerWidget {
         return (appState.viewingAdminSite && loggedInUser.isAdmin)
             ? const AdminScaffold()
             : const MainScaffold();
+      }
+      if ([LoginState.isLoggingIn, LoginState.needToCreateUser]
+          .contains(loggedInUser.status)) {
+        return const Scaffold(body: Loading());
       }
 
       // Return the current view, based on the currentUser value:

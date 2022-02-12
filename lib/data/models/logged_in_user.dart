@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sagelink_communities/app/graphql_config.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -26,6 +27,7 @@ enum LoginState {
   isLoggedOut,
   isLoggingIn,
   isLoggedIn,
+  needToCreateUser,
 }
 
 class LoggedInUser {
@@ -47,10 +49,10 @@ class LoggedInUser {
 }
 
 class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
-  LoggedInUserStateNotifier(state, {required this.client})
+  LoggedInUserStateNotifier(state, {required this.gqlConfig})
       : super(state ?? LoggedInUser());
 
-  final GraphQLClient client;
+  final GraphQLConfiguration gqlConfig;
 
   void updateUserWithState(User? user) {
     if (user == null && state.status != LoginState.isLoggedOut) {
@@ -58,31 +60,25 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
           LoggedInUser(user: UserModel(), status: LoginState.isLoggedOut);
       state = _loggedInUser;
     } else if (user != null && state.status != LoginState.isLoggedIn) {
-      fetchUserData(email: user.email!);
+      fetchUserData(user: user);
     }
   }
 
   void setIsLoading() {
-    state = LoggedInUser(user: UserModel(), status: LoginState.isLoggingIn);
+    state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
   }
 
   // Fetch logged in user's data from the SL backend
-  Future<Object?> fetchUserData(
-      {String userId = "", String email = "", String firebaseId = ""}) async {
-    if (userId.isEmpty && email.isEmpty && firebaseId.isEmpty) {
-      return Exception(
-          "missing required uid fields [email, userId, firebaseId]");
+  Future<Object?> fetchUserData({required User user}) async {
+    if (!gqlConfig.isAuthenticated) {
+      print("Don't fetch - unauthenticated");
+      return null;
     }
-
     state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
-    final QueryResult result = await client.query(QueryOptions(
+    final QueryResult result = await gqlConfig.client.query(QueryOptions(
       document: gql(getUserQuery),
       variables: {
-        "where": userId.isNotEmpty
-            ? {"id": userId}
-            : email.isNotEmpty
-                ? {"email": email}
-                : {"firebaesId": firebaseId},
+        "where": {"firebaseId": user.uid},
         "options": {"limit": 1}
       },
     ));
@@ -108,6 +104,12 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
           isAdmin: isAdmin,
           adminBrandId: brandId);
       state = _loggedInUser;
+    } else {
+      // need to create user
+      // LoggedInUser _loggedInUser = LoggedInUser(
+      //   user: UserModel()
+      // )
+
     }
   }
 

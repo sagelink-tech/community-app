@@ -1,10 +1,24 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-//import 'package:google_sign_in/google_sign_in.dart';
 
-class Authentication {
+class Authentication extends ChangeNotifier {
   // For Authentication related functions you need an instance of FirebaseAuth
   final FirebaseAuth authInstance = FirebaseAuth.instance;
+
+  DateTime? tokenExpiryDate;
+  String? token;
+
+  bool get isAuthenticated => token != null && tokenExpiryDate != null;
+
+  Authentication() {
+    authStateChange.listen((user) {
+      if (user != null) {
+        updateToken();
+      } else {
+        updateToken(remove: true);
+      }
+    });
+  }
 
   //  This getter will be returning a Stream of User object.
   //  It will be used to check if the user is logged in or not.
@@ -24,13 +38,23 @@ class Authentication {
   //  Trust me it will really clear all your concepts about futures
 
   // Get JWT for signing requests
-  Future<String?> getJWT() async {
-    try {
-      String token = await authInstance.currentUser!.getIdToken(true);
-      return token;
-    } catch (e) {
-      print(e);
-      return null;
+  Future<void> updateToken({remove = false}) async {
+    print("updating token");
+    if (remove) {
+      token = null;
+      tokenExpiryDate = null;
+      notifyListeners();
+    } else {
+      try {
+        tokenExpiryDate = DateTime.now().add(const Duration(minutes: 3));
+        String _token = await authInstance.currentUser!.getIdToken(true);
+        token = _token;
+        notifyListeners();
+      } catch (e) {
+        token = null;
+        tokenExpiryDate = null;
+        notifyListeners();
+      }
     }
   }
 
@@ -52,7 +76,7 @@ class Authentication {
   Future<void> signUpWithEmailAndPassword(
       String email, String password, BuildContext context) async {
     try {
-      authInstance.createUserWithEmailAndPassword(
+      await authInstance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -71,9 +95,15 @@ class Authentication {
                   ]));
     } catch (e) {
       if (e == 'email-already-in-use') {
-        // print('Email already in use.');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text("The email you entered is already in user"),
+          backgroundColor: Theme.of(context).errorColor,
+        ));
       } else if (e == 'weak-password') {
-        // print('Error: "Password is too weak');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text("Please enter a more secure password"),
+          backgroundColor: Theme.of(context).errorColor,
+        ));
       } else {
         // print(e);
       }

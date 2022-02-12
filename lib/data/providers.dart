@@ -15,19 +15,8 @@ import 'package:sagelink_communities/data/services/user_service.dart';
 ////////////////////////////////////////
 final gqlConfigProvider = ChangeNotifierProvider((ref) {
   var gqlConfig = GraphQLConfiguration();
-  final authState = ref.watch(authStateChangesProvider);
   final auth = ref.watch(authProvider);
-  authState.when(
-      data: (user) async {
-        if (user != null) {
-          var token = await auth.getJWT();
-          token != null ? gqlConfig.setToken(token) : gqlConfig.removeToken();
-        } else {
-          gqlConfig.removeToken();
-        }
-      },
-      error: (e, trace) => gqlConfig.removeToken(),
-      loading: () => {});
+  gqlConfig.setAuthenticator(auth);
   return gqlConfig;
 });
 
@@ -54,12 +43,11 @@ final userServiceProvider = Provider((ref) => UserService(
 
 final loggedInUserProvider =
     StateNotifierProvider<LoggedInUserStateNotifier, LoggedInUser>((ref) {
-  final client = ref.watch(gqlClientProvider);
   final gqlConfig = ref.watch(gqlConfigProvider);
   final authState = ref.watch(authStateChangesProvider);
 
-  var notifier = LoggedInUserStateNotifier(LoggedInUser(user: UserModel()),
-      client: client.value);
+  var notifier =
+      LoggedInUserStateNotifier(LoggedInUser(user: null), gqlConfig: gqlConfig);
 
   authState.when(
       data: (user) {
@@ -71,10 +59,10 @@ final loggedInUserProvider =
   return notifier;
 });
 
-final authProvider = Provider((ref) => Authentication());
+final authProvider = ChangeNotifierProvider((ref) => Authentication());
 
 final authStateChangesProvider =
-    StreamProvider<User?>((ref) => Authentication().idTokenChanges);
+    StreamProvider<User?>((ref) => ref.watch(authProvider).idTokenChanges);
 
 ////////////////////////////////////////
 // App state providers                //
