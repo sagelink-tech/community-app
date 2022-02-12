@@ -57,21 +57,20 @@ class BaseApp extends ConsumerWidget {
     }
 
     Widget _home() {
-      if (loggedInUser.status == LoginState.isLoggedIn) {
-        return (appState.viewingAdminSite && loggedInUser.isAdmin)
-            ? const AdminScaffold()
-            : const MainScaffold();
-      }
-      if ([LoginState.isLoggingIn, LoginState.needToCreateUser]
-          .contains(loggedInUser.status)) {
-        return const Scaffold(body: Loading());
-      }
-
-      // Return the current view, based on the currentUser value:
-      else {
-        return const Scaffold(
-          body: LoginPage(),
-        );
+      switch (loggedInUser.status) {
+        case LoginState.isLoggedIn:
+          return (appState.viewingAdminSite && loggedInUser.isAdmin)
+              ? const AdminScaffold()
+              : const MainScaffold();
+        case LoginState.isLoggingIn:
+          return const Scaffold(body: Loading());
+        case LoginState.isLoggedOut:
+          return const Scaffold(
+            body: LoginPage(),
+          );
+        case LoginState.needToCreateUser:
+          return const Scaffold(
+              body: Center(child: Text("Need to get user info")));
       }
     }
 

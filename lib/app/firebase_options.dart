@@ -17,6 +17,10 @@ import 'package:sagelink_communities/app/app_config.dart';
 /// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
+    if (FlutterAppConfig.useEmulator) {
+      return DefaultFirebaseOptions.emulator;
+    }
+
     AppEnvironment buildEnv = FlutterAppConfig.environment;
 
     if (kIsWeb) {
@@ -98,5 +102,16 @@ class DefaultFirebaseOptions {
     iosClientId:
         '851337593328-lpldghvrkrkforkp2db3km0o4io7c2mv.apps.googleusercontent.com',
     iosBundleId: 'com.sagelink.communityApp.demo',
+  );
+
+  static const FirebaseOptions emulator = FirebaseOptions(
+    apiKey: 'AIzaSyC4mVykrxd_9ARflIQTTXXCZf2SVkVNbJ8',
+    appId: '1:365461850788:ios:f047368ed58edd154f3431',
+    messagingSenderId: '365461850788',
+    projectId: 'sagelink-community-dev',
+    storageBucket: 'sagelink-community-dev.appspot.com',
+    iosClientId:
+        '365461850788-vajqsmcs6b20u57ok5lbgfbr1tc0qci0.apps.googleusercontent.com',
+    iosBundleId: 'com.sagelink.communityApp.dev',
   );
 }

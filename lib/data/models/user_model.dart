@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/data/models/cause_model.dart';
@@ -49,6 +50,14 @@ class UserModel extends ChangeNotifier {
   }
 
   UserModel();
+
+  UserModel.fromFirebaseUser(User user) {
+    id = "NO_SL_ID";
+    name = user.displayName ?? "";
+    accountPictureUrl = user.photoURL ?? "";
+    email = user.email ?? "";
+    firebaseId = user.uid;
+  }
 
   UserModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];

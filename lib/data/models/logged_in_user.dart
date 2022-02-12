@@ -71,7 +71,6 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   // Fetch logged in user's data from the SL backend
   Future<Object?> fetchUserData({required User user}) async {
     if (!gqlConfig.isAuthenticated) {
-      print("Don't fetch - unauthenticated");
       return null;
     }
     state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
@@ -106,10 +105,10 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       state = _loggedInUser;
     } else {
       // need to create user
-      // LoggedInUser _loggedInUser = LoggedInUser(
-      //   user: UserModel()
-      // )
-
+      LoggedInUser _loggedInUser = LoggedInUser(
+          user: UserModel.fromFirebaseUser(user),
+          status: LoginState.needToCreateUser);
+      state = _loggedInUser;
     }
   }
 
