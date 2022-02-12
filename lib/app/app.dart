@@ -7,7 +7,7 @@ import "package:graphql_flutter/graphql_flutter.dart";
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/ui/theme.dart';
-import 'package:sagelink_communities/ui/views/pages/login_page.dart';
+import 'package:sagelink_communities/ui/views/login_signup/login_page.dart';
 
 class CommunityApp extends ConsumerStatefulWidget {
   const CommunityApp({required this.appName, Key? key}) : super(key: key);

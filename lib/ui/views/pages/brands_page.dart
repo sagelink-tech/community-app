@@ -6,7 +6,7 @@ import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/ui/views/users/accept_invite_page.dart';
+import 'package:sagelink_communities/ui/views/login_signup/accept_invite_page.dart';
 
 String getBrandsQuery = '''
 query Brands {
