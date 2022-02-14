@@ -25,9 +25,9 @@ query Query{
 
 // ignore: constant_identifier_names
 const String CREATE_INVITES_NUTATION = '''
-mutation CreateInvites(\$input: [InviteCreateInput!]!) {
-  createInvites(input: \$input) {
-    invites {
+mutation Mutation(\$input: [UserCreateInput!]!) {
+  createUsers(input: \$input) {
+    users {
       id
     }
   }
@@ -53,8 +53,12 @@ mutation Mutation(\$verificationCode: String!) {
 class UserService {
   final GraphQLClient client;
   final LoggedInUser authUser;
+  final LoggedInUserStateNotifier authNotifier;
 
-  const UserService({required this.client, required this.authUser});
+  const UserService(
+      {required this.client,
+      required this.authUser,
+      required this.authNotifier});
 
   /////////////////////////////////////////////////////////////
   /// Removing users
@@ -169,7 +173,6 @@ class UserService {
 
   // Remove a user from a community
   // This actually bans the user from the community
-  //TODO
   Future<bool> unbanUserFromCommunity(UserModel user, String brandId,
       {OnMutationCompleted? onComplete}) async {
     if (authUser.adminBrandId != brandId) {
@@ -392,9 +395,5 @@ class UserService {
   /////////////////////////////////////////////////////////////
   /// Creating users
   /////////////////////////////////////////////////////////////
-
-  // This should be handled as a gcp cloud function on account creation
-  // To "create a member" the user account must already exist, and then
-  // the user is added to the community.
 
 }

@@ -5,11 +5,11 @@ import 'package:sagelink_communities/data/models/cause_model.dart';
 import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 
 class UserModel extends ChangeNotifier {
-  String id = "123";
-  String firebaseId = "123";
-  String description = "description";
-  String name = "full name";
-  String email = "email@email.com";
+  String id = "NO_SL_ID";
+  String firebaseId = "";
+  String description = "";
+  String name = "";
+  String email = "";
   String accountPictureUrl = "";
   DateTime createdAt = DateTime(2020, 1, 1, 0, 0);
   bool queryUserIsBlocked = false;
@@ -109,8 +109,10 @@ class UserModel extends ChangeNotifier {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
+        'description': description,
         'email': email,
-        'accountPictureUrl': accountPictureUrl
+        'accountPictureUrl': accountPictureUrl,
+        'firebaseId': firebaseId,
       };
 }
 
@@ -119,6 +121,7 @@ class EmployeeModel extends UserModel {
   bool founder = false;
   bool owner = false;
   String jobTitle = "";
+  String inviteEmail = "";
   EmployeeModel() : super();
 
   @override
@@ -151,6 +154,7 @@ class EmployeeModel extends UserModel {
     founder = json['founder'] ?? _employeeJson?["founder"] ?? false;
     owner = json['owner'] ?? _employeeJson?["owner"] ?? "";
     jobTitle = json['jobTitle'] ?? _employeeJson?["jobTitle"] ?? "";
+    inviteEmail = json['inviteEmail'] ?? _employeeJson?["inviteEmail"] ?? "";
 
     if (json.containsKey('causes')) {
       List<CauseModel> _c = [];
@@ -178,6 +182,7 @@ class MemberModel extends UserModel {
   bool isBanned = false;
   DateTime memberSince = DateTime(2020);
   String customerId = "";
+  String inviteEmail = "";
   MemberModel() : super();
 
   @override
@@ -210,6 +215,7 @@ class MemberModel extends UserModel {
       // parse membership info
       tier = memberInfo["tier"] ?? "";
       customerId = memberInfo["customerId"] ?? "";
+      inviteEmail = memberInfo["inviteEmail"] ?? "";
       memberSince =
           DateTime.tryParse(memberInfo["createdAt"]) ?? DateTime(2020);
     }

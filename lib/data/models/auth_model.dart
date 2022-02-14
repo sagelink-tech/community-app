@@ -9,14 +9,6 @@ class AuthState {
   bool get isExpired =>
       isAuthenticated && tokenExpiryDate!.isBefore(DateTime.now());
 
-  // For Authentication related functions you need an instance of FirebaseAuth
-  final FirebaseAuth authInstance = FirebaseAuth.instance;
-
-  //  This getter will be returning a Stream of User object.
-  //  It will be used to check if the user is logged in or not.
-  Stream<User?> get authStateChange => authInstance.authStateChanges();
-  Stream<User?> get idTokenChanges => authInstance.idTokenChanges();
-
   AuthState({this.token, this.tokenExpiryDate});
 }
 
@@ -25,8 +17,17 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
 
   static final provider =
       StateNotifierProvider<AuthStateNotifier, AuthState>((ref) {
-    return AuthStateNotifier(AuthState());
+    AuthStateNotifier notifier = AuthStateNotifier(AuthState());
+    return notifier;
   });
+
+  // For Authentication related functions you need an instance of FirebaseAuth
+  final FirebaseAuth authInstance = FirebaseAuth.instance;
+
+  //  This getter will be returning a Stream of User object.
+  //  It will be used to check if the user is logged in or not.
+  Stream<User?> get authStateChange => authInstance.authStateChanges();
+  Stream<User?> get idTokenChanges => authInstance.idTokenChanges();
 
   // Now This Class Contains 3 Functions currently
   // 1. signInWithGoogle
@@ -51,7 +52,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       try {
         print("Adding token");
         DateTime expiryDate = DateTime.now().add(const Duration(minutes: 3));
-        String token = await state.authInstance.currentUser!.getIdToken(true);
+        String token = await authInstance.currentUser!.getIdToken(true);
         state = AuthState(token: token, tokenExpiryDate: expiryDate);
         return;
       } catch (e) {
@@ -65,8 +66,8 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
   Future<void> signInWithEmailAndPassword(
       String email, String password, BuildContext context) async {
     try {
-      await state.authInstance
-          .signInWithEmailAndPassword(email: email, password: password);
+      await authInstance.signInWithEmailAndPassword(
+          email: email, password: password);
       await updateToken();
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -81,7 +82,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
   Future<void> signUpWithEmailAndPassword(
       String email, String password, BuildContext context) async {
     try {
-      await state.authInstance.createUserWithEmailAndPassword(
+      await authInstance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -141,7 +142,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
 
   //  SignOut the current user
   Future<void> signOut() async {
-    await state.authInstance.signOut();
+    await authInstance.signOut();
     await updateToken(remove: true);
   }
 }

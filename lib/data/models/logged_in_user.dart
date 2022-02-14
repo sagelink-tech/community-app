@@ -3,6 +3,7 @@ import 'package:sagelink_communities/app/graphql_config.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/data/providers.dart';
 
 String getUserQuery = """
 query Users(\$where: UserWhere) {
@@ -14,10 +15,41 @@ query Users(\$where: UserWhere) {
     employeeOfBrandsConnection {
       edges {
         roles
+        inviteEmail
+        jobTitle
+        owner
+        founder
         node {
           id
+          name
+          logoUrl
+          mainColor
         }
       }
+    }
+    memberOfBrandsConnection {
+      edges {
+        tier
+        inviteEmail
+        customerId
+        node {
+          id
+          name
+          logoUrl
+          mainColor
+        }
+      }
+    }
+  }
+}
+""";
+
+//ignore: constant_identifier_names
+const String CREATE_USER_MUTATION = """
+mutation CreateUsers(\$input: [UserCreateInput!]!) {
+  createUsers(input: \$input) {
+    users {
+      id
     }
   }
 }
@@ -52,10 +84,27 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   LoggedInUserStateNotifier(state, {required this.gqlConfig})
       : super(state ?? LoggedInUser());
 
+  static final provider =
+      StateNotifierProvider<LoggedInUserStateNotifier, LoggedInUser>((ref) {
+    final gqlConfig = ref.watch(GraphQLConfigurationNotifier.provider);
+    final authState = ref.watch(authStateChangesProvider);
+
+    var notifier = LoggedInUserStateNotifier(LoggedInUser(user: null),
+        gqlConfig: gqlConfig);
+
+    authState.when(
+        data: (user) {
+          notifier.updateUserWithState(user);
+        },
+        error: (e, trace) => notifier.updateUserWithState(null),
+        loading: () => notifier.setIsLoggingIn());
+
+    return notifier;
+  });
+
   final GraphQLConfiguration gqlConfig;
 
   void updateUserWithState(User? user) {
-    print(user);
     if (user != null) {
       fetchUserData(user: user);
     } else if (user == null) {
@@ -76,9 +125,11 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   }
 
   // Fetch logged in user's data from the SL backend
-  Future<void> fetchUserData({required User user}) async {
-    print("fetching user");
-    print("ISAUTHCHECK: " + gqlConfig.isAuthenticated.toString());
+  Future<void> fetchUserData({User? user, String? userId}) async {
+    if (user == null && userId == null) {
+      throw ("Need either user or userid to fetch");
+    }
+
     if (!gqlConfig.isAuthenticated) {
       return;
     }
@@ -86,7 +137,7 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
     final QueryResult result = await gqlConfig.client.query(QueryOptions(
       document: gql(getUserQuery),
       variables: {
-        "where": {"firebaseId": user.uid},
+        "where": userId != null ? {"id": userId} : {"firebaseId": user!.uid},
         "options": {"limit": 1}
       },
     ));
@@ -113,15 +164,53 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
           adminBrandId: brandId);
       state = _loggedInUser;
     } else {
-      // need to create user
-      state = LoggedInUser(
-          user: UserModel.fromFirebaseUser(user),
-          status: LoginState.needToCreateUser);
+      if (user != null) {
+        state = LoggedInUser(
+            user: UserModel.fromFirebaseUser(user),
+            status: LoginState.needToCreateUser);
+      } else {
+        throw ("Error fetching user data with userid: " + userId!);
+      }
     }
   }
 
-  // Create a new user on the SL backend
-  UserModel? createUserWithData() {
-    return null;
+  void updateWithUserId(String userId) {
+    state = LoggedInUser(user: UserModel(), status: LoginState.isLoggingIn);
+    fetchUserData(userId: userId);
+  }
+
+  void createNewUser(UserModel user, {OnMutationCompleted? onComplete}) async {
+    // initialize mutation variables
+    Map<String, dynamic> mutationVariables = user.toJson();
+    mutationVariables.remove('id');
+    mutationVariables["causes"] = {
+      "connectOrCreate": user.causes
+          .map((e) => {
+                "where": {
+                  "node": {"title": e.title}
+                },
+                "onCreate": {
+                  "node": {"title": e.title}
+                }
+              })
+          .toList()
+    };
+
+    // Update
+    MutationOptions options =
+        MutationOptions(document: gql(CREATE_USER_MUTATION), variables: {
+      "input": [mutationVariables]
+    });
+
+    QueryResult result = await gqlConfig.client.mutate(options);
+
+    bool success = (result.data != null &&
+        (result.data!['createUsers']['users'] as List).length == 1);
+    if (success) {
+      updateWithUserId(result.data!['createUsers']['users'][0]['id']);
+    }
+    if (onComplete != null) {
+      onComplete(result.data);
+    }
   }
 }

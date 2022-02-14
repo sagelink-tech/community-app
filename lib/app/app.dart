@@ -1,6 +1,7 @@
 import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/views/login_signup/tutorial_pages.dart';
+import 'package:sagelink_communities/ui/views/login_signup/user_creation.dart';
 import 'package:sagelink_communities/ui/views/scaffold/admin_scaffold.dart';
 import 'package:sagelink_communities/ui/views/scaffold/main_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -46,11 +47,13 @@ class _CommunityAppState extends ConsumerState<CommunityApp> {
                 currentFocus.focusedChild!.unfocus();
               }
             },
-            child: MaterialApp(theme: _theme(), home: BaseApp())));
+            child: MaterialApp(theme: _theme(), home: const BaseApp())));
   }
 }
 
 class BaseApp extends ConsumerWidget {
+  const BaseApp({Key? key}) : super(key: key);
+
   Widget _home(LoggedInUser loggedInUser, AppStateStatus appState) {
     switch (loggedInUser.status) {
       case LoginState.isLoggedIn:
@@ -64,8 +67,7 @@ class BaseApp extends ConsumerWidget {
           body: LoginPage(),
         );
       case LoginState.needToCreateUser:
-        return const Scaffold(
-            body: Center(child: Text("Need to get user info")));
+        return const UserCreationPage();
     }
   }
 

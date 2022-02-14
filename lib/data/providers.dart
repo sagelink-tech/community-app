@@ -30,34 +30,19 @@ final postServiceProvider = Provider((ref) => PostService(
 
 final userServiceProvider = Provider((ref) => UserService(
     client: ref.watch(gqlClientProvider).value,
+    authNotifier: ref.watch(loggedInUserProvider.notifier),
     authUser: ref.watch(loggedInUserProvider)));
 
 ////////////////////////////////////////
 // Auth providers                     //
 ////////////////////////////////////////
 
-final loggedInUserProvider =
-    StateNotifierProvider<LoggedInUserStateNotifier, LoggedInUser>((ref) {
-  final gqlConfig = ref.watch(GraphQLConfigurationNotifier.provider);
-  final authState = ref.watch(authStateChangesProvider);
-
-  var notifier =
-      LoggedInUserStateNotifier(LoggedInUser(user: null), gqlConfig: gqlConfig);
-
-  authState.when(
-      data: (user) {
-        notifier.updateUserWithState(user);
-      },
-      error: (e, trace) => notifier.updateUserWithState(null),
-      loading: () => notifier.setIsLoggingIn());
-
-  return notifier;
-});
-
 final authProvider = AuthStateNotifier.provider;
-
+final authNotifier = AuthStateNotifier.provider.notifier;
 final authStateChangesProvider =
-    StreamProvider<User?>((ref) => ref.watch(authProvider).idTokenChanges);
+    StreamProvider<User?>((ref) => ref.watch(authNotifier).idTokenChanges);
+
+final loggedInUserProvider = LoggedInUserStateNotifier.provider;
 
 ////////////////////////////////////////
 // App state providers                //
