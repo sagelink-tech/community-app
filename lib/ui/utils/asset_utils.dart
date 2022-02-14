@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'dart:io';
 
 class AssetUtils {
-  static defaultImage(
+  static Image defaultImage(
           {BoxFit fit = BoxFit.cover, double? width, double? height}) =>
       Image(
         image: const AssetImage('assets/default_image.png'),
@@ -13,7 +13,7 @@ class AssetUtils {
         width: width,
         height: height,
       );
-  static wrappedDefaultImage(
+  static Widget wrappedDefaultImage(
           {BoxFit fit = BoxFit.cover, double? width, double? height}) =>
       SizedBox(
           width: width,
