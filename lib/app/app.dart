@@ -46,31 +46,15 @@ class _CommunityAppState extends ConsumerState<CommunityApp> {
                 currentFocus.focusedChild!.unfocus();
               }
             },
-            child: MaterialApp(
-                theme: _theme(), home: BaseApp(appState: appState))));
+            child: MaterialApp(theme: _theme(), home: BaseApp())));
   }
 }
 
-class BaseApp extends ConsumerStatefulWidget {
-  const BaseApp({required this.appState, Key? key}) : super(key: key);
-
-  final AppStateStatus appState;
-
-  @override
-  _BaseAppState createState() => _BaseAppState();
-}
-
-class _BaseAppState extends ConsumerState<BaseApp> {
-  late LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
-  late AppState appState = ref.watch(appStateProvider.notifier);
-
-  bool showTutorial = false;
-
-  Widget _home() {
-    print("APPARENT STATUS: " + loggedInUser.status.toString());
+class BaseApp extends ConsumerWidget {
+  Widget _home(LoggedInUser loggedInUser, AppStateStatus appState) {
     switch (loggedInUser.status) {
       case LoginState.isLoggedIn:
-        return (appState.status.isViewingAdminSite && loggedInUser.isAdmin)
+        return (appState.isViewingAdminSite && loggedInUser.isAdmin)
             ? const AdminScaffold()
             : const MainScaffold();
       case LoginState.isLoggingIn:
@@ -85,19 +69,22 @@ class _BaseAppState extends ConsumerState<BaseApp> {
     }
   }
 
-  Widget _splash() {
+  Widget _splash(BuildContext bc) {
     return Scaffold(
         body: Center(
-            child: Text("SAGELINK",
-                style: Theme.of(context).textTheme.headline6!)));
+            child: Text("SAGELINK", style: Theme.of(bc).textTheme.headline6!)));
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (showTutorial) {
-      return TutorialPages(onComplete: appState.completedTutorial);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
+    final AppState appState = ref.watch(appStateProvider.notifier);
+    final AppStateStatus appStateStatus = ref.watch(appStateProvider);
+
+    if (!appStateStatus.tutorialComplete) {
+      return TutorialPages(onComplete: () => appState.completedTutorial());
     } else {
-      return _home();
+      return _home(loggedInUser, appStateStatus);
     }
   }
 }

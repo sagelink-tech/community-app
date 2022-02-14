@@ -58,7 +58,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     super.dispose();
   }
 
-  _buildBody(BuildContext context, Authentication auth) {
+  _buildBody(BuildContext context, AuthStateNotifier auth) {
     return TabBarView(
       controller: _tabController,
       children: [
@@ -99,7 +99,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     final loggedInUser = ref.watch(loggedInUserProvider);
     _user = loggedInUser.getUser();
 
-    final auth = ref.watch(authProvider);
+    final auth = ref.watch(authProvider.notifier);
 
     return Scaffold(
         appBar: AppBar(

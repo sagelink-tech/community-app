@@ -55,23 +55,32 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   final GraphQLConfiguration gqlConfig;
 
   void updateUserWithState(User? user) {
-    if (user == null && state.status != LoginState.isLoggedOut) {
-      LoggedInUser _loggedInUser =
-          LoggedInUser(user: UserModel(), status: LoginState.isLoggedOut);
-      state = _loggedInUser;
-    } else if (user != null && state.status != LoginState.isLoggedIn) {
+    print(user);
+    if (user != null) {
       fetchUserData(user: user);
+    } else if (user == null) {
+      logout();
     }
   }
 
-  void setIsLoading() {
-    state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
+  void logout() {
+    LoggedInUser _user =
+        LoggedInUser(user: null, status: LoginState.isLoggedOut);
+    state = _user;
+  }
+
+  void setIsLoggingIn() {
+    LoggedInUser _user =
+        LoggedInUser(user: null, status: LoginState.isLoggingIn);
+    state = _user;
   }
 
   // Fetch logged in user's data from the SL backend
-  Future<Object?> fetchUserData({required User user}) async {
+  Future<void> fetchUserData({required User user}) async {
+    print("fetching user");
+    print("ISAUTHCHECK: " + gqlConfig.isAuthenticated.toString());
     if (!gqlConfig.isAuthenticated) {
-      return null;
+      return;
     }
     state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
     final QueryResult result = await gqlConfig.client.query(QueryOptions(
@@ -105,10 +114,9 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       state = _loggedInUser;
     } else {
       // need to create user
-      LoggedInUser _loggedInUser = LoggedInUser(
+      state = LoggedInUser(
           user: UserModel.fromFirebaseUser(user),
           status: LoginState.needToCreateUser);
-      state = _loggedInUser;
     }
   }
 

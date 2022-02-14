@@ -1,27 +1,22 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/app/graphql_config.dart';
-import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/models/app_state_model.dart';
-import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
 import 'package:sagelink_communities/data/services/post_service.dart';
 import 'package:sagelink_communities/data/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 ////////////////////////////////////////
 // API providers                      //
 ////////////////////////////////////////
-final gqlConfigProvider = ChangeNotifierProvider((ref) {
-  var gqlConfig = GraphQLConfiguration();
-  final auth = ref.watch(authProvider);
-  gqlConfig.setAuthenticator(auth);
-  return gqlConfig;
-});
+final gqlConfigurationProvider = GraphQLConfigurationNotifier.provider;
 
 final gqlClientProvider = Provider((ref) {
-  final config = ref.watch(gqlConfigProvider);
+  final config = ref.watch(GraphQLConfigurationNotifier.provider);
   return ValueNotifier(config.client);
 });
 
@@ -43,7 +38,7 @@ final userServiceProvider = Provider((ref) => UserService(
 
 final loggedInUserProvider =
     StateNotifierProvider<LoggedInUserStateNotifier, LoggedInUser>((ref) {
-  final gqlConfig = ref.watch(gqlConfigProvider);
+  final gqlConfig = ref.watch(GraphQLConfigurationNotifier.provider);
   final authState = ref.watch(authStateChangesProvider);
 
   var notifier =
@@ -51,15 +46,15 @@ final loggedInUserProvider =
 
   authState.when(
       data: (user) {
-        gqlConfig.isAuthenticated ? notifier.updateUserWithState(user) : {};
+        notifier.updateUserWithState(user);
       },
       error: (e, trace) => notifier.updateUserWithState(null),
-      loading: () => notifier.setIsLoading());
+      loading: () => notifier.setIsLoggingIn());
 
   return notifier;
 });
 
-final authProvider = ChangeNotifierProvider((ref) => Authentication());
+final authProvider = AuthStateNotifier.provider;
 
 final authStateChangesProvider =
     StreamProvider<User?>((ref) => ref.watch(authProvider).idTokenChanges);
@@ -67,4 +62,14 @@ final authStateChangesProvider =
 ////////////////////////////////////////
 // App state providers                //
 ////////////////////////////////////////
-final appStateProvider = ChangeNotifierProvider((ref) => AppState());
+
+final sharedPrefs = FutureProvider<SharedPreferences>(
+    (_) async => await SharedPreferences.getInstance());
+
+final appStateProvider = StateNotifierProvider<AppState, AppStateStatus>((ref) {
+  final prefs = ref.watch(sharedPrefs).maybeWhen(
+        data: (value) => value,
+        orElse: () => null,
+      );
+  return AppState(prefs);
+});

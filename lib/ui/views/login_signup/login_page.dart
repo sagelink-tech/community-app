@@ -16,7 +16,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   String? email;
   String? password;
   bool isLoggingIn = false;
-  late final Authentication auth = ref.watch(authProvider);
+  late final AuthStateNotifier authNotifier = ref.watch(authProvider.notifier);
 
   void _handleLogin(BuildContext context) async {
     if (email == null || password == null) {
@@ -28,7 +28,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       setState(() {
         isLoggingIn = true;
       });
-      await auth.signInWithEmailAndPassword(email!, password!, context);
+      await authNotifier.signInWithEmailAndPassword(email!, password!, context);
       setState(() {
         isLoggingIn = false;
       });
@@ -45,7 +45,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       setState(() {
         isLoggingIn = true;
       });
-      await auth.signUpWithEmailAndPassword(email!, password!, context);
+      await authNotifier.signUpWithEmailAndPassword(email!, password!, context);
       setState(() {
         isLoggingIn = false;
       });

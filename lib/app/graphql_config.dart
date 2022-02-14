@@ -1,62 +1,18 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/app/app_config.dart';
 import 'package:sagelink_communities/data/models/auth_model.dart';
+import 'package:sagelink_communities/data/providers.dart';
 
-class GraphQLConfiguration extends ChangeNotifier {
-  Link? link;
+class GraphQLConfiguration {
+  AuthLink? authLink;
   HttpLink httpLink = HttpLink(FlutterAppConfig.apiUrl());
-  bool _disposed = false;
+  bool get isAuthenticated => authLink != null;
 
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_disposed) {
-      super.notifyListeners();
-    }
-  }
-
-  bool get isAuthenticated => link != null;
-
-  void updateClient() {
-    client = GraphQLClient(
-        defaultPolicies: DefaultPolicies(
-            watchQuery:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            watchMutation:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            query: Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            mutate:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
-            subscribe:
-                Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
-        cache: GraphQLCache(store: HiveStore()),
-        link: getLink());
-    notifyListeners();
-  }
-
-  void setAuthenticator(Authentication auth) async {
-    if (!auth.isAuthenticated) {
-      link = null;
-    } else {
-      AuthLink alink = AuthLink(getToken: () async {
-        if (auth.tokenExpiryDate!.isBefore(DateTime.now())) {
-          await auth.updateToken();
-        }
-        return 'Bearer ${auth.token}';
-      });
-      link = alink.concat(httpLink);
-    }
-    updateClient();
-  }
+  GraphQLConfiguration({this.authLink});
 
   Link getLink() {
-    return link != null ? link! : httpLink;
+    return authLink != null ? authLink!.concat(httpLink) : httpLink;
   }
 
   late GraphQLClient client = GraphQLClient(
@@ -71,4 +27,40 @@ class GraphQLConfiguration extends ChangeNotifier {
               Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
       cache: GraphQLCache(store: HiveStore()),
       link: getLink());
+}
+
+class GraphQLConfigurationNotifier extends StateNotifier<GraphQLConfiguration> {
+  GraphQLConfigurationNotifier(state) : super(state);
+
+  static final provider =
+      StateNotifierProvider<GraphQLConfigurationNotifier, GraphQLConfiguration>(
+          (ref) {
+    GraphQLConfigurationNotifier gqlNotifier =
+        GraphQLConfigurationNotifier(GraphQLConfiguration());
+    AuthState authState = ref.watch(AuthStateNotifier.provider);
+    AuthStateNotifier authNofifier =
+        ref.watch(AuthStateNotifier.provider.notifier);
+    final authUser = ref.watch(authStateChangesProvider);
+
+    authUser.whenData((data) {
+      gqlNotifier.updateGQLConfig(authState, authNofifier);
+    });
+
+    return gqlNotifier;
+  });
+
+  void updateGQLConfig(AuthState authState, AuthStateNotifier notifier) {
+    print("UPDATING GQL CONFIG WITH " + authState.isAuthenticated.toString());
+    if (!authState.isAuthenticated) {
+      state = GraphQLConfiguration();
+    } else {
+      AuthLink alink = AuthLink(getToken: () async {
+        if (authState.isExpired) {
+          await notifier.updateToken();
+        }
+        return 'Bearer ${authState.token}';
+      });
+      state = GraphQLConfiguration(authLink: alink);
+    }
+  }
 }
