@@ -13,10 +13,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 ////////////////////////////////////////
 // API providers                      //
 ////////////////////////////////////////
-final gqlConfigurationProvider = GraphQLConfigurationNotifier.provider;
+final gqlConfigurationProvider = ChangeNotifierProvider((ref) {
+  final authChanges = ref.watch(authStateChangesProvider);
+  final authState = ref.watch(authProvider);
+  final config = GraphQLConfiguration(authState: ref.watch(authProvider));
+
+  authChanges.whenData((user) {
+    if (user != null && !authState.isAuthenticated) {
+      authState.updateToken();
+    }
+  });
+  return config;
+});
 
 final gqlClientProvider = Provider((ref) {
-  final config = ref.watch(GraphQLConfigurationNotifier.provider);
+  final config = ref.watch(gqlConfigurationProvider);
   return ValueNotifier(config.client);
 });
 
@@ -30,19 +41,17 @@ final postServiceProvider = Provider((ref) => PostService(
 
 final userServiceProvider = Provider((ref) => UserService(
     client: ref.watch(gqlClientProvider).value,
-    authNotifier: ref.watch(loggedInUserProvider.notifier),
     authUser: ref.watch(loggedInUserProvider)));
 
 ////////////////////////////////////////
 // Auth providers                     //
 ////////////////////////////////////////
 
-final authProvider = AuthStateNotifier.provider;
-final authNotifier = AuthStateNotifier.provider.notifier;
+final authProvider = ChangeNotifierProvider((ref) => AuthState());
 final authStateChangesProvider =
-    StreamProvider<User?>((ref) => ref.watch(authNotifier).idTokenChanges);
+    StreamProvider<User?>((ref) => ref.watch(authProvider).idTokenChanges);
 
-final loggedInUserProvider = LoggedInUserStateNotifier.provider;
+final loggedInUserProvider = LoggedInUser.provider;
 
 ////////////////////////////////////////
 // App state providers                //

@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:sagelink_communities/app/graphql_config.dart';
+import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -62,82 +64,103 @@ enum LoginState {
   needToCreateUser,
 }
 
-class LoggedInUser {
+class LoggedInUser extends ChangeNotifier {
   UserModel? user;
   LoginState status = LoginState.isLoggedOut;
   bool isAdmin = false;
   String? adminBrandId;
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
 
   // Main use case interfaces
   UserModel getUser() {
     return user ?? UserModel();
   }
 
-  LoggedInUser(
+  LoggedInUser(this.authState, this.gqlConfig,
       {this.user,
       this.status = LoginState.isLoggedOut,
       this.isAdmin = false,
       this.adminBrandId});
-}
+// }
 
-class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
-  LoggedInUserStateNotifier(state, {required this.gqlConfig})
-      : super(state ?? LoggedInUser());
+// class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
+//   LoggedInUserStateNotifier(state,
+//       {required this.gqlConfig, required this.authState})
+//       : super(state ?? LoggedInUser());
 
-  static final provider =
-      StateNotifierProvider<LoggedInUserStateNotifier, LoggedInUser>((ref) {
-    final gqlConfig = ref.watch(GraphQLConfigurationNotifier.provider);
-    final authState = ref.watch(authStateChangesProvider);
+  static final provider = ChangeNotifierProvider<LoggedInUser>((ref) {
+    final gqlConfig = ref.watch(gqlConfigurationProvider);
+    final authState = ref.watch(authProvider);
+    final authChanges = ref.watch(authStateChangesProvider);
 
-    var notifier = LoggedInUserStateNotifier(LoggedInUser(user: null),
-        gqlConfig: gqlConfig);
+    LoggedInUser loggedInUser = LoggedInUser(authState, gqlConfig);
 
-    authState.when(
-        data: (user) {
-          notifier.updateUserWithState(user);
+    authChanges.when(
+        data: (user) async {
+          //print(user);
+          if (authState.isAuthenticated) {
+            if (!gqlConfig.isAuthenticated) {}
+          }
+          loggedInUser.updateUserWithState(user);
         },
-        error: (e, trace) => notifier.updateUserWithState(null),
-        loading: () => notifier.setIsLoggingIn());
+        error: (e, trace) => loggedInUser.updateUserWithState(null),
+        loading: () => loggedInUser.setIsLoggingIn());
 
-    return notifier;
+    return loggedInUser;
   });
 
   final GraphQLConfiguration gqlConfig;
+  final AuthState authState;
 
   void updateUserWithState(User? user) {
     if (user != null) {
-      fetchUserData(user: user);
+      fetchUserData(firebaseUser: user);
     } else if (user == null) {
       logout();
     }
   }
 
   void logout() {
-    LoggedInUser _user =
-        LoggedInUser(user: null, status: LoginState.isLoggedOut);
-    state = _user;
+    user = null;
+    status = LoginState.isLoggedOut;
+    notifyListeners();
   }
 
   void setIsLoggingIn() {
-    LoggedInUser _user =
-        LoggedInUser(user: null, status: LoginState.isLoggingIn);
-    state = _user;
+    user = null;
+    status = LoginState.isLoggingIn;
+    notifyListeners();
   }
 
   // Fetch logged in user's data from the SL backend
-  Future<void> fetchUserData({User? user, String? userId}) async {
-    if (user == null && userId == null) {
+  Future<void> fetchUserData({User? firebaseUser, String? userId}) async {
+    if (firebaseUser == null && userId == null) {
       throw ("Need either user or userid to fetch");
     }
 
     if (!gqlConfig.isAuthenticated) {
       return;
     }
-    state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
+    setIsLoggingIn();
     final QueryResult result = await gqlConfig.client.query(QueryOptions(
       document: gql(getUserQuery),
       variables: {
-        "where": userId != null ? {"id": userId} : {"firebaseId": user!.uid},
+        "where":
+            userId != null ? {"id": userId} : {"firebaseId": firebaseUser!.uid},
         "options": {"limit": 1}
       },
     ));
@@ -149,7 +172,7 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       var _userData = result.data?['users'][0];
       UserModel _user = UserModel.fromJson(_userData);
       String? brandId;
-      bool isAdmin = false;
+      bool isAdminFlag = false;
 
       if ((_userData['employeeOfBrandsConnection']['edges'] as List)
           .isNotEmpty) {
@@ -157,17 +180,16 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
         brandId =
             _userData['employeeOfBrandsConnection']['edges'][0]['node']['id'];
       }
-      LoggedInUser _loggedInUser = LoggedInUser(
-          user: _user,
-          status: LoginState.isLoggedIn,
-          isAdmin: isAdmin,
-          adminBrandId: brandId);
-      state = _loggedInUser;
+      user = _user;
+      status = LoginState.isLoggedIn;
+      isAdmin = isAdminFlag;
+      adminBrandId = brandId;
+      notifyListeners();
     } else {
-      if (user != null) {
-        state = LoggedInUser(
-            user: UserModel.fromFirebaseUser(user),
-            status: LoginState.needToCreateUser);
+      if (firebaseUser != null) {
+        user = UserModel.fromFirebaseUser(firebaseUser);
+        status = LoginState.needToCreateUser;
+        notifyListeners();
       } else {
         throw ("Error fetching user data with userid: " + userId!);
       }
@@ -175,7 +197,9 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   }
 
   void updateWithUserId(String userId) {
-    state = LoggedInUser(user: UserModel(), status: LoginState.isLoggingIn);
+    user = UserModel();
+    status = LoginState.isLoggingIn;
+    notifyListeners();
     fetchUserData(userId: userId);
   }
 

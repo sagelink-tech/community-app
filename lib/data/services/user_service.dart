@@ -53,12 +53,8 @@ mutation Mutation(\$verificationCode: String!) {
 class UserService {
   final GraphQLClient client;
   final LoggedInUser authUser;
-  final LoggedInUserStateNotifier authNotifier;
 
-  const UserService(
-      {required this.client,
-      required this.authUser,
-      required this.authNotifier});
+  const UserService({required this.client, required this.authUser});
 
   /////////////////////////////////////////////////////////////
   /// Removing users

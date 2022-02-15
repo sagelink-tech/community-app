@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AuthState {
+class AuthState extends ChangeNotifier {
   DateTime? tokenExpiryDate;
   String? token;
   bool get isAuthenticated => token != null && tokenExpiryDate != null;
@@ -10,16 +9,6 @@ class AuthState {
       isAuthenticated && tokenExpiryDate!.isBefore(DateTime.now());
 
   AuthState({this.token, this.tokenExpiryDate});
-}
-
-class AuthStateNotifier extends StateNotifier<AuthState> {
-  AuthStateNotifier(AuthState state) : super(state);
-
-  static final provider =
-      StateNotifierProvider<AuthStateNotifier, AuthState>((ref) {
-    AuthStateNotifier notifier = AuthStateNotifier(AuthState());
-    return notifier;
-  });
 
   // For Authentication related functions you need an instance of FirebaseAuth
   final FirebaseAuth authInstance = FirebaseAuth.instance;
@@ -29,36 +18,36 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
   Stream<User?> get authStateChange => authInstance.authStateChanges();
   Stream<User?> get idTokenChanges => authInstance.idTokenChanges();
 
-  // Now This Class Contains 3 Functions currently
-  // 1. signInWithGoogle
-  // 2. signOut
-  // 3. signInwithEmailAndPassword
-
-  //  All these functions are async because this involves a future.
-  //  if async keyword is not used, it will throw an error.
-  //  to know more about futures, check out the documentation.
-  //  https://dart.dev/codelabs/async-await
-  //  Read this to know more about futures.
-  //  Trust me it will really clear all your concepts about futures
-
   // Get JWT for signing requests
   Future<void> updateToken({remove = false}) async {
     print("updating token");
     if (remove) {
       print("removing token");
-      state = AuthState();
+      token = null;
+      tokenExpiryDate = null;
+      notifyListeners();
       return;
     } else {
       try {
         print("Adding token");
-        DateTime expiryDate = DateTime.now().add(const Duration(minutes: 3));
-        String token = await authInstance.currentUser!.getIdToken(true);
-        state = AuthState(token: token, tokenExpiryDate: expiryDate);
+        tokenExpiryDate = DateTime.now().add(const Duration(minutes: 3));
+        print(tokenExpiryDate);
+        token = await authInstance.currentUser!.getIdToken(true);
+        notifyListeners();
         return;
       } catch (e) {
         await updateToken(remove: true);
         return;
       }
+    }
+  }
+
+  Future<String?> getToken() async {
+    if (isAuthenticated && !isExpired) {
+      return token;
+    } else {
+      await updateToken();
+      return token;
     }
   }
 

@@ -58,7 +58,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     super.dispose();
   }
 
-  _buildBody(BuildContext context, AuthStateNotifier auth) {
+  _buildBody(BuildContext context, AuthState auth) {
     return TabBarView(
       controller: _tabController,
       children: [
