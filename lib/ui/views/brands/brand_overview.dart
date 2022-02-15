@@ -22,13 +22,16 @@ class BrandOverview extends StatelessWidget {
   }
 
   Future<void> _launchURL(String url) async {
-    if (!await launch(
-      url,
-      forceSafariVC: true,
-      forceWebView: true,
-      headers: <String, String>{'my_header_key': 'my_header_value'},
-    )) {
-      throw 'Could not launch $url';
+    try {
+      !await launch(
+        url,
+        forceSafariVC: true,
+        forceWebView: true,
+        headers: <String, String>{'my_header_key': 'my_header_value'},
+      );
+    } catch (e) {
+      print(e);
+      return;
     }
   }
 

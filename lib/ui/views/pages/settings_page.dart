@@ -99,7 +99,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     final loggedInUser = ref.watch(loggedInUserProvider);
     _user = loggedInUser.getUser();
 
-    final auth = ref.watch(authProvider.notifier);
+    final auth = ref.watch(authProvider);
 
     return Scaffold(
         appBar: AppBar(
