@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
+import 'package:sagelink_communities/ui/components/splash_screen.dart';
 import 'package:sagelink_communities/ui/views/login_signup/tutorial_pages.dart';
 import 'package:sagelink_communities/ui/views/login_signup/user_creation.dart';
 import 'package:sagelink_communities/ui/views/scaffold/admin_scaffold.dart';
@@ -83,10 +85,21 @@ class BaseApp extends ConsumerWidget {
     final AppState appState = ref.watch(appStateProvider.notifier);
     final AppStateStatus appStateStatus = ref.watch(appStateProvider);
 
-    if (!appStateStatus.tutorialComplete) {
-      return TutorialPages(onComplete: () => appState.completedTutorial());
+    Widget _getMainPage() {
+      if (!appStateStatus.tutorialComplete) {
+        return TutorialPages(onComplete: () => appState.completedTutorial());
+      } else {
+        return _home(loggedInUser, appStateStatus);
+      }
+    }
+
+    if (!kIsWeb) {
+      return SplashScreen(
+          onComplete: () => Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                  builder: (BuildContext context) => _getMainPage())));
     } else {
-      return _home(loggedInUser, appStateStatus);
+      return _getMainPage();
     }
   }
 }
