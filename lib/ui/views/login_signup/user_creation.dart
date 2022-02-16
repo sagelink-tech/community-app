@@ -1,7 +1,6 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/services.dart';
 import 'package:sagelink_communities/data/models/cause_model.dart';
-import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/ui/components/causes_chips.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';

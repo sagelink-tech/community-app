@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 
 class GoToAdminPage extends ConsumerWidget {
@@ -8,7 +7,8 @@ class GoToAdminPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appState = ref.watch(appStateProvider.notifier);
+    final appStateNotifier = ref.watch(appStateProvider.notifier);
+    final appState = ref.watch(appStateProvider);
 
     return Container(
         alignment: Alignment.center,
@@ -17,7 +17,7 @@ class GoToAdminPage extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              appState.status.isViewingAdminSite
+              appState.isViewingAdminSite
                   ? ("Would you like to transfer to the Main Site?")
                   : ("Would you like to transfer to the Admin Site?"),
               style: Theme.of(context).textTheme.headline3,
@@ -28,8 +28,8 @@ class GoToAdminPage extends ConsumerWidget {
                     primary: Theme.of(context).colorScheme.secondary,
                     onPrimary: Theme.of(context).colorScheme.onError),
                 onPressed: () => {
-                      appState.setViewingAdminSite(
-                          !appState.status.isViewingAdminSite)
+                      appStateNotifier
+                          .setViewingAdminSite(!appState.isViewingAdminSite)
                     },
                 child: const Text("Confirm"))
           ],

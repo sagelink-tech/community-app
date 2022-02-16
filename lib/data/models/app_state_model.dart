@@ -19,16 +19,16 @@ class AppState extends StateNotifier<AppStateStatus> {
   static const String _tutorialFlagKey = "COMPLETED_TUTORIAL";
   static const String _isDarkModeKey = "DARK_MODE";
   static const String _verifiedProfileKey = "VERIFIED_PROFILE";
-  late AppStateStatus status;
 
   AppState(this.prefs) : super(AppState.statusWithPrefs(prefs));
 
-  static AppStateStatus statusWithPrefs(SharedPreferences? prefs) {
+  static AppStateStatus statusWithPrefs(SharedPreferences? prefs,
+      {bool isViewingAdminSite = kIsWeb}) {
     return AppStateStatus(
         tutorialComplete: prefs?.getBool(_tutorialFlagKey) ?? false,
         isDarkModeEnabled: prefs?.getBool(_isDarkModeKey) ?? false,
         verifiedProfile: prefs?.getBool(_verifiedProfileKey) ?? false,
-        isViewingAdminSite: kIsWeb);
+        isViewingAdminSite: isViewingAdminSite);
   }
 
   final SharedPreferences? prefs;
@@ -58,6 +58,6 @@ class AppState extends StateNotifier<AppStateStatus> {
 
   void setViewingAdminSite(bool viewAdminSite) {
     state.isViewingAdminSite = viewAdminSite;
-    state = AppState.statusWithPrefs(prefs);
+    state = AppState.statusWithPrefs(prefs, isViewingAdminSite: viewAdminSite);
   }
 }
