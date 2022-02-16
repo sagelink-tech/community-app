@@ -1,11 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:sagelink_communities/app/graphql_config.dart';
-import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/data/providers.dart';
 
 String getUserQuery = """
 query Users(\$where: UserWhere) {
@@ -17,28 +13,8 @@ query Users(\$where: UserWhere) {
     employeeOfBrandsConnection {
       edges {
         roles
-        inviteEmail
-        jobTitle
-        owner
-        founder
         node {
           id
-          name
-          logoUrl
-          mainColor
-        }
-      }
-    }
-    memberOfBrandsConnection {
-      edges {
-        tier
-        inviteEmail
-        customerId
-        node {
-          id
-          name
-          logoUrl
-          mainColor
         }
       }
     }
@@ -57,110 +33,63 @@ mutation CreateUsers(\$input: [UserCreateInput!]!) {
 }
 """;
 
-enum LoginState {
-  isLoggedOut,
-  isLoggingIn,
-  isLoggedIn,
-  needToCreateUser,
-}
+enum LoginState { isLoggedOut, isLoggingIn, isLoggedIn, needToCreateUser }
 
-class LoggedInUser extends ChangeNotifier {
+class LoggedInUser {
   UserModel? user;
   LoginState status = LoginState.isLoggedOut;
   bool isAdmin = false;
   String? adminBrandId;
-
-  bool _disposed = false;
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_disposed) {
-      super.notifyListeners();
-    }
-  }
 
   // Main use case interfaces
   UserModel getUser() {
     return user ?? UserModel();
   }
 
-  LoggedInUser(this.authState, this.gqlConfig,
+  LoggedInUser(
       {this.user,
       this.status = LoginState.isLoggedOut,
       this.isAdmin = false,
       this.adminBrandId});
-// }
+}
 
-// class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
-//   LoggedInUserStateNotifier(state,
-//       {required this.gqlConfig, required this.authState})
-//       : super(state ?? LoggedInUser());
+class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
+  LoggedInUserStateNotifier(state, {required this.client})
+      : super(state ?? LoggedInUser());
 
-  static final provider = ChangeNotifierProvider<LoggedInUser>((ref) {
-    final gqlConfig = ref.watch(gqlConfigurationProvider);
-    final authState = ref.watch(authProvider);
-    final authChanges = ref.watch(authStateChangesProvider);
-
-    LoggedInUser loggedInUser = LoggedInUser(authState, gqlConfig);
-
-    authChanges.when(
-        data: (user) async {
-          //print(user);
-          if (authState.isAuthenticated) {
-            if (!gqlConfig.isAuthenticated) {}
-          }
-          loggedInUser.updateUserWithState(user);
-        },
-        error: (e, trace) => loggedInUser.updateUserWithState(null),
-        loading: () => loggedInUser.setIsLoggingIn());
-
-    return loggedInUser;
-  });
-
-  final GraphQLConfiguration gqlConfig;
-  final AuthState authState;
+  final GraphQLClient client;
 
   void updateUserWithState(User? user) {
-    if (user != null) {
-      fetchUserData(firebaseUser: user);
-    } else if (user == null) {
-      logout();
+    if (user == null && state.status != LoginState.isLoggedOut) {
+      LoggedInUser _loggedInUser =
+          LoggedInUser(user: UserModel(), status: LoginState.isLoggedOut);
+      state = _loggedInUser;
+    } else if (user != null && state.status != LoginState.isLoggedIn) {
+      fetchUserData(email: user.email!);
     }
   }
 
-  void logout() {
-    user = null;
-    status = LoginState.isLoggedOut;
-    notifyListeners();
-  }
-
-  void setIsLoggingIn() {
-    user = null;
-    status = LoginState.isLoggingIn;
-    notifyListeners();
+  void setIsLoading() {
+    state = LoggedInUser(user: UserModel(), status: LoginState.isLoggingIn);
   }
 
   // Fetch logged in user's data from the SL backend
-  Future<void> fetchUserData({User? firebaseUser, String? userId}) async {
-    if (firebaseUser == null && userId == null) {
-      throw ("Need either user or userid to fetch");
+  Future<Object?> fetchUserData(
+      {String userId = "", String email = "", User? firebaseUser}) async {
+    if (userId.isEmpty && email.isEmpty && firebaseUser != null) {
+      return Exception(
+          "missing required uid fields [email, userId, firebaseUser]");
     }
 
-    if (!gqlConfig.isAuthenticated) {
-      return;
-    }
-    setIsLoggingIn();
-    final QueryResult result = await gqlConfig.client.query(QueryOptions(
+    state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
+    final QueryResult result = await client.query(QueryOptions(
       document: gql(getUserQuery),
       variables: {
-        "where":
-            userId != null ? {"id": userId} : {"firebaseId": firebaseUser!.uid},
+        "where": userId.isNotEmpty
+            ? {"id": userId}
+            : email.isNotEmpty
+                ? {"email": email}
+                : {"firebaseId": firebaseUser!.uid},
         "options": {"limit": 1}
       },
     ));
@@ -172,7 +101,7 @@ class LoggedInUser extends ChangeNotifier {
       var _userData = result.data?['users'][0];
       UserModel _user = UserModel.fromJson(_userData);
       String? brandId;
-      bool isAdminFlag = false;
+      bool isAdmin = false;
 
       if ((_userData['employeeOfBrandsConnection']['edges'] as List)
           .isNotEmpty) {
@@ -180,26 +109,22 @@ class LoggedInUser extends ChangeNotifier {
         brandId =
             _userData['employeeOfBrandsConnection']['edges'][0]['node']['id'];
       }
-      user = _user;
-      status = LoginState.isLoggedIn;
-      isAdmin = isAdminFlag;
-      adminBrandId = brandId;
-      notifyListeners();
-    } else {
-      if (firebaseUser != null) {
-        user = UserModel.fromFirebaseUser(firebaseUser);
-        status = LoginState.needToCreateUser;
-        notifyListeners();
-      } else {
-        throw ("Error fetching user data with userid: " + userId!);
-      }
+      LoggedInUser _loggedInUser = LoggedInUser(
+          user: _user,
+          status: LoginState.isLoggedIn,
+          isAdmin: isAdmin,
+          adminBrandId: brandId);
+      state = _loggedInUser;
+    } else if (result.data != null && firebaseUser != null) {
+      LoggedInUser _loggedInUser = LoggedInUser(
+          user: UserModel.fromFirebaseUser(firebaseUser),
+          status: LoginState.needToCreateUser);
+      state = _loggedInUser;
     }
   }
 
   void updateWithUserId(String userId) {
-    user = UserModel();
-    status = LoginState.isLoggingIn;
-    notifyListeners();
+    setIsLoading();
     fetchUserData(userId: userId);
   }
 
@@ -226,7 +151,7 @@ class LoggedInUser extends ChangeNotifier {
       "input": [mutationVariables]
     });
 
-    QueryResult result = await gqlConfig.client.mutate(options);
+    QueryResult result = await client.mutate(options);
 
     bool success = (result.data != null &&
         (result.data!['createUsers']['users'] as List).length == 1);

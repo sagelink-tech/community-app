@@ -1,35 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/app/app_config.dart';
-import 'package:sagelink_communities/data/models/auth_model.dart';
 
 class GraphQLConfiguration extends ChangeNotifier {
-  AuthLink? authLink;
+  Link? link;
   HttpLink httpLink = HttpLink(FlutterAppConfig.apiUrl());
-  bool get isAuthenticated => authLink != null;
+  bool _disposed = false;
 
-  AuthState authState;
-
-  GraphQLConfiguration({required this.authState}) {
-    updateGQLConfig();
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
-  void updateGQLConfig() {
-    print("UPDATING GQL CONFIG WITH " + authState.isAuthenticated.toString());
-    if (!authState.isAuthenticated) {
-      authLink = null;
-    } else {
-      authLink = AuthLink(getToken: () async {
-        print("Checking expiration");
-        return 'Bearer ${await authState.getToken()}';
-      });
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
     }
-    updateClient();
   }
 
-  Link getLink() {
-    return authLink != null ? authLink!.concat(httpLink) : httpLink;
-  }
+  bool get isAuthenticated => link != null;
 
   void updateClient() {
     client = GraphQLClient(
@@ -48,5 +39,31 @@ class GraphQLConfiguration extends ChangeNotifier {
     notifyListeners();
   }
 
-  late GraphQLClient client;
+  void setToken(String token) {
+    AuthLink alink = AuthLink(getToken: () => 'Bearer ' + token);
+    link = alink.concat(httpLink);
+    updateClient();
+  }
+
+  void removeToken() {
+    link = null;
+    updateClient();
+  }
+
+  Link getLink() {
+    return link != null ? link! : httpLink;
+  }
+
+  late GraphQLClient client = GraphQLClient(
+      defaultPolicies: DefaultPolicies(
+          watchQuery:
+              Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+          watchMutation:
+              Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+          query: Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+          mutate: Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all),
+          subscribe:
+              Policies(fetch: FetchPolicy.noCache, error: ErrorPolicy.all)),
+      cache: GraphQLCache(store: HiveStore()),
+      link: getLink());
 }

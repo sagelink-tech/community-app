@@ -16,7 +16,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   String? email;
   String? password;
   bool isLoggingIn = false;
-  late final AuthState authState = ref.watch(authProvider);
+  late final Authentication authState = ref.watch(authProvider);
 
   void _handleLogin(BuildContext context) async {
     if (email == null || password == null) {

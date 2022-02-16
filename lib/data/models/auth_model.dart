@@ -1,15 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+//import 'package:google_sign_in/google_sign_in.dart';
 
-class AuthState extends ChangeNotifier {
-  DateTime? tokenExpiryDate;
-  String? token;
-  bool get isAuthenticated => token != null && tokenExpiryDate != null;
-  bool get isExpired =>
-      isAuthenticated && tokenExpiryDate!.isBefore(DateTime.now());
-
-  AuthState({this.token, this.tokenExpiryDate});
-
+class Authentication {
   // For Authentication related functions you need an instance of FirebaseAuth
   final FirebaseAuth authInstance = FirebaseAuth.instance;
 
@@ -18,36 +11,26 @@ class AuthState extends ChangeNotifier {
   Stream<User?> get authStateChange => authInstance.authStateChanges();
   Stream<User?> get idTokenChanges => authInstance.idTokenChanges();
 
-  // Get JWT for signing requests
-  Future<void> updateToken({remove = false}) async {
-    print("updating token");
-    if (remove) {
-      print("removing token");
-      token = null;
-      tokenExpiryDate = null;
-      notifyListeners();
-      return;
-    } else {
-      try {
-        print("Adding token");
-        tokenExpiryDate = DateTime.now().add(const Duration(minutes: 3));
-        print(tokenExpiryDate);
-        token = await authInstance.currentUser!.getIdToken(true);
-        notifyListeners();
-        return;
-      } catch (e) {
-        await updateToken(remove: true);
-        return;
-      }
-    }
-  }
+  // Now This Class Contains 3 Functions currently
+  // 1. signInWithGoogle
+  // 2. signOut
+  // 3. signInwithEmailAndPassword
 
-  Future<String?> getToken() async {
-    if (isAuthenticated && !isExpired) {
+  //  All these functions are async because this involves a future.
+  //  if async keyword is not used, it will throw an error.
+  //  to know more about futures, check out the documentation.
+  //  https://dart.dev/codelabs/async-await
+  //  Read this to know more about futures.
+  //  Trust me it will really clear all your concepts about futures
+
+  // Get JWT for signing requests
+  Future<String?> getJWT() async {
+    try {
+      String token = await authInstance.currentUser!.getIdToken(true);
       return token;
-    } else {
-      await updateToken();
-      return token;
+    } catch (e) {
+      print(e);
+      return null;
     }
   }
 
@@ -57,13 +40,11 @@ class AuthState extends ChangeNotifier {
     try {
       await authInstance.signInWithEmailAndPassword(
           email: email, password: password);
-      await updateToken();
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Error signing in: $e"),
         backgroundColor: Theme.of(context).errorColor,
       ));
-      await updateToken(remove: true);
     }
   }
 
@@ -71,23 +52,28 @@ class AuthState extends ChangeNotifier {
   Future<void> signUpWithEmailAndPassword(
       String email, String password, BuildContext context) async {
     try {
-      await authInstance.createUserWithEmailAndPassword(
+      authInstance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      await updateToken();
+    } on FirebaseAuthException catch (e) {
+      await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+                  title: const Text('Error Occured'),
+                  content: Text(e.toString()),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                        },
+                        child: const Text("OK"))
+                  ]));
     } catch (e) {
-      await updateToken(remove: true);
       if (e == 'email-already-in-use') {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text("The email you entered is already in user"),
-          backgroundColor: Theme.of(context).errorColor,
-        ));
+        // print('Email already in use.');
       } else if (e == 'weak-password') {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text("Please enter a more secure password"),
-          backgroundColor: Theme.of(context).errorColor,
-        ));
+        // print('Error: "Password is too weak');
       } else {
         // print(e);
       }
@@ -132,6 +118,5 @@ class AuthState extends ChangeNotifier {
   //  SignOut the current user
   Future<void> signOut() async {
     await authInstance.signOut();
-    await updateToken(remove: true);
   }
 }
