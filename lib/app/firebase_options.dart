@@ -64,6 +64,16 @@ class DefaultFirebaseOptions {
     storageBucket: 'sagelink-community-dev.appspot.com',
   );
 
+  static const FirebaseOptions webProd = FirebaseOptions(
+    apiKey: 'AIzaSyCuaXewoWsYzw8Fkdb5ldtZ0BcGF1PS02c',
+    appId: '1:7241848546:web:088ab6e9cca730ef0670bb',
+    messagingSenderId: '7241848546',
+    projectId: 'sagelink-community',
+    authDomain: 'sagelink-community.firebaseapp.com',
+    storageBucket: 'sagelink-community.appspot.com',
+    measurementId: 'G-4R6H1YDX3C',
+  );
+
   // Android options
   static const FirebaseOptions androidDev = FirebaseOptions(
     apiKey: 'AIzaSyDAY0U7BEMoF_dwuR0bkDj5Svw-0L2Tg3s',
@@ -81,27 +91,47 @@ class DefaultFirebaseOptions {
     storageBucket: 'sagelink-community-demo.appspot.com',
   );
 
+  static const FirebaseOptions androidProd = FirebaseOptions(
+    apiKey: 'AIzaSyADJ4RBkoPNtTKyEjyERhCkoObquIxRvRA',
+    appId: '1:7241848546:android:1fa8089ca92ae0290670bb',
+    messagingSenderId: '7241848546',
+    projectId: 'sagelink-community',
+    storageBucket: 'sagelink-community.appspot.com',
+  );
+
   // iOS options
   static const FirebaseOptions iosDev = FirebaseOptions(
     apiKey: 'AIzaSyC4mVykrxd_9ARflIQTTXXCZf2SVkVNbJ8',
-    appId: '1:365461850788:ios:f047368ed58edd154f3431',
+    appId: '1:365461850788:ios:34af71f420a9e6ef4f3431',
     messagingSenderId: '365461850788',
     projectId: 'sagelink-community-dev',
+    databaseURL: 'https://sagelink-community-dev-default-rtdb.firebaseio.com',
     storageBucket: 'sagelink-community-dev.appspot.com',
     iosClientId:
-        '365461850788-vajqsmcs6b20u57ok5lbgfbr1tc0qci0.apps.googleusercontent.com',
-    iosBundleId: 'com.sagelink.communityApp.dev',
+        '365461850788-422d4veu7o8h24tb3ud709hgbligjdo0.apps.googleusercontent.com',
+    iosBundleId: 'com.sagelink.community-app.dev',
   );
 
   static const FirebaseOptions iosDemo = FirebaseOptions(
     apiKey: 'AIzaSyBgPEfJltYUhqa2tHWNJp3Zl18x-HXj6Oo',
-    appId: '1:851337593328:ios:04f88cb980c57ec81f5d35',
+    appId: '1:851337593328:ios:76828cc291cd28751f5d35',
     messagingSenderId: '851337593328',
     projectId: 'sagelink-community-demo',
     storageBucket: 'sagelink-community-demo.appspot.com',
     iosClientId:
-        '851337593328-lpldghvrkrkforkp2db3km0o4io7c2mv.apps.googleusercontent.com',
-    iosBundleId: 'com.sagelink.communityApp.demo',
+        '851337593328-n2bj90en7su5mjidgokpaeomr5imq22g.apps.googleusercontent.com',
+    iosBundleId: 'com.sagelink.community-app.demo',
+  );
+
+  static const FirebaseOptions iosProd = FirebaseOptions(
+    apiKey: 'AIzaSyCe6Ou4dwMPys9o2P-Gx3TW6IFo2DbNPqA',
+    appId: '1:7241848546:ios:b8eaf2f134611b190670bb',
+    messagingSenderId: '7241848546',
+    projectId: 'sagelink-community',
+    storageBucket: 'sagelink-community.appspot.com',
+    iosClientId:
+        '7241848546-qqc9oqg0i8f08c7v400ibq7fdmcemtqs.apps.googleusercontent.com',
+    iosBundleId: 'com.sagelink.community-app',
   );
 
   static const FirebaseOptions emulator = FirebaseOptions(
