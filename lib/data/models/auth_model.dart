@@ -74,26 +74,11 @@ class Authentication {
         password: password,
       );
     } on FirebaseAuthException catch (e) {
-      await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-                  title: const Text('Error Occured'),
-                  content: Text(e.toString()),
-                  actions: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                        },
-                        child: const Text("OK"))
-                  ]));
-    } catch (e) {
-      if (e == 'email-already-in-use') {
-        // print('Email already in use.');
-      } else if (e == 'weak-password') {
-        // print('Error: "Password is too weak');
-      } else {
-        // print(e);
-      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            Text(e.message ?? "Error creating this account. Please try again."),
+        backgroundColor: Theme.of(context).errorColor,
+      ));
     }
   }
 
@@ -115,20 +100,10 @@ class Authentication {
     try {
       await authInstance.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
-      await showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Error Occured'),
-          content: Text(e.toString()),
-          actions: [
-            TextButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                },
-                child: const Text("OK"))
-          ],
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.message ?? "Error with google sign in: ${e.message}"),
+        backgroundColor: Theme.of(context).errorColor,
+      ));
     }
   }
 

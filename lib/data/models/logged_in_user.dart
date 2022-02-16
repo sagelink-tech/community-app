@@ -65,7 +65,7 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
           LoggedInUser(user: UserModel(), status: LoginState.isLoggedOut);
       state = _loggedInUser;
     } else if (user != null && state.status != LoginState.isLoggedIn) {
-      fetchUserData(email: user.email!);
+      fetchUserData(firebaseUser: user);
     }
   }
 
@@ -76,7 +76,7 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   // Fetch logged in user's data from the SL backend
   Future<Object?> fetchUserData(
       {String userId = "", String email = "", User? firebaseUser}) async {
-    if (userId.isEmpty && email.isEmpty && firebaseUser != null) {
+    if (userId.isEmpty && email.isEmpty && firebaseUser == null) {
       return Exception(
           "missing required uid fields [email, userId, firebaseUser]");
     }
@@ -155,11 +155,11 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
 
     bool success = (result.data != null &&
         (result.data!['createUsers']['users'] as List).length == 1);
+    if (onComplete != null) {
+      await onComplete(result.data);
+    }
     if (success) {
       updateWithUserId(result.data!['createUsers']['users'][0]['id']);
-    }
-    if (onComplete != null) {
-      onComplete(result.data);
     }
   }
 }

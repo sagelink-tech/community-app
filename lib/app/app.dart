@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
-import 'package:sagelink_communities/ui/components/splash_screen.dart';
 import 'package:sagelink_communities/ui/views/login_signup/login_page.dart';
 import 'package:sagelink_communities/ui/views/login_signup/tutorial_pages.dart';
 import 'package:sagelink_communities/ui/views/login_signup/user_creation.dart';

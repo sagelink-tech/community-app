@@ -22,6 +22,7 @@ class UserCreationPage extends ConsumerStatefulWidget {
 class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   late final loggedInUser = ref.watch(loggedInUserProvider);
   late final notifier = ref.watch(loggedInUserProvider.notifier);
+  late final userService = ref.watch(userServiceProvider);
 
   late UserModel user = loggedInUser.getUser();
 
@@ -51,43 +52,53 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
     }
   }
 
-  // Save changes
-
-  void _saveChanges(BuildContext context, GraphQLClient client) async {
-    // Start saving
-    setState(() {
-      _isSaving = true;
-    });
-
-    if (user.accountPictureUrl.isNotEmpty ||
-        _profileImagePicker.images.isNotEmpty) {
+  Future<void> uploadAndSavePhoto(
+      BuildContext context, GraphQLClient client, String userId) async {
+    if (_profileImagePicker.images.isNotEmpty) {
       // upload logo image
-      var imageResult = await _profileImagePicker.uploadImages(
-          "users/${user.id}/",
-          imageKeyPrefix: "logo",
-          context: context,
-          client: client);
-
+      var imageResult = await _profileImagePicker.uploadImages("users/$userId/",
+          imageKeyPrefix: "logo", context: context, client: client);
       if (!imageResult.success) {
         setState(() {
           _isSaving = false;
         });
       } else {
-        user.accountPictureUrl = imageResult.locations[0];
+        await userService.updateUserWithID(
+            userId, {"accountPictureUrl": imageResult.locations[0]},
+            requireAuth: false);
       }
     }
+  }
 
+  // Save changes
+  void _saveChanges(BuildContext context, GraphQLClient client) async {
+    // Start saving
+    setState(() {
+      _isSaving = true;
+    });
+    // Step one: create the user
     user.name = newName;
     user.description = newDescription;
     user.causes = newCauses;
 
-    notifier.createNewUser(user,
-        onComplete: (data) => {
-              setState(() {
-                _isSaving = false;
-              }),
-              print("Should go to brand verify page")
-            });
+    if (_profileImagePicker.images.isNotEmpty) {
+      user.accountPictureUrl = "";
+    }
+
+    notifier.createNewUser(user, onComplete: (data) async {
+      String? userId;
+      if (data != null && (data!['createUsers']['users'] as List).isNotEmpty) {
+        userId = data!['createUsers']['users'][0]['id'];
+      }
+
+      if (_profileImagePicker.images.isNotEmpty && userId != null) {
+        await uploadAndSavePhoto(context, client, userId);
+      }
+      setState(() {
+        _isSaving = false;
+      });
+      print("Should go to brand verify page");
+    });
   }
 
   TextEditingController causesTextController = TextEditingController();

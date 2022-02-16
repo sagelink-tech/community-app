@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
@@ -18,6 +19,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   String? password;
   bool isLoggingIn = false;
   late final Authentication authState = ref.watch(authProvider);
+
+  bool get isValid =>
+      email != null &&
+      email!.isNotEmpty &&
+      password != null &&
+      password!.isNotEmpty;
 
   void _handleLogin(BuildContext context) async {
     if (email == null || password == null) {
@@ -53,6 +60,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
+  void _handleGoogleSignIn(BuildContext context) async {
+    setState(() {
+      isLoggingIn = true;
+    });
+    await authState.signInWithGoogle(context);
+    setState(() {
+      isLoggingIn = false;
+    });
+  }
+
   Widget buildEmailForm({bool enabled = true}) => TextFormField(
         decoration: InputDecoration(
           labelText: 'Email',
@@ -82,6 +99,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         onChanged: (value) => setState(() => password = value),
         enabled: enabled,
       );
+
   Widget buildPasswordResetLink() => Align(
       alignment: Alignment.centerLeft,
       child: InkWell(
@@ -121,22 +139,47 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         buildPasswordForm(),
                         const ListSpacer(height: 20),
                         buildPasswordResetLink(),
+                        const ListSpacer(height: 20),
                         ElevatedButton(
-                            onPressed: () => {
-                                  _handleLogin(context),
-                                  setState(() {
-                                    isLoggingIn = true;
-                                  })
-                                },
+                            style: ElevatedButton.styleFrom(
+                                primary:
+                                    Theme.of(context).colorScheme.secondary,
+                                onPrimary:
+                                    Theme.of(context).colorScheme.onError,
+                                minimumSize: const Size.fromHeight(48)),
+                            onPressed:
+                                isValid ? () => _handleLogin(context) : null,
                             child: const Text("Login")),
-                        ElevatedButton(
+                        const ListSpacer(height: 20),
+                        OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    width: 1.0,
+                                    color: isValid
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                        : Theme.of(context).dividerColor),
+                                primary:
+                                    Theme.of(context).colorScheme.secondary,
+                                minimumSize: const Size.fromHeight(48)),
+                            onPressed:
+                                isValid ? () => _handleSignup(context) : null,
+                            child: const Text("Signup")),
+                        const ListSpacer(height: 20),
+                        const Divider(),
+                        const ListSpacer(height: 20),
+                        SignInButton(Buttons.Google,
+                            padding: EdgeInsets.zero,
+                            elevation: 1,
+                            onPressed: () => _handleGoogleSignIn(context)),
+                        SignInButton(Buttons.Apple,
                             onPressed: () => {
                                   _handleSignup(context),
                                   setState(() {
                                     isLoggingIn = true;
                                   })
-                                },
-                            child: const Text("Signup")),
+                                }),
                       ]),
           ));
     }));

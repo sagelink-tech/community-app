@@ -360,15 +360,17 @@ class UserService {
   /////////////////////////////////////////////////////////////
 
   // Update user with update dictionary
-  Future<bool> updateUser(UserModel user, Map<String, dynamic> updateData,
-      {OnMutationCompleted? onComplete}) async {
-    if (user.id != authUser.getUser().id) {
-      return false;
+  Future<bool> updateUserWithID(String userId, Map<String, dynamic> updateData,
+      {OnMutationCompleted? onComplete, bool requireAuth = true}) async {
+    if (requireAuth) {
+      if (userId != authUser.getUser().id) {
+        return false;
+      }
     }
 
     Map<String, dynamic> variables = {
       "update": updateData,
-      "where": {"id": user.id}
+      "where": {"id": userId}
     };
 
     MutationOptions options = MutationOptions(
@@ -379,8 +381,9 @@ class UserService {
       return false;
     }
 
-    bool success =
-        (result.data != null && result.data!['users'][0]['id'] == user.id);
+    bool success = (result.data != null &&
+        (result.data!['updateUsers']['users'] as List).isNotEmpty &&
+        result.data!['updateUsers']['users'][0]['id'] == userId);
 
     if (success && onComplete != null) {
       onComplete(result.data);
