@@ -3,6 +3,7 @@ import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/ui/components/list_spacer.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -52,9 +53,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  Widget buildEmailForm({bool enabled = true}) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 50),
-      child: TextFormField(
+  Widget buildEmailForm({bool enabled = true}) => TextFormField(
         decoration: InputDecoration(
           labelText: 'Email',
           border: const OutlineInputBorder(),
@@ -73,48 +72,73 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         },
         onChanged: (value) => setState(() => email = value),
         enabled: enabled,
-      ));
-  Widget buildPasswordForm({bool enabled = true}) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 50),
-      child: TextFormField(
+      );
+  Widget buildPasswordForm({bool enabled = true}) => TextFormField(
+        obscureText: true,
         decoration: const InputDecoration(
           hintText: "Password",
           border: OutlineInputBorder(),
         ),
         onChanged: (value) => setState(() => password = value),
         enabled: enabled,
-      ));
+      );
+  Widget buildPasswordResetLink() => Align(
+      alignment: Alignment.centerLeft,
+      child: InkWell(
+          child: Text('Forgot password',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyText2!
+                  .copyWith(decoration: TextDecoration.underline)),
+          onTap: () => email != null
+              ? authState.sendForgotPasswordEmail(email!, context)
+              : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: const Text(
+                      "Enter your email into the email field to have a reset link sent to you."),
+                  backgroundColor: Theme.of(context).errorColor,
+                ))));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: GraphQLConsumer(builder: (GraphQLClient client) {
-      return Center(
-        child: isLoggingIn
-            ? const CircularProgressIndicator()
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                    buildEmailForm(),
-                    buildPasswordForm(),
-                    ElevatedButton(
-                        onPressed: () => {
-                              _handleLogin(context),
-                              setState(() {
-                                isLoggingIn = true;
-                              })
-                            },
-                        child: const Text("Login")),
-                    ElevatedButton(
-                        onPressed: () => {
-                              _handleSignup(context),
-                              setState(() {
-                                isLoggingIn = true;
-                              })
-                            },
-                        child: const Text("Signup")),
-                  ]),
-      );
+      return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 50),
+          child: Center(
+            child: isLoggingIn
+                ? const CircularProgressIndicator()
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                        const Image(
+                          image: AssetImage('assets/splash.png'),
+                          fit: BoxFit.fitWidth,
+                          width: 200,
+                        ),
+                        const ListSpacer(height: 50),
+                        buildEmailForm(),
+                        const ListSpacer(height: 20),
+                        buildPasswordForm(),
+                        const ListSpacer(height: 20),
+                        buildPasswordResetLink(),
+                        ElevatedButton(
+                            onPressed: () => {
+                                  _handleLogin(context),
+                                  setState(() {
+                                    isLoggingIn = true;
+                                  })
+                                },
+                            child: const Text("Login")),
+                        ElevatedButton(
+                            onPressed: () => {
+                                  _handleSignup(context),
+                                  setState(() {
+                                    isLoggingIn = true;
+                                  })
+                                },
+                            child: const Text("Signup")),
+                      ]),
+          ));
     }));
   }
 }

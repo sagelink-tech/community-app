@@ -76,6 +76,7 @@ flutter:
   assets:
     - assets/default_image.png
     - assets/app_icon.png
+    - assets/splash.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
@@ -109,7 +110,7 @@ flutter_icons:
   image_path: "assets/app_icon.png"
 
 flutter_native_splash:
-  image: assets/app_icon.png
+  image: assets/splash.png
   color: "ffffff"
 
 flutter_app_name:

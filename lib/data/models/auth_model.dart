@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 //import 'package:google_sign_in/google_sign_in.dart';
 
 class Authentication {
@@ -31,6 +32,22 @@ class Authentication {
     } catch (e) {
       print(e);
       return null;
+    }
+  }
+
+  // Send forgot password email
+  Future<void> sendForgotPasswordEmail(
+      String email, BuildContext context) async {
+    try {
+      await authInstance.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Check your inbox for a reset link!"),
+      ));
+    } on FirebaseException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Error sending password reset: $e"),
+        backgroundColor: Theme.of(context).errorColor,
+      ));
     }
   }
 
@@ -81,39 +98,39 @@ class Authentication {
   }
 
   //  SignIn the user Google
-  // Future<void> signInWithGoogle(BuildContext context) async {
-  //   // Trigger the authentication flow
-  //   final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  Future<void> signInWithGoogle(BuildContext context) async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-  //   // Obtain the auth details from the request
-  //   final GoogleSignInAuthentication googleAuth =
-  //       await googleUser!.authentication;
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser!.authentication;
 
-  //   // Create a new credential
-  //   final credential = GoogleAuthProvider.credential(
-  //     accessToken: googleAuth.accessToken,
-  //     idToken: googleAuth.idToken,
-  //   );
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
 
-  //   try {
-  //     await _auth.signInWithCredential(credential);
-  //   } on FirebaseAuthException catch (e) {
-  //     await showDialog(
-  //       context: context,
-  //       builder: (ctx) => AlertDialog(
-  //         title: const Text('Error Occured'),
-  //         content: Text(e.toString()),
-  //         actions: [
-  //           TextButton(
-  //               onPressed: () {
-  //                 Navigator.of(ctx).pop();
-  //               },
-  //               child: const Text("OK"))
-  //         ],
-  //       ),
-  //     );
-  //   }
-  // }
+    try {
+      await authInstance.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Error Occured'),
+          content: Text(e.toString()),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text("OK"))
+          ],
+        ),
+      );
+    }
+  }
 
   //  SignOut the current user
   Future<void> signOut() async {
