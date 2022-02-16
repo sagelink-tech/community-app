@@ -7,12 +7,14 @@ class AppStateStatus {
   bool isDarkModeEnabled;
   bool isViewingAdminSite;
   bool verifiedProfile;
+  bool loadingPrefs;
 
   AppStateStatus(
       {this.tutorialComplete = false,
       this.isDarkModeEnabled = false,
       this.verifiedProfile = false,
-      this.isViewingAdminSite = kIsWeb});
+      this.isViewingAdminSite = kIsWeb,
+      this.loadingPrefs = false});
 }
 
 class AppState extends StateNotifier<AppStateStatus> {
@@ -25,6 +27,7 @@ class AppState extends StateNotifier<AppStateStatus> {
   static AppStateStatus statusWithPrefs(SharedPreferences? prefs,
       {bool isViewingAdminSite = kIsWeb}) {
     return AppStateStatus(
+        loadingPrefs: prefs == null,
         tutorialComplete: prefs?.getBool(_tutorialFlagKey) ?? false,
         isDarkModeEnabled: prefs?.getBool(_isDarkModeKey) ?? false,
         verifiedProfile: prefs?.getBool(_verifiedProfileKey) ?? false,

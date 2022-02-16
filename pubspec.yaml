@@ -46,6 +46,7 @@ dependencies:
   cached_network_image: ^3.2.0
   any_link_preview: ^2.0.4
   shared_preferences: ^2.0.13
+  flutter_native_splash: ^2.0.4
 
 dev_dependencies:
   flutter_test:
@@ -106,6 +107,10 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/app_icon.png"
+
+flutter_native_splash:
+  image: assets/app_icon.png
+  color: "ffffff"
 
 flutter_app_name:
   name: "Sagelink"

@@ -62,6 +62,9 @@ class BaseApp extends ConsumerWidget {
     }
 
     Widget _home() {
+      if (appState.loadingPrefs) {
+        return const Scaffold(body: LoginPage());
+      }
       if (!appState.tutorialComplete) {
         return TutorialPages(onComplete: appStateNotifier.completedTutorial);
       }
