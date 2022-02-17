@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -54,10 +55,12 @@ class LoggedInUser {
 }
 
 class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
-  LoggedInUserStateNotifier(state, {required this.client})
+  LoggedInUserStateNotifier(state,
+      {required this.client, required this.appState})
       : super(state ?? LoggedInUser());
 
   final GraphQLClient client;
+  final AppState appState;
 
   void updateUserWithState(User? user) {
     if (user == null && state.status != LoginState.isLoggedOut) {
@@ -114,6 +117,8 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
           status: LoginState.isLoggedIn,
           isAdmin: isAdmin,
           adminBrandId: brandId);
+      // update app state that the user has successfully logged in
+      appState.didSignIn();
       state = _loggedInUser;
     } else if (result.data != null && firebaseUser != null) {
       LoggedInUser _loggedInUser = LoggedInUser(

@@ -57,9 +57,10 @@ final loggedInUserProvider =
   final client = ref.watch(gqlClientProvider);
   final gqlConfig = ref.watch(gqlConfigProvider);
   final authState = ref.watch(authStateChangesProvider);
+  final appState = ref.watch(appStateProvider.notifier);
 
-  var notifier =
-      LoggedInUserStateNotifier(LoggedInUser(), client: client.value);
+  var notifier = LoggedInUserStateNotifier(LoggedInUser(),
+      client: client.value, appState: appState);
 
   authState.when(
       data: (user) {
