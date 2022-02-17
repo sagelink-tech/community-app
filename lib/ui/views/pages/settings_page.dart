@@ -87,7 +87,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           children: [
             const ListTile(title: Text("Privacy Policy")),
             const ListTile(title: Text("Terms and Conditions")),
-            ListTile(title: const Text("Logout"), onTap: () => auth.signOut()),
+            ListTile(
+                title: const Text("Logout"),
+                onTap: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
+                  auth.signOut();
+                }),
           ],
         )
       ],

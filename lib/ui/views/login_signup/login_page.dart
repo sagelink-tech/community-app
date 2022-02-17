@@ -5,6 +5,7 @@ import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/ui/components/feedback_form.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -19,9 +20,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final formKey = GlobalKey<FormState>();
   String? email;
   String? password;
-  String? feedbackText;
   bool isLoggingIn = false;
-  bool isCollectingFeedback = false;
 
   late final Authentication authState = ref.watch(authProvider);
   late final AppStateStatus appState = ref.watch(appStateProvider);
@@ -136,10 +135,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             TextButton(
               child: const Text('No invite code yet'),
               onPressed: () {
-                setState(() {
-                  isCollectingFeedback = true;
-                });
                 Navigator.of(context).pop(false);
+                _showFeedbackForm();
               },
             ),
           ],
@@ -148,34 +145,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  Widget buildFeedbackForm({bool enabled = true}) => TextFormField(
-        key: const Key("email_key"),
-        decoration: const InputDecoration(
-          hintText:
-              'Share some feedback... What interests are causes do you care about? What brands do you love? What brought you to Sagelink?',
-          border: OutlineInputBorder(),
-        ),
-        minLines: 5,
-        maxLines: 5,
-        initialValue: feedbackText,
-        onChanged: (value) => setState(() => feedbackText = value),
-        enabled: enabled,
-      );
+  void _dismissFeedbackForm(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
 
-  void _submitFeedback() {
-    setState(() {
-      isLoggingIn = true;
-    });
-    final Uri _emailLaunchUri =
-        Uri(scheme: 'mailto', path: 'support@sage.link', queryParameters: {
-      "subject": "Future User - Feedback",
-      "body": feedbackText,
-    });
-    launch(_emailLaunchUri.toString());
-    setState(() {
-      isLoggingIn = false;
-      isCollectingFeedback = false;
-    });
+  void _showFeedbackForm() async {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) => FeedbackForm(
+            onSubmit: () => _dismissFeedbackForm(context),
+            onCancel: () => _dismissFeedbackForm(context)));
   }
 
   Widget buildEmailForm({bool enabled = true}) => TextFormField(
@@ -190,6 +171,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               borderSide: BorderSide(color: Theme.of(context).primaryColor)),
           errorStyle: TextStyle(color: Theme.of(context).errorColor),
         ),
+        keyboardType: TextInputType.emailAddress,
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please enter an email';
@@ -229,19 +211,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   backgroundColor: Theme.of(context).errorColor,
                 ))));
 
-  List<Widget> _formWidgets() => [
-        const ListSpacer(height: 50),
-        Visibility(visible: !isCollectingFeedback, child: buildEmailForm()),
-        Visibility(
-            visible: !isCollectingFeedback,
-            child: const ListSpacer(height: 20)),
-        Visibility(visible: !isCollectingFeedback, child: buildPasswordForm()),
-        Visibility(visible: isCollectingFeedback, child: buildFeedbackForm()),
-        const ListSpacer(height: 20),
-      ];
-
   List<Widget> _loginWidgets() => [
-        ..._formWidgets(),
+        const ListSpacer(height: 50),
+        buildEmailForm(),
+        const ListSpacer(height: 20),
+        buildPasswordForm(),
+        const ListSpacer(height: 20),
         buildPasswordResetLink(),
         const ListSpacer(height: 20),
         ElevatedButton(
@@ -276,37 +251,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 }),
       ];
 
-  List<Widget> _feedbackWidgets() => [
-        ..._formWidgets(),
-        ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                primary: Theme.of(context).colorScheme.secondary,
-                onPrimary: Theme.of(context).colorScheme.onError,
-                minimumSize: const Size.fromHeight(48)),
-            onPressed: feedbackText != null && feedbackText!.isNotEmpty
-                ? () => _submitFeedback()
-                : null,
-            child: const Text("Send Feedback")),
-        const ListSpacer(height: 20),
-        OutlinedButton(
-            style: OutlinedButton.styleFrom(
-                side: BorderSide(
-                    width: 1.0,
-                    color: isValid
-                        ? Theme.of(context).colorScheme.secondary
-                        : Theme.of(context).dividerColor),
-                primary: Theme.of(context).colorScheme.secondary,
-                minimumSize: const Size.fromHeight(48)),
-            onPressed: () => setState(() {
-                  isCollectingFeedback = false;
-                }),
-            child: const Text("Cancel")),
-      ];
-
   @override
   Widget build(BuildContext context) {
-    List<Widget> _widgets =
-        isCollectingFeedback ? _feedbackWidgets() : _loginWidgets();
     return Scaffold(body: GraphQLConsumer(builder: (GraphQLClient client) {
       return Container(
           padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -320,9 +266,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         const Image(
                           image: AssetImage('assets/splash.png'),
                           fit: BoxFit.fitWidth,
-                          width: 200,
+                          width: 150,
                         ),
-                        ..._widgets
+                        ..._loginWidgets()
                       ]),
           ));
     }));

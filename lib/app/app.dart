@@ -1,4 +1,5 @@
 import 'package:sagelink_communities/ui/components/loading.dart';
+import 'package:sagelink_communities/ui/views/login_signup/accept_invite_page.dart';
 import 'package:sagelink_communities/ui/views/login_signup/login_page.dart';
 import 'package:sagelink_communities/ui/views/login_signup/tutorial_pages.dart';
 import 'package:sagelink_communities/ui/views/login_signup/user_creation.dart';
@@ -68,9 +69,11 @@ class BaseApp extends ConsumerWidget {
       }
       switch (loggedInUser.status) {
         case LoginState.isLoggedIn:
-          return (appState.isViewingAdminSite && loggedInUser.isAdmin)
-              ? const AdminScaffold()
-              : const MainScaffold();
+          return loggedInUser.getUser().brands.isEmpty
+              ? AcceptInvitePage(showFullDetails: true, onComplete: () => {})
+              : (appState.isViewingAdminSite && loggedInUser.isAdmin)
+                  ? const AdminScaffold()
+                  : const MainScaffold();
         case LoginState.isLoggedOut:
           return const Scaffold(body: LoginPage());
         case LoginState.isLoggingIn:
