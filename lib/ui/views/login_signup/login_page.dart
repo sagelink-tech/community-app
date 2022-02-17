@@ -70,6 +70,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
   }
 
+  void _handleAppleSignIn(BuildContext context) async {
+    setState(() {
+      isLoggingIn = true;
+    });
+    await authState.signInWithApple(context);
+    setState(() {
+      isLoggingIn = false;
+    });
+  }
+
   Widget buildEmailForm({bool enabled = true}) => TextFormField(
         decoration: InputDecoration(
           labelText: 'Email',
@@ -175,7 +185,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             onPressed: () => _handleGoogleSignIn(context)),
                         SignInButton(Buttons.Apple,
                             onPressed: () => {
-                                  _handleSignup(context),
+                                  _handleAppleSignIn(context),
                                   setState(() {
                                     isLoggingIn = true;
                                   })
