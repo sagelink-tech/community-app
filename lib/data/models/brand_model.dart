@@ -13,7 +13,6 @@ class BrandLink {
 
 class BrandModel extends ChangeNotifier {
   String id = "df487c75-7186-48ea-a507-25b80aa92c64";
-  String firebaseId = "df487c75-7186-48ea-a507-25b80aa92c64";
   String name = "brand name";
   String description = "brand description";
   String logoUrl = "";

@@ -4,6 +4,7 @@ import 'package:sagelink_communities/app/graphql_config.dart';
 import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
 import 'package:sagelink_communities/data/services/post_service.dart';
@@ -71,6 +72,9 @@ final loggedInUserProvider =
 
   return notifier;
 });
+
+final brandsProvider = Provider<List<BrandModel>>((ref) =>
+    ref.watch(loggedInUserProvider.select((value) => value.getUser().brands)));
 
 final authProvider = Provider((ref) => Authentication());
 

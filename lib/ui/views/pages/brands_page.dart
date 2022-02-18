@@ -1,3 +1,4 @@
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
@@ -9,8 +10,8 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/ui/views/login_signup/accept_invite_page.dart';
 
 String getBrandsQuery = '''
-query Brands {
-  brands {
+query Brands(\$where: BrandWhere) {
+  brands(where: \$where) {
     name
     shopifyToken
     mainColor
@@ -52,10 +53,13 @@ class BrandsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    List<String> brandIds = ref.watch(brandsProvider).map((e) => e.id).toList();
     List<BrandModel> brands = [];
 
     return Query(
-        options: QueryOptions(document: gql(getBrandsQuery)),
+        options: QueryOptions(document: gql(getBrandsQuery), variables: {
+          "where": {"id_IN": brandIds}
+        }),
         builder: (QueryResult result,
             {VoidCallback? refetch, FetchMore? fetchMore}) {
           if (result.hasException) {

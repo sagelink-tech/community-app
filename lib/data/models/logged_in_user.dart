@@ -11,13 +11,17 @@ query Users(\$where: UserWhere) {
     email
     name
     accountPictureUrl
-    employeeOfBrandsConnection {
-      edges {
-        roles
-        node {
-          id
-        }
-      }
+    memberOfBrands{
+      id
+      logoUrl
+      name
+      mainColor
+    }
+    employeeOfBrands{
+      id
+      logoUrl
+      name
+      mainColor
     }
   }
 }
@@ -106,11 +110,9 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       String? brandId;
       bool isAdmin = false;
 
-      if ((_userData['employeeOfBrandsConnection']['edges'] as List)
-          .isNotEmpty) {
+      if ((_userData['employeeOfBrands'] as List).isNotEmpty) {
         isAdmin = true;
-        brandId =
-            _userData['employeeOfBrandsConnection']['edges'][0]['node']['id'];
+        brandId = _userData['employeeOfBrands'][0]['id'];
       }
       LoggedInUser _loggedInUser = LoggedInUser(
           user: _user,

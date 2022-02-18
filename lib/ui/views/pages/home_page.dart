@@ -49,13 +49,12 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  late final user = ref.watch(loggedInUserProvider);
+  late final userBrands = ref.watch(brandsProvider);
   late List<String> selectedBrandIds =
       brands.where((e) => e != null).map((e) => e!.id).toList();
   List<PostModel> posts = [];
-  late List<BrandModel?> brands = user.getUser().brands.length > 1
-      ? [null, ...user.getUser().brands]
-      : user.getUser().brands;
+  late List<BrandModel?> brands =
+      userBrands.length > 1 ? [null, ...userBrands] : userBrands;
 
   void _handleBrandFilter(BrandModel? brand, bool selected) {
     List<String> updatedIds = selectedBrandIds;
@@ -88,7 +87,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       },
       "where": {}
     };
-    print(selectedBrandIds);
     if (selectedBrandIds.isNotEmpty) {
       variables['where']['inBrandCommunity'] = {"id_IN": selectedBrandIds};
     }
