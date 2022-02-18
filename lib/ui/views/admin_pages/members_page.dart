@@ -10,6 +10,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
+import 'package:sagelink_communities/ui/views/users/invite_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 String getMembersQuery = """
@@ -61,33 +62,31 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
   List<MemberModel> _members = [];
   List<MemberInviteModel> _invites = [];
 
-  bool _isInviting = false;
+  bool _showingInvites = false;
 
   late final loggedInUser = ref.watch(loggedInUserProvider);
   late final userService = ref.watch(userServiceProvider);
 
+  void _toggleShowingInvites() {
+    setState(() {
+      _showingInvites = !_showingInvites;
+    });
+  }
+
+  void _showInviteOption() {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) {
+          return const FractionallySizedBox(
+              heightFactor: 0.85,
+              child: InvitePage(inviteType: InviteType.members));
+        });
+  }
+
   void _goToAccount(String userId) async {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
-  }
-
-  void inviteUsers() async {
-    setState(() {
-      _isInviting = true;
-    });
-    List<String> emails = ['1', '2', '3', '4', '5', '6'];
-    List<MemberInviteModel> invites = emails
-        .map((e) => MemberInviteModel(
-            id: "id",
-            userEmail: e,
-            isAdmin: false,
-            memberTier: "VIP",
-            brandId: loggedInUser.adminBrandId))
-        .toList();
-    await userService.inviteUsersToCommunity(invites);
-    setState(() {
-      _isInviting = false;
-    });
   }
 
   Future<dynamic> fetchMembersAndInvites(GraphQLClient client) async {
@@ -157,7 +156,6 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
 
     Widget _buildUserTable() {
       return Container(
-          padding: const EdgeInsets.all(20),
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -217,7 +215,6 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
 
     Widget _buildInvitesTable() {
       return Container(
-          padding: const EdgeInsets.all(20),
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -258,13 +255,47 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                   ]))));
     }
 
+    Widget _buildButtonRow() {
+      Widget row = Row(children: [
+        const Spacer(),
+        OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              primary: Theme.of(context).colorScheme.secondary,
+            ),
+            onPressed: _toggleShowingInvites,
+            child: Text("Show " + (_showingInvites ? "Members" : "Invites"))),
+        const ListSpacer(),
+        ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                primary: Theme.of(context).colorScheme.secondary,
+                onPrimary: Theme.of(context).colorScheme.onError),
+            onPressed: _showInviteOption,
+            child: const Text("Create Invite Codes"))
+      ]);
+
+      return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: _showingInvites
+              ? Column(mainAxisSize: MainAxisSize.min, children: [
+                  row,
+                  Row(children: [
+                    const Spacer(),
+                    OutlinedButton.icon(
+                        icon: const Icon(Icons.download_outlined),
+                        onPressed: () => {},
+                        label: const Text("Copy"))
+                  ])
+                ])
+              : row);
+    }
+
     return GraphQLConsumer(builder: (GraphQLClient client) {
       return FutureBuilder(
           future: fetchMembersAndInvites(client),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasError) {
               return const ErrorView();
-            } else if (!snapshot.hasData || _isInviting) {
+            } else if (!snapshot.hasData) {
               return const Loading();
             }
             if (snapshot.hasData) {
@@ -277,40 +308,20 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Flexible(
-                          flex: 6,
-                          child: Text("Search Bar Here"),
-                        ),
-                        const Spacer(),
-                        const Flexible(
-                          flex: 3,
-                          child: Text("Filters here"),
-                        ),
-                        const Spacer(),
-                        Flexible(
-                            flex: 3,
-                            child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    primary:
-                                        Theme.of(context).colorScheme.secondary,
-                                    onPrimary:
-                                        Theme.of(context).colorScheme.onError),
-                                onPressed: inviteUsers,
-                                child: const Text("Invite")))
-                      ],
-                    ),
-                    Center(
+                    _buildButtonRow(),
+                    Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.all(20),
                         child: Text(
-                      _members.length.toString() + " results",
-                      style: Theme.of(context).textTheme.caption,
-                    )),
-                    _buildInvitesTable(),
+                          (_showingInvites ? _invites.length : _members.length)
+                                  .toString() +
+                              " results",
+                          style: Theme.of(context).textTheme.caption,
+                        )),
                     Expanded(
-                      child: _buildUserTable(),
-                    ),
+                        child: _showingInvites
+                            ? _buildInvitesTable()
+                            : _buildUserTable()),
                   ],
                 ));
           });

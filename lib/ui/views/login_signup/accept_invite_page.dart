@@ -30,6 +30,10 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
   late final UserService userService = ref.watch(userServiceProvider);
   late final LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
 
+  void _handleRefresh() {
+    ref.refresh(loggedInUserProvider);
+  }
+
   void _handleSubmit() async {
     if (inviteCode == null) {
       return;
@@ -44,6 +48,7 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
       widget.onComplete();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        behavior: SnackBarBehavior.floating,
         content: const Text("There was an error with this invite code"),
         backgroundColor: Theme.of(context).errorColor,
       ));
@@ -152,6 +157,14 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
             backgroundColor: Theme.of(context).backgroundColor,
             title: const Text("Invite code"),
             elevation: 0,
+            actions: widget.showFullDetails
+                ? [
+                    IconButton(
+                      icon: const Icon(Icons.refresh_outlined),
+                      onPressed: _handleRefresh,
+                    ),
+                  ]
+                : [],
           ),
           body: Container(
             padding: const EdgeInsets.symmetric(horizontal: 50),

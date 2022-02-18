@@ -24,10 +24,10 @@ query Query{
 ''';
 
 // ignore: constant_identifier_names
-const String CREATE_INVITES_NUTATION = '''
-mutation Mutation(\$input: [UserCreateInput!]!) {
-  createUsers(input: \$input) {
-    users {
+const String CREATE_INVITES_MUTATION = '''
+mutation Mutation(\$input: [InviteCreateInput!]!) {
+  createInvites(input: \$input) {
+    invites {
       id
     }
   }
@@ -68,7 +68,7 @@ class UserService {
   /////////////////////////////////////////////////////////////
 
   // Generate invites to a community
-  Future<bool> inviteUsersToCommunity(List<MemberInviteModel> invites,
+  Future<bool> inviteUsersToTeam(List<EmployeeInviteModel> invites,
       {OnMutationCompleted? onComplete}) async {
     // First generate the invite entitites
     Map<String, dynamic> variables = {
@@ -77,7 +77,9 @@ class UserService {
                 //"verificationCode": e.verificationCode,
                 "userEmail": e.userEmail,
                 "isAdmin": e.isAdmin,
-                "memberTier": e.memberTier,
+                "founder": e.founder,
+                "owner": e.owner,
+                "jobTitle": e.jobTitle,
                 "forBrand": {
                   "connect": {
                     "where": {
@@ -89,7 +91,7 @@ class UserService {
           .toList()
     };
     QueryResult response = await client.mutate(MutationOptions(
-        document: gql(CREATE_INVITES_NUTATION), variables: variables));
+        document: gql(CREATE_INVITES_MUTATION), variables: variables));
 
     // If success, generate codes for the new invites
     if (response.hasException || response.data == null) {
@@ -107,6 +109,56 @@ class UserService {
 
     // Return
     if (response.hasException || response.data == null) {
+      return false;
+    }
+
+    if (onComplete != null) {
+      onComplete(response.data);
+    }
+    return true;
+  }
+
+  // Generate invites to a community
+  Future<bool> inviteUsersToCommunity(List<MemberInviteModel> invites,
+      {OnMutationCompleted? onComplete}) async {
+    // First generate the invite entitites
+    Map<String, dynamic> variables = {
+      "input": invites
+          .map((e) => {
+                //"verificationCode": e.verificationCode,
+                "userEmail": e.userEmail,
+                "isAdmin": e.isAdmin,
+                "memberTier": e.memberTier,
+                "customerId": e.customerId,
+                "forBrand": {
+                  "connect": {
+                    "where": {
+                      "node": {"id": e.brandId}
+                    }
+                  }
+                }
+              })
+          .toList()
+    };
+    QueryResult response = await client.mutate(MutationOptions(
+        document: gql(CREATE_INVITES_MUTATION), variables: variables));
+
+    // If success, generate codes for the new invites
+    if (response.hasException || response.data == null) {
+      return false;
+    }
+
+    Map<String, dynamic> input = {
+      "inviteIds": response.data!['createInvites']['invites']
+          .map((inv) => inv['id'])
+          .toList()
+    };
+
+    response = await client.mutate(MutationOptions(
+        document: gql(GENERATE_INVITE_CODES_MUTATION), variables: input));
+
+    // Return
+    if (response.hasException) {
       return false;
     }
 
