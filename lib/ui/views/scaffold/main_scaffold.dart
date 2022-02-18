@@ -69,7 +69,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
           const BrandsPage(),
           showFloatingAction: false),
-      TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
+      TabItem("Messages", "Messages", const Icon(Icons.mail_outline),
           const SettingsPage(),
           showFloatingAction: false)
     ];
@@ -96,9 +96,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       });
     }
 
-    void _goToAccount(String userId) async {
+    void _goToSettings() {
       Navigator.push(context,
-          MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
+          MaterialPageRoute(builder: (context) => const SettingsPage()));
     }
 
     return Scaffold(
@@ -107,16 +107,12 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.search),
-          //   onPressed: () {},
-          // ),
           ClickableAvatar(
             avatarText: loggedInUser.getUser().name[0],
             avatarURL: loggedInUser.getUser().accountPictureUrl,
             radius: 20,
             padding: const EdgeInsets.all(10),
-            onTap: () => _goToAccount(loggedInUser.getUser().id),
+            onTap: _goToSettings,
           )
         ],
       ),

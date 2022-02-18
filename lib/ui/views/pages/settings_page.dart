@@ -1,8 +1,11 @@
 import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:flutter/material.dart';
-import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:sagelink_communities/ui/components/feedback_form.dart';
+import 'package:sagelink_communities/ui/components/list_spacer.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -13,115 +16,110 @@ class SettingsPage extends ConsumerStatefulWidget {
   _SettingsPageState createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends ConsumerState<SettingsPage>
-    with SingleTickerProviderStateMixin {
-  UserModel _user = UserModel();
+class _SettingsPageState extends ConsumerState<SettingsPage> {
+  late final _user =
+      ref.watch(loggedInUserProvider.select((value) => value.getUser()));
+  late final auth = ref.watch(authProvider);
 
-  bool _isEditing = false;
-
-  void _toggleEditing() {
-    setState(() {
-      _isEditing = !_isEditing;
-    });
+  void _goToAccount() {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => AccountPage(userId: _user.id)));
   }
 
-  bool _isCollapsed = false;
-  final double _headerSize = 50.0;
+  void _goToNotifications() {
+    print("GO TO NOTIFICATIONS");
+  }
 
-  late ScrollController _scrollController;
-  late TabController _tabController;
+  void _goToDataSettings() {
+    print("GO TO DATA SETTINGS");
+  }
 
-  _scrollListener() {
-    if (_scrollController.offset >= _headerSize) {
-      setState(() {
-        _isCollapsed = true;
-      });
-    } else {
-      setState(() {
-        _isCollapsed = false;
-      });
+  void _goToPrivacy() {
+    print("Go TO PRIVACY");
+  }
+
+  void _goToTerms() {
+    print("Go TO TERMS");
+  }
+
+  void _dismissFeedbackForm(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
     }
   }
 
-  @override
-  initState() {
-    super.initState();
-    _scrollController = ScrollController(initialScrollOffset: 0.0);
-    _tabController = TabController(length: 3, vsync: this);
-    _scrollController.addListener(_scrollListener);
+  void _showFeedbackForm() async {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) => FeedbackForm(
+            onSubmit: () => _dismissFeedbackForm(context),
+            onCancel: () => _dismissFeedbackForm(context)));
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  _buildBody(BuildContext context, Authentication auth) {
-    return TabBarView(
-      controller: _tabController,
-      children: [
-        ListView(
-          children: [
-            SwitchListTile(
-                title: const Text("New perks"),
-                value: false,
-                onChanged: (value) => {}),
-            SwitchListTile(
-                title: const Text("Mentions"),
-                value: false,
-                onChanged: (value) => {}),
-            SwitchListTile(
-                title: const Text("Replies to authored posts"),
-                value: false,
-                onChanged: (value) => {}),
-            SwitchListTile(
-                title: const Text("New posts"),
-                value: false,
-                onChanged: (value) => {}),
-          ],
-        ),
-        const Text("data sharing goes here"),
-        ListView(
-          children: [
-            const ListTile(title: Text("Privacy Policy")),
-            const ListTile(title: Text("Terms and Conditions")),
-            ListTile(
-                title: const Text("Logout"),
-                onTap: () {
-                  if (Navigator.of(context).canPop()) {
-                    Navigator.of(context).pop();
-                  }
-                  auth.signOut();
-                }),
-          ],
-        )
-      ],
-    );
+  _buildMainSelection() {
+    List<Widget> items = [
+      Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          child: Text(
+            "Account settings",
+            style: Theme.of(context).textTheme.headline3,
+          )),
+      ListTile(
+        leading: ClickableAvatar(
+            avatarText: _user.name,
+            avatarImage: _user.profileImage(),
+            radius: 15),
+        title: const Text("My profile"),
+        onTap: _goToAccount,
+      ),
+      ListTile(
+        leading: const Icon(Icons.notifications_outlined),
+        title: const Text("Notifications"),
+        onTap: _goToNotifications,
+      ),
+      ListTile(
+        leading: const Icon(Icons.bar_chart_outlined),
+        title: const Text("Data preferences"),
+        onTap: _goToDataSettings,
+      ),
+      ListTile(
+        leading: const Icon(Icons.message_outlined),
+        title: const Text("Feedback & Support"),
+        onTap: _showFeedbackForm,
+      ),
+      Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            "Legal",
+            style: Theme.of(context).textTheme.headline5,
+          )),
+      ListTile(
+        leading: const Icon(Icons.privacy_tip_outlined),
+        title: const Text("Privacy policy"),
+        onTap: _goToPrivacy,
+      ),
+      ListTile(
+        leading: const Icon(Icons.grading_outlined),
+        title: const Text("Terms and conditions"),
+        onTap: _goToTerms,
+      )
+    ];
+    return ListView.separated(
+        itemBuilder: (BuildContext context, int index) => items[index],
+        separatorBuilder: (BuildContext context, int index) =>
+            index > 0 ? const Divider() : const ListSpacer(height: 1),
+        itemCount: items.length);
   }
 
   @override
   Widget build(BuildContext context) {
-    final loggedInUser = ref.watch(loggedInUserProvider);
-    _user = loggedInUser.getUser();
-
-    final auth = ref.watch(authProvider);
-
     return Scaffold(
-        appBar: AppBar(
-            toolbarHeight: 0.0,
-            title: null,
-            bottom: TabBar(
-                labelColor: Theme.of(context).colorScheme.onBackground,
-                controller: _tabController,
-                tabs: const [
-                  Tab(text: "Notifications"),
-                  Tab(text: "Data Sharing"),
-                  Tab(text: "Other")
-                ]),
-            backgroundColor: Theme.of(context).backgroundColor,
-            elevation: 0),
-        body: _buildBody(context, auth));
+      appBar: AppBar(
+        title: const Text(""),
+        backgroundColor: Theme.of(context).backgroundColor,
+        elevation: 1,
+      ),
+      body: _buildMainSelection(),
+    );
   }
 }
