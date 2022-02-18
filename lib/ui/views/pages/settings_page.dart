@@ -114,12 +114,29 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(""),
-        backgroundColor: Theme.of(context).backgroundColor,
-        elevation: 1,
-      ),
-      body: _buildMainSelection(),
-    );
+        appBar: AppBar(
+          title: const Text(""),
+          backgroundColor: Theme.of(context).backgroundColor,
+          elevation: 1,
+        ),
+        body: Stack(alignment: Alignment.bottomCenter, children: [
+          _buildMainSelection(),
+          Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                  color: Theme.of(context).backgroundColor,
+                  padding:
+                      const EdgeInsets.only(left: 20, right: 20, bottom: 40),
+                  child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                          primary: Theme.of(context).colorScheme.secondary,
+                          minimumSize: const Size.fromHeight(48)),
+                      onPressed: () => {
+                            auth.signOut(),
+                            Navigator.popUntil(context,
+                                (Route<dynamic> route) => route.isFirst)
+                          },
+                      child: const Text("Sign out")))),
+        ]));
   }
 }
