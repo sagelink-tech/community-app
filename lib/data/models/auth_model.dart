@@ -168,4 +168,8 @@ class Authentication {
   Future<void> signOut() async {
     await authInstance.signOut();
   }
+
+  Future<void> reloadUser() async {
+    await authInstance.currentUser?.reload();
+  }
 }

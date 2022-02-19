@@ -12,6 +12,8 @@ import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/ui/theme.dart';
 
+import 'lifecycle_events_handler.dart';
+
 class CommunityApp extends ConsumerStatefulWidget {
   const CommunityApp({required this.appName, Key? key}) : super(key: key);
 
@@ -22,6 +24,22 @@ class CommunityApp extends ConsumerStatefulWidget {
 }
 
 class _CommunityAppState extends ConsumerState<CommunityApp> {
+  late final lifecycleHandler = LifecycleEventHandler(
+      resumeCallBack: () async => ref.watch(authProvider).reloadUser());
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance?.removeObserver(lifecycleHandler);
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance?.addObserver(lifecycleHandler);
+  }
+
   @override
   Widget build(BuildContext context) {
     // GraphQL Setup
