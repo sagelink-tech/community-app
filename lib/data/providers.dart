@@ -5,6 +5,7 @@ import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
+import 'package:sagelink_communities/data/models/firebase_messaging_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
 import 'package:sagelink_communities/data/services/post_service.dart';
@@ -94,4 +95,21 @@ final appStateProvider = StateNotifierProvider<AppState, AppStateStatus>((ref) {
         orElse: () => null,
       );
   return AppState(prefs);
+});
+
+final messagingProvider = Provider<Messaging>((ref) {
+  LoginState loginStatus =
+      ref.watch(loggedInUserProvider.select((value) => value.status));
+  DateTime? lastTokenUpdate = ref.watch(
+      loggedInUserProvider.select((value) => value.lastDeviceTokenUpdate));
+
+  Messaging messager = Messaging(
+      userService: ref.watch(userServiceProvider),
+      lastTokenUpdate: lastTokenUpdate);
+
+  if (loginStatus == LoginState.needToCreateUser ||
+      loginStatus == LoginState.isLoggedIn) {
+    messager.requestPermissionAndUpdateToken();
+  }
+  return messager;
 });

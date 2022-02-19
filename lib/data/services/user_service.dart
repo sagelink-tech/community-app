@@ -1,4 +1,5 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/data/models/firebase_messaging_model.dart';
 import 'package:sagelink_communities/data/models/invite_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
@@ -410,6 +411,77 @@ class UserService {
   /////////////////////////////////////////////////////////////
   /// Update user data
   /////////////////////////////////////////////////////////////
+
+  // Add new device token
+  Future<bool> addNewDeviceToken(String deviceToken) async {
+    var deviceTokens = authUser.deviceTokens;
+    deviceTokens.add(deviceToken);
+
+    return await updateUserWithID(authUser.getUser().id, {
+      "deviceTokens": deviceToken,
+      "lastDeviceTokenUpdate": DateTime.now().toIso8601String()
+    });
+  }
+
+  // Update subscription status
+  Future<bool> updateTopicSubscriptionStatus(
+      MessagingTopics topic, String? brandId, bool status) async {
+    Map<String, dynamic> userUpdateData = {};
+    var relUpdateData = {};
+
+    bool isEmployee = false;
+    bool isMember = false;
+
+    if (brandId != null &&
+        ![MessagingTopics.slAnnouncments, MessagingTopics.slDigest]
+            .contains(topic)) {
+      if (authUser.adminBrandId == brandId) {
+        isEmployee = true;
+      } else {
+        isMember = true;
+      }
+    }
+
+    switch (topic) {
+      case MessagingTopics.slAnnouncments:
+        userUpdateData["subscribedToAnnouncements"] = status;
+        break;
+      case MessagingTopics.slDigest:
+        userUpdateData["subscribedToDigest"] = status;
+        break;
+      case MessagingTopics.brandAnnouncments:
+        relUpdateData["subscribedToAnnouncements"] = status;
+        break;
+      case MessagingTopics.brandDigest:
+        relUpdateData["subscribedToDigest"] = status;
+        break;
+      case MessagingTopics.brandNewPosts:
+        relUpdateData["subscribedToNewPosts"] = status;
+        break;
+      case MessagingTopics.brandPerks:
+        relUpdateData["subscribedToPerks"] = status;
+        break;
+    }
+
+    if (isEmployee || isMember) {
+      var data = [
+        {
+          "where": {
+            "node": {"id": brandId}
+          },
+          "update": {"edge": relUpdateData}
+        }
+      ];
+      if (isMember) {
+        userUpdateData['memberOfBrands'] = data;
+      }
+      if (isEmployee) {
+        userUpdateData['employeeOfBrands'] = data;
+      }
+    }
+
+    return await updateUserWithID(authUser.getUser().id, userUpdateData);
+  }
 
   // Update user with update dictionary
   Future<bool> updateUserWithID(String userId, Map<String, dynamic> updateData,

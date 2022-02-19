@@ -11,6 +11,8 @@ query Users(\$where: UserWhere) {
     email
     name
     accountPictureUrl
+    deviceTokens
+    lastDeviceTokenUpdate
     memberOfBrands{
       id
       logoUrl
@@ -45,6 +47,8 @@ class LoggedInUser {
   LoginState status = LoginState.isLoggedOut;
   bool isAdmin = false;
   String? adminBrandId;
+  List<String> deviceTokens = [];
+  DateTime? lastDeviceTokenUpdate;
 
   // Main use case interfaces
   UserModel getUser() {
@@ -55,7 +59,9 @@ class LoggedInUser {
       {this.user,
       this.status = LoginState.isLoggedOut,
       this.isAdmin = false,
-      this.adminBrandId});
+      this.adminBrandId,
+      this.deviceTokens = const [],
+      this.lastDeviceTokenUpdate});
 }
 
 class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
@@ -105,11 +111,18 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
     }
 
     if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
-      var _userData = result.data?['users'][0];
+      Map<String, dynamic> _userData = result.data?['users'][0];
       UserModel _user = UserModel.fromJson(_userData);
       String? brandId;
       bool isAdmin = false;
+      List<String> deviceTokens = _userData['deviceTokens'] ?? [];
+      DateTime? lastDeviceTokenUpdate;
 
+      if (_userData.containsKey('lastDeviceTokenUpdate') &&
+          _userData['startDate'] != null) {
+        lastDeviceTokenUpdate =
+            DateTime.tryParse(_userData["lastDeviceTokenUpdate"]);
+      }
       if ((_userData['employeeOfBrands'] as List).isNotEmpty) {
         isAdmin = true;
         brandId = _userData['employeeOfBrands'][0]['id'];
@@ -118,7 +131,9 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
           user: _user,
           status: LoginState.isLoggedIn,
           isAdmin: isAdmin,
-          adminBrandId: brandId);
+          adminBrandId: brandId,
+          deviceTokens: deviceTokens,
+          lastDeviceTokenUpdate: lastDeviceTokenUpdate);
       // update app state that the user has successfully logged in
       appState.didSignIn();
       state = _loggedInUser;
