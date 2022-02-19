@@ -1,6 +1,5 @@
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/go_to_admin_page.dart';
-import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:sagelink_communities/ui/views/pages/brands_page.dart';
 import 'package:sagelink_communities/ui/views/pages/home_page.dart';
 import 'package:sagelink_communities/ui/views/pages/perks_page.dart';
@@ -9,6 +8,7 @@ import 'package:sagelink_communities/ui/views/posts/new_post_brand_selection.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
+import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/ui/views/scaffold/nav_bar.dart';
 import 'package:sagelink_communities/ui/views/scaffold/nav_bar_mobile.dart';
 
@@ -123,7 +123,13 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const NewPostBrandSelection()));
+                        builder: (context) =>
+                            loggedInUser.getUser().brands.length == 1
+                                ? NewPostPage(
+                                    brandId:
+                                        loggedInUser.getUser().brands[0].id,
+                                    onCompleted: () => {})
+                                : const NewPostBrandSelection()));
               },
               child: Icon(Icons.add,
                   color: Theme.of(context).colorScheme.background),

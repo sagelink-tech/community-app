@@ -139,6 +139,9 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   }
 
   void complete() {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text("Post submitted!"),
+        backgroundColor: Theme.of(context).colorScheme.error));
     Navigator.of(context).pop();
     widget.onCompleted();
   }
