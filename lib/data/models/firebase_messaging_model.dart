@@ -15,6 +15,8 @@ enum MessagingTopics {
   brandDigest,
   brandNewPosts,
   slDigest,
+  brandContentReplies,
+  newMessages,
 }
 
 class Messaging {
@@ -86,13 +88,15 @@ class Messaging {
         topicString = forBrandId + brandNewPostsTopic;
         break;
       default:
-        return false;
+        topicString = "";
+        break;
     }
 
-    subscribe
-        ? (await messagingInstance.subscribeToTopic(topicString))
-        : (await messagingInstance.unsubscribeFromTopic(topicString));
-
+    if (topicString.isNotEmpty) {
+      subscribe
+          ? (await messagingInstance.subscribeToTopic(topicString))
+          : (await messagingInstance.unsubscribeFromTopic(topicString));
+    }
     return await userService.updateTopicSubscriptionStatus(
         topicType, forBrandId, subscribe);
   }

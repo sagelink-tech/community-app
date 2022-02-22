@@ -115,7 +115,10 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       UserModel _user = UserModel.fromJson(_userData);
       String? brandId;
       bool isAdmin = false;
-      List<String> deviceTokens = _userData['deviceTokens'] ?? [];
+      List<String> deviceTokens = (_userData.containsKey('deviceTokens') &&
+              _userData['deviceTokens'] != null)
+          ? List<String>.from(_userData['deviceTokens'])
+          : [];
       DateTime? lastDeviceTokenUpdate;
 
       if (_userData.containsKey('lastDeviceTokenUpdate') &&

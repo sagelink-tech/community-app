@@ -6,6 +6,7 @@ import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/feedback_form.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
+import 'package:sagelink_communities/ui/views/users/notification_settings.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -27,7 +28,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   void _goToNotifications() {
-    print("GO TO NOTIFICATIONS");
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const NotificationSettingsPage()));
   }
 
   void _goToDataSettings() {
