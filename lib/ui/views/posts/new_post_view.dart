@@ -492,6 +492,9 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
 
   Widget buildSubmit() => ElevatedButton(
         style: ElevatedButton.styleFrom(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
             primary: Theme.of(context).colorScheme.secondary,
             // onPrimary: Theme.of(context).colorScheme.onSecondary,
             minimumSize: const Size.fromHeight(48)),

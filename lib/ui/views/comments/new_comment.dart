@@ -95,7 +95,7 @@ class _NewCommentState extends ConsumerState<NewComment> {
       setState(() {});
     }
     return Container(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        padding: const EdgeInsets.all(10.0),
         color: Theme.of(context).canvasColor,
         child: TextFormField(
             focusNode: _focusNode,
@@ -135,6 +135,9 @@ class _NewCommentState extends ConsumerState<NewComment> {
 
   Widget buildSubmit({bool enabled = true}) => ElevatedButton(
         style: ElevatedButton.styleFrom(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
             primary: Theme.of(context).colorScheme.secondary,
             // onPrimary: Theme.of(context).colorScheme.onSecondary,
             minimumSize: const Size.fromHeight(48)),

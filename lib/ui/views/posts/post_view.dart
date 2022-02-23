@@ -196,7 +196,6 @@ class _PostViewState extends State<PostView> {
       alignment: Alignment.bottomCenter,
       child: Container(
           color: Theme.of(context).backgroundColor,
-          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
           child: NewComment(
             focused: true,
             parentId: showingThread ? _threadId! : widget.postId,
