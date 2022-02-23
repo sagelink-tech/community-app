@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:sagelink_communities/data/models/app_state_model.dart';
@@ -211,6 +212,45 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   backgroundColor: Theme.of(context).errorColor,
                 ))));
 
+  Widget buildTermsText() => RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: "By continuing, you agree to Sagelink's ",
+              style:
+                  Theme.of(context).textTheme.caption!.copyWith(fontSize: 12.0),
+            ),
+            TextSpan(
+              text: 'Terms of Service',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyText2!
+                  .copyWith(fontWeight: FontWeight.bold, fontSize: 12.0),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  launch('https://sage.link/privacy');
+                },
+            ),
+            TextSpan(
+              text: " and acknowledge that you've read the ",
+              style:
+                  Theme.of(context).textTheme.caption!.copyWith(fontSize: 12.0),
+            ),
+            TextSpan(
+              text: 'Privacy Policy.',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyText2!
+                  .copyWith(fontWeight: FontWeight.bold, fontSize: 12.0),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  launch('https://sage.link/privacy');
+                },
+            ),
+          ],
+        ),
+      );
+
   List<Widget> _loginWidgets() => [
         const ListSpacer(height: 50),
         buildEmailForm(),
@@ -249,6 +289,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             onPressed: () => {
                   _handleAppleSignIn(context),
                 }),
+        const ListSpacer(height: 20),
+        buildTermsText()
       ];
 
   @override
@@ -264,10 +306,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                         const Image(
-                          image: AssetImage('assets/splash.png'),
-                          fit: BoxFit.fitWidth,
-                          width: 150,
-                        ),
+                            image: AssetImage('assets/splash.png'),
+                            fit: BoxFit.scaleDown,
+                            height: 40),
                         ..._loginWidgets()
                       ]),
           ));
