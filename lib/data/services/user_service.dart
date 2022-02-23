@@ -456,13 +456,17 @@ class UserService {
 
   // Add new device token
   Future<bool> addNewDeviceToken(String deviceToken) async {
-    var deviceTokens = authUser.deviceTokens;
-    deviceTokens.add(deviceToken);
+    List<String> deviceTokens = [...authUser.deviceTokens];
+    if (!deviceTokens.contains(deviceToken)) {
+      deviceTokens.add(deviceToken);
 
-    return await updateUserWithID(authUser.getUser().id, {
-      "deviceTokens": deviceToken,
-      "lastDeviceTokenUpdate": DateTime.now().toIso8601String()
-    });
+      return await updateUserWithID(authUser.getUser().id, {
+        "deviceTokens": deviceToken,
+        "lastDeviceTokenUpdate": DateTime.now().toIso8601String()
+      });
+    } else {
+      return true;
+    }
   }
 
   // Update subscription status

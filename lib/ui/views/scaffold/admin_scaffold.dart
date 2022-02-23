@@ -9,7 +9,6 @@ import 'package:sagelink_communities/ui/views/admin_pages/home_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/members_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/perks_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/team_page.dart';
-import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:sagelink_communities/ui/views/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,6 +28,7 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
   int _selectedIndex = 0;
   late List<TabItem> pages;
   late final loggedInUser = ref.watch(loggedInUserProvider);
+  late final messaging = ref.watch(messagingProvider);
 
   void createPostAction(BuildContext context) {
     Navigator.of(context).push(MaterialPageRoute(
@@ -88,6 +88,7 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
   @override
   Widget build(BuildContext context) {
     bool showSmallScreen = MediaQuery.of(context).size.shortestSide <= 550;
+    messaging.setupInteractedMessage(context);
 
     void _handlePageSelection(int index) {
       setState(() {

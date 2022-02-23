@@ -25,7 +25,9 @@ class CommunityApp extends ConsumerStatefulWidget {
 
 class _CommunityAppState extends ConsumerState<CommunityApp> {
   late final lifecycleHandler = LifecycleEventHandler(
-      resumeCallBack: () async => ref.watch(authProvider).reloadUser());
+      resumeCallBack: () async => ref.read(authProvider).reloadUser());
+
+  MaterialPageRoute? destinationRoute;
 
   @override
   void dispose() {
@@ -36,7 +38,6 @@ class _CommunityAppState extends ConsumerState<CommunityApp> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance?.addObserver(lifecycleHandler);
   }
 
@@ -70,7 +71,6 @@ class BaseApp extends ConsumerWidget {
     final loggedInUser = ref.watch(loggedInUserProvider);
     final appState = ref.watch(appStateProvider);
     final appStateNotifier = ref.watch(appStateProvider.notifier);
-    final messaging = ref.watch(messagingProvider);
 
     ThemeData _theme() {
       // Theme setup

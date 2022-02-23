@@ -43,11 +43,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   late List<TabItem> pages;
 
   late final loggedInUser = ref.watch(loggedInUserProvider);
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  late final messaging = ref.watch(messagingProvider);
 
   List<TabItem> consumerPageOptions = [
     TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
@@ -89,6 +85,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   Widget build(BuildContext context) {
     // Check for device size
     bool showSmallScreen = MediaQuery.of(context).size.shortestSide <= 550;
+    messaging.setupInteractedMessage(context);
 
     void _handlePageSelection(int index) {
       setState(() {

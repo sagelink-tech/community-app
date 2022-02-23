@@ -233,7 +233,9 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
               title: const Text("Setup Your Profile"),
               actions: [
                 IconButton(
-                  onPressed: () => _saveChanges(context, client),
+                  onPressed: newName.isNotEmpty
+                      ? () => _saveChanges(context, client)
+                      : null,
                   icon: const Icon(Icons.done),
                 )
               ],

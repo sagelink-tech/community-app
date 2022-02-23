@@ -109,14 +109,19 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
       ];
 
   void _goToAccount(String userId) async {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
+    showModalBottomSheet(
+        isScrollControlled: true,
+        context: context,
+        builder: (BuildContext context) => FractionallySizedBox(
+            heightFactor: 0.85, child: AccountPage(userId: userId)));
   }
 
   void _goToSettings() async {
     showModalBottomSheet(
+        isScrollControlled: true,
         context: context,
-        builder: (BuildContext context) => const SettingsPage());
+        builder: (BuildContext context) => const FractionallySizedBox(
+            heightFactor: 0.85, child: SettingsPage()));
   }
 
   void _dismissFeedbackForm(BuildContext context) {
