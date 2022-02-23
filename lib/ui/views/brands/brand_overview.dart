@@ -39,7 +39,6 @@ class BrandOverview extends StatelessWidget {
         url,
         forceSafariVC: true,
         forceWebView: true,
-        headers: <String, String>{'my_header_key': 'my_header_value'},
       );
     } catch (e) {
       print(e);

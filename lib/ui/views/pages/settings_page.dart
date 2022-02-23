@@ -1,4 +1,3 @@
-import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +6,7 @@ import 'package:sagelink_communities/ui/components/feedback_form.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:sagelink_communities/ui/views/users/notification_settings.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -38,12 +38,26 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     print("GO TO DATA SETTINGS");
   }
 
-  void _goToPrivacy() {
-    print("Go TO PRIVACY");
+  void _goToPrivacy() async {
+    try {
+      !await launch(
+        "https://sage.link/privayc",
+      );
+    } catch (e) {
+      print(e);
+      return;
+    }
   }
 
-  void _goToTerms() {
-    print("Go TO TERMS");
+  void _goToTerms() async {
+    try {
+      !await launch(
+        "https://sage.link/terms",
+      );
+    } catch (e) {
+      print(e);
+      return;
+    }
   }
 
   void _dismissFeedbackForm(BuildContext context) {
@@ -81,11 +95,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         title: const Text("Notifications"),
         onTap: _goToNotifications,
       ),
-      ListTile(
-        leading: const Icon(Icons.bar_chart_outlined),
-        title: const Text("Data preferences"),
-        onTap: _goToDataSettings,
-      ),
+      // ListTile(
+      //   leading: const Icon(Icons.bar_chart_outlined),
+      //   title: const Text("Data preferences"),
+      //   onTap: _goToDataSettings,
+      // ),
       ListTile(
         leading: const Icon(Icons.message_outlined),
         title: const Text("Feedback & Support"),

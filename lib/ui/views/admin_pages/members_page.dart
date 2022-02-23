@@ -17,7 +17,6 @@ String getMembersQuery = """
 query Users(\$where: UserWhere, \$options: UserOptions, \$inviteWhere: InviteWhere, \$inviteOptions: InviteOptions) {
   users(where: \$where, options: \$options) {
     id
-    email
     description
     name
     accountPictureUrl
@@ -205,7 +204,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                                 Text(e.name)
                               ]),
                               onTap: () => {_goToAccount(e.id)}),
-                          DataCell(Text(e.email)),
+                          DataCell(Text(e.inviteEmail)),
                           DataCell(Text(timeago.format(e.memberSince))),
                           DataCell(Text(e.tier)),
                           DataCell(_buildStatusButton(e))
