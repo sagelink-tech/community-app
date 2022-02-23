@@ -7,7 +7,6 @@ import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:sagelink_communities/ui/views/login_signup/accept_invite_page.dart';
 
 String getBrandsQuery = '''
 query Brands(\$where: BrandWhere) {
@@ -38,19 +37,6 @@ class BrandsPage extends ConsumerWidget {
     return;
   }
 
-  void _handleInviteButtonClick(BuildContext bc, VoidCallback? refetch) {
-    showModalBottomSheet(
-        context: bc,
-        builder: (BuildContext context) => AcceptInvitePage(onComplete: () {
-              if (refetch != null) {
-                refetch();
-              }
-              if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
-              }
-            }));
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     List<String> brandIds = ref.watch(brandsProvider).map((e) => e.id).toList();
@@ -72,22 +58,12 @@ class BrandsPage extends ConsumerWidget {
           for (var b in result.data?['brands']) {
             brands.add(BrandModel.fromJson(b));
           }
-          return Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              BrandListView(brands, _handleBrandSelection),
-              Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          primary: Theme.of(context).colorScheme.secondary,
-                          onPrimary: Theme.of(context).colorScheme.onError,
-                          minimumSize: const Size.fromHeight(48)),
-                      onPressed: () =>
-                          _handleInviteButtonClick(context, refetch),
-                      child: const Text('Accept Community Invite'))),
-            ],
+          return BrandListView(
+            [...brands, null],
+            _handleBrandSelection,
+            onNewSelected: refetch,
           );
+          ;
         });
   }
 }
