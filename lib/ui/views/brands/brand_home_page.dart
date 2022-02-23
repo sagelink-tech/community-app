@@ -188,7 +188,7 @@ class _BrandHomepageState extends State<BrandHomepage>
               controller: _tabController,
               tabs: const [
                 Tab(text: "Conversations"),
-                Tab(text: "My Perks"),
+                Tab(text: "Shop"),
                 Tab(text: "Overview")
               ])),
     ];

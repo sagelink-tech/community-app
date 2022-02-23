@@ -58,7 +58,7 @@ class PerkView extends StatefulWidget {
   const PerkView({Key? key, required this.perkId}) : super(key: key);
   final String perkId;
 
-  static const routeName = '/perks';
+  static const routeName = '/shop';
 
   @override
   _PerkViewState createState() => _PerkViewState();

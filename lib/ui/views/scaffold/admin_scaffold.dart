@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/empty_result.dart';
 import 'package:sagelink_communities/ui/components/page_scaffold.dart';
@@ -9,12 +10,15 @@ import 'package:sagelink_communities/ui/views/admin_pages/home_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/members_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/perks_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/team_page.dart';
+import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/ui/views/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/views/perks/new_perk_view.dart';
+import 'package:sagelink_communities/ui/views/perks/perk_view.dart';
 import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
+import 'package:sagelink_communities/ui/views/posts/post_view.dart';
 import 'package:sagelink_communities/ui/views/scaffold/main_scaffold.dart';
 
 class AdminScaffold extends ConsumerStatefulWidget {
@@ -28,7 +32,57 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
   int _selectedIndex = 0;
   late List<TabItem> pages;
   late final loggedInUser = ref.watch(loggedInUserProvider);
-  late final messaging = ref.watch(messagingProvider);
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Run code required to handle interacted messages in an async function
+    // as initState() must not be async
+    setupInteractedMessage();
+  }
+
+  Future<void> setupInteractedMessage() async {
+    // Get any messages which caused the application to open from
+    // a terminated state.
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    // If the message also contains a data property with a "type" of "chat",
+    // navigate to a chat screen
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+
+    // Also handle any interaction when the app is in the background via a
+    // Stream listener
+    FirebaseMessaging.onMessageOpenedApp
+        .listen((RemoteMessage message) => _handleMessage(message));
+  }
+
+  void _handleMessage(RemoteMessage message) {
+    if (message.data['type'] == 'post') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  PostView(postId: message.data['postId'])));
+    }
+    if (message.data['type'] == 'perk') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  PerkView(perkId: message.data['perkId'])));
+    }
+    if (message.data['type'] == 'brand') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  BrandHomepage(brandId: message.data['brandId'])));
+    }
+  }
 
   void createPostAction(BuildContext context) {
     Navigator.of(context).push(MaterialPageRoute(
@@ -60,7 +114,7 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
       TabItem("Messages", "Messages", const Icon(Icons.chat_bubble_outlined),
           const EmptyResult(text: "Messages"),
           onAction: createPostAction),
-      TabItem("Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
+      TabItem("Shop", "Shop", const Icon(Icons.shopping_cart_outlined),
           const AdminPerksPage(),
           onAction: createPerkAction),
       TabItem("Team", "Team", const Icon(Icons.groups_outlined),
@@ -88,7 +142,6 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
   @override
   Widget build(BuildContext context) {
     bool showSmallScreen = MediaQuery.of(context).size.shortestSide <= 550;
-    messaging.setupInteractedMessage(context);
 
     void _handlePageSelection(int index) {
       setState(() {

@@ -73,7 +73,9 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   final AppState appState;
 
   void updateUserWithState(User? user) {
-    if (user == null && state.status != LoginState.isLoggedOut) {
+    if (user == null &&
+        (state.status != LoginState.isLoggedOut ||
+            state.status != LoginState.isLoggingIn)) {
       LoggedInUser _loggedInUser =
           LoggedInUser(user: UserModel(), status: LoginState.isLoggedOut);
       state = _loggedInUser;

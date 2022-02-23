@@ -22,7 +22,7 @@ class NewPerkPage extends ConsumerStatefulWidget {
   final String brandId;
   final OnCompletionCallback onCompleted;
 
-  static const routeName = '/perks';
+  static const routeName = '/shop';
 
   @override
   _NewPerkPageState createState() => _NewPerkPageState();

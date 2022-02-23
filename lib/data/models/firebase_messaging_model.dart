@@ -29,54 +29,6 @@ class Messaging {
   final UserService userService;
   final DateTime? lastTokenUpdate;
 
-  Future<void> setupInteractedMessage(BuildContext context) async {
-    // Get any messages which caused the application to open from
-    // a terminated state.
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
-
-    // If the message also contains a data property with a "type" of "chat",
-    // navigate to a chat screen
-    if (initialMessage != null) {
-      _handleMessage(context, initialMessage);
-    }
-
-    // Also handle any interaction when the app is in the background via a
-    // Stream listener
-    FirebaseMessaging.onMessageOpenedApp
-        .listen((RemoteMessage message) => _handleMessage(context, message));
-  }
-
-  void _handleMessage(BuildContext context, RemoteMessage message) {
-    print(message);
-    if (message.data['type'] == 'post') {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (BuildContext context) =>
-                  PostView(postId: message.data['postId'])));
-    }
-    if (message.data['type'] == 'perk') {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (BuildContext context) =>
-                  PerkView(perkId: message.data['perkId'])));
-    }
-    if (message.data['type'] == 'brand') {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (BuildContext context) =>
-                  BrandHomepage(brandId: message.data['brandId'])));
-    }
-    // if (message.data['type'] == 'chat') {
-    //   Navigator.pushNamed(context, '/message',
-    //     arguments: {'postId': message.data['chatThreadId']},
-    //   );
-    // }
-  }
-
   Messaging({required this.userService, required this.lastTokenUpdate});
 
   Future<void> addNewToken() async {
