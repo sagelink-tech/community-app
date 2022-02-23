@@ -24,6 +24,11 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
     logoUrl
     backgroundImageUrl
     communityGuidelines
+    links {
+      id
+      title
+      url
+    }
     posts(options: \$postsOptions) {
       commentsAggregate {
         count

@@ -95,6 +95,8 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
   Image? newLogoImage;
   late String newDescription = _brand.description;
   late List<CauseModel> causes = _brand.causes;
+  late String newGuidelines = _brand.communityGuidelines;
+  late List<BrandLink> links = _brand.links;
 
   TextEditingController causesTextController = TextEditingController();
   // Text controller functions
@@ -163,6 +165,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
 
     var updateData = {
       "description": newDescription,
+      "communityGuidelines": newGuidelines,
     };
 
     // parse causes
