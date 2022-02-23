@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class BrandLink {
   final String id;
   final String title;
-  final String url;
+  final String? url;
   const BrandLink(this.id, this.title, this.url);
 }
 
@@ -138,6 +138,13 @@ class BrandModel extends ChangeNotifier {
         _c.add(CauseModel(c['id'], c['title']));
       }
       causes = _c;
+    }
+
+    if (json.containsKey('links')) {
+      List<BrandLink> _l = [];
+      for (var link in json['links']) {
+        _l.add(BrandLink(link['id'], link['title'], link['url']));
+      }
     }
   }
 

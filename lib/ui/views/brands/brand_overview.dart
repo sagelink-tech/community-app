@@ -75,24 +75,27 @@ class BrandOverview extends StatelessWidget {
   }
 
   Widget externalLinks(BuildContext context) {
-    return ListView(shrinkWrap: true, primary: false, children: [
-      InkWell(
-        child: Container(
-            padding: const EdgeInsets.all(10.0),
-            child: const Text(
-              "Main Store",
-            )),
-        onTap: () => {_launchURL(brand.website)},
-      ),
-      InkWell(
-        child: Container(
-            padding: const EdgeInsets.all(10.0),
-            child: const Text(
-              "Community Guidelines",
-            )),
-        onTap: () => {_showCommunityGuidelines(context)},
-      )
-    ]);
+    List<BrandLink> links = [
+      BrandLink("store", "Full shop", brand.website),
+      const BrandLink("guidelines", "Community Guidelines", null)
+    ];
+    links.addAll(brand.links);
+
+    return ListView.builder(
+        itemCount: links.length,
+        itemBuilder: (BuildContext context, int index) => InkWell(
+            child: Container(
+                padding: const EdgeInsets.all(10.0),
+                child: Text(
+                  links[index].title,
+                )),
+            onTap: () => {
+                  links[index].url != null
+                      ? _launchURL(links[index].url!)
+                      : _showCommunityGuidelines(context)
+                }),
+        shrinkWrap: true,
+        primary: false);
   }
 
   @override

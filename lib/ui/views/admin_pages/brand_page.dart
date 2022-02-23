@@ -25,6 +25,12 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$membersFirst: Int, 
     mainColor
     logoUrl
     backgroundImageUrl
+    communityGuidelines
+    links {
+      id
+      title
+      url
+    }
     employeesConnection(first: \$employeesFirst) {
       totalCount
       edges {
