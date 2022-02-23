@@ -12,6 +12,7 @@ import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:collection/collection.dart';
 import 'package:sagelink_communities/ui/utils/asset_utils.dart';
+import 'package:sagelink_communities/ui/views/brands/community_guidelines.dart';
 
 String createPostMutation = """
 mutation CreatePosts(\$input: [PostCreateInput!]!) {
@@ -29,6 +30,15 @@ mutation UpdatePosts(\$where: PostWhere, \$update: PostUpdateInput) {
     posts {
       id
     }
+  }
+}
+""";
+
+String fetchCommunityGuidelines = """
+query FetchCommunityGuidelines(\$where: BrandWhere) {
+  brands(where: \$where) {
+    id
+    communityGuidelines
   }
 }
 """;
@@ -55,10 +65,13 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   String? body;
   String? linkUrl;
   PostType selectedType = PostType.text;
+  String communityGuidelines = "";
+
   bool get isUpdating => widget.post != null;
 
   late PostService postService = ref.watch(postServiceProvider);
   late LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
+  late GraphQLClient client = ref.watch(gqlClientProvider).value;
 
   bool isDisposed = false;
 
@@ -72,6 +85,9 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      _fetchCommunityGuidelines();
+    });
     if (isUpdating) {
       selectedType = widget.post!.type;
       title = widget.post!.title;
@@ -88,6 +104,26 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
           break;
       }
     }
+  }
+
+  _fetchCommunityGuidelines() async {
+    QueryResult result = await client.query(
+        QueryOptions(document: gql(fetchCommunityGuidelines), variables: {
+      "where": {"id": widget.brandId}
+    }));
+
+    if (result.data != null && (result.data!['brands'] as List).isNotEmpty) {
+      communityGuidelines = result.data!['brands'][0]['communityGuidelines'];
+    }
+  }
+
+  _showCommunityGuidelines(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) => FractionallySizedBox(
+            heightFactor: 0.85,
+            child: CommunityGuidelines(guidelineText: communityGuidelines)));
   }
 
   void imageFilesFromPost() async {
@@ -146,7 +182,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     widget.onCompleted();
   }
 
-  Future<bool> setImagesOnCreate(GraphQLClient client, String postId) async {
+  Future<bool> setImagesOnCreate(String postId) async {
     ImageUploadResult imageResults = await _imagePicker
         .uploadImages("post/$postId/", context: context, client: client);
     if (!imageResults.success) {
@@ -168,7 +204,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     }
   }
 
-  void createPost(GraphQLClient client) async {
+  void createPost() async {
     setState(() {
       isSaving = true;
     });
@@ -182,7 +218,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     if (result.data != null) {
       if (selectedType == PostType.images) {
         bool uploadResult = await setImagesOnCreate(
-            client, result.data!['createPosts']['posts'][0]['id']);
+            result.data!['createPosts']['posts'][0]['id']);
 
         if (!uploadResult) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -197,7 +233,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     complete();
   }
 
-  void updatePost(GraphQLClient client) async {
+  void updatePost() async {
     Map<String, dynamic> updateData = {
       "title": title,
     };
@@ -263,50 +299,50 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   }
 
   Widget _buildPostTypeSelection(BuildContext context) {
+    Widget selector = Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: const [
+              BoxShadow(
+                  color: Colors.grey, offset: Offset(0, -1), blurRadius: 5.0)
+            ],
+            color: Theme.of(context).cardColor),
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 10),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "select post type",
+                style: Theme.of(context).textTheme.caption,
+              ),
+              Wrap(
+                  children: PostType.values
+                      .map((e) => TextButton.icon(
+                            style: ButtonStyle(
+                                foregroundColor: MaterialStateProperty.all(
+                                    selectedType == e
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .primary)),
+                            onPressed: () => setState(() {
+                              selectedType = e;
+                            }),
+                            icon: e.iconForPostType(),
+                            label: Text(e.toShortString()),
+                          ))
+                      .toList())
+            ]));
     return Align(
         alignment: Alignment.bottomCenter,
         child: Wrap(children: [
-          Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Colors.grey,
-                        offset: Offset(0, -1),
-                        blurRadius: 5.0)
-                  ],
-                  color: Theme.of(context).cardColor),
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    "select post type",
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                  Wrap(
-                      children: PostType.values
-                          .map((e) => TextButton.icon(
-                                style: ButtonStyle(
-                                    foregroundColor: MaterialStateProperty.all(
-                                        selectedType == e
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .secondary
-                                            : Theme.of(context)
-                                                .colorScheme
-                                                .primary)),
-                                onPressed: () => setState(() {
-                                  selectedType = e;
-                                }),
-                                icon: e.iconForPostType(),
-                                label: Text(e.toShortString()),
-                              ))
-                          .toList())
-                ],
-              ))
+          Column(
+              children:
+                  isUpdating ? [buildSubmit()] : [selector, buildSubmit()])
         ]));
   }
 
@@ -334,6 +370,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
         autofocus: true,
         decoration: const InputDecoration(
           labelText: 'Title',
+          counterText: "",
           border: OutlineInputBorder(),
         ),
         validator: (value) {
@@ -453,13 +490,19 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     );
   }
 
-  Widget buildSubmit({bool enabled = true}) => GraphQLConsumer(
-      builder: (client) => IconButton(
-            icon: const Icon(Icons.send),
-            onPressed: enabled
-                ? () => isUpdating ? updatePost(client) : createPost(client)
-                : null,
-          ));
+  Widget buildSubmit() => ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            primary: Theme.of(context).colorScheme.secondary,
+            // onPrimary: Theme.of(context).colorScheme.onSecondary,
+            minimumSize: const Size.fromHeight(48)),
+        onPressed:
+            canSubmit() ? () => isUpdating ? updatePost() : createPost() : null,
+        child: Text("Submit",
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16.0,
+                color: Theme.of(context).colorScheme.onError)),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -469,7 +512,10 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
                 ? const Text("Update Post")
                 : const Text("Create Post"),
             actions: [
-              buildSubmit(enabled: canSubmit()),
+              IconButton(
+                onPressed: () => _showCommunityGuidelines(context),
+                icon: const Icon(Icons.info_outline),
+              )
             ],
             backgroundColor: Theme.of(context).backgroundColor,
             elevation: 0),
@@ -477,9 +523,9 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
             alignment: AlignmentDirectional.topStart,
             child: isSaving || isLoading
                 ? const Loading()
-                : Stack(
-                    children: isUpdating
-                        ? [_buildBody()]
-                        : [_buildBody(), _buildPostTypeSelection(context)])));
+                : Stack(children: [
+                    _buildBody(),
+                    _buildPostTypeSelection(context)
+                  ])));
   }
 }

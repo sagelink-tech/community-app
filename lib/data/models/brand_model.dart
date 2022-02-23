@@ -15,10 +15,13 @@ class BrandModel extends ChangeNotifier {
   String id = "df487c75-7186-48ea-a507-25b80aa92c64";
   String name = "brand name";
   String description = "brand description";
+  String communityGuidelines = "";
   String logoUrl = "";
   String backgroundImageUrl = "";
   String website = "www.brand.com";
   Color mainColor = Colors.blueGrey;
+
+  List<BrandLink> links = [];
 
   Image bannerImage() => backgroundImageUrl.isNotEmpty
       ? Image.network(
@@ -80,6 +83,9 @@ class BrandModel extends ChangeNotifier {
     name = json['name'];
     description =
         json.containsKey('description') ? json['description'] ?? "" : "";
+    communityGuidelines = json.containsKey('communityGuidelines')
+        ? json['communityGuidelines'] ?? ""
+        : "";
     logoUrl = json.containsKey('logoUrl') ? json['logoUrl'] ?? "" : "";
     backgroundImageUrl = json.containsKey('backgroundImageUrl')
         ? json['backgroundImageUrl'] ?? ""
@@ -139,6 +145,7 @@ class BrandModel extends ChangeNotifier {
         'id': id,
         'name': name,
         'description': description,
+        'communityGuidelines': communityGuidelines,
         'logoUrl': logoUrl,
         'backgroundImageUrl': backgroundImageUrl,
         'website': website,

@@ -6,6 +6,8 @@ import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'community_guidelines.dart';
+
 class BrandOverview extends StatelessWidget {
   final BrandModel brand;
   final bool shrinkWrap;
@@ -19,6 +21,16 @@ class BrandOverview extends StatelessWidget {
   _goToAccount(BuildContext context, String userId) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
+  }
+
+  _showCommunityGuidelines(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) => FractionallySizedBox(
+            heightFactor: 0.85,
+            child:
+                CommunityGuidelines(guidelineText: brand.communityGuidelines)));
   }
 
   Future<void> _launchURL(String url) async {
@@ -64,12 +76,21 @@ class BrandOverview extends StatelessWidget {
 
   Widget externalLinks(BuildContext context) {
     return ListView(shrinkWrap: true, primary: false, children: [
-      ListTile(
-        title: Text(
-          "Main Store",
-          style: Theme.of(context).textTheme.headline6,
-        ),
+      InkWell(
+        child: Container(
+            padding: const EdgeInsets.all(10.0),
+            child: const Text(
+              "Main Store",
+            )),
         onTap: () => {_launchURL(brand.website)},
+      ),
+      InkWell(
+        child: Container(
+            padding: const EdgeInsets.all(10.0),
+            child: const Text(
+              "Community Guidelines",
+            )),
+        onTap: () => {_showCommunityGuidelines(context)},
       )
     ]);
   }

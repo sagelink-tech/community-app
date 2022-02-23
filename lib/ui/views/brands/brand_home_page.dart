@@ -7,6 +7,7 @@ import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_overview.dart';
+import 'package:sagelink_communities/ui/views/brands/community_guidelines.dart';
 import 'package:sagelink_communities/ui/views/perks/perk_list.dart';
 import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/ui/views/posts/post_list.dart';
@@ -22,6 +23,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
     mainColor
     logoUrl
     backgroundImageUrl
+    communityGuidelines
     posts(options: \$postsOptions) {
       commentsAggregate {
         count
@@ -189,7 +191,7 @@ class _BrandHomepageState extends State<BrandHomepage>
               tabs: const [
                 Tab(text: "Conversations"),
                 Tab(text: "Shop"),
-                Tab(text: "Overview")
+                Tab(text: "Overview"),
               ])),
     ];
   }
