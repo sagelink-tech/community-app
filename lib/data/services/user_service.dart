@@ -17,6 +17,60 @@ mutation Mutation(\$update: UserUpdateInput, \$where: UserWhere, \$connect: User
 ''';
 
 // ignore: constant_identifier_names
+const String FETCH_USER_DISPLAY_DATA = '''
+query Query(\$where: UserWhere) {
+  users(where: \$where) {
+    id
+    firebaseId
+    name
+    accountPictureUrl
+  }
+}
+''';
+
+// ignore: constant_identifier_names
+const String FETCH_MESSAGEBLE_USERS = '''
+query Users(\$where: BrandWhere, \$sort: [BrandEmployeesConnectionSort!], \$memberOfBrandsConnectionSort2: [BrandMembersConnectionSort!]) {
+  brands(where: \$where) {
+    id
+    name
+    mainColor
+    logoUrl
+    employeesConnection(sort: \$sort) {
+      totalCount
+      edges {
+        node {
+          id
+          firebaseId
+          name
+          accountPictureUrl
+          queryUserHasBlocked
+          queryUserIsBlocked
+        }
+        roles
+        founder
+        owner
+        jobTitle
+      }
+    }
+    membersConnection(sort: \$memberOfBrandsConnectionSort2) {
+      totalCount
+      edges {
+        node {
+          id
+          firebaseId
+          name
+          accountPictureUrl
+          queryUserHasBlocked
+          queryUserIsBlocked
+        }
+      }
+    }
+  }
+}
+''';
+
+// ignore: constant_identifier_names
 const String FETCH_INVITE_CODES_QUERY = '''
 query Query{
   invites {
@@ -100,11 +154,58 @@ class UserService {
   const UserService({required this.client, required this.authUser});
 
   /////////////////////////////////////////////////////////////
-  /// Removing users
+  /// Finding users
   /////////////////////////////////////////////////////////////
 
-  // TO DELETE A USER, SEND A REQUEST TO A QUEUE THAT WE WILL
-  // PROCESS (DELETE ALL DATA)
+  Future<List<UserModel>> fetchMessagebleUers() async {
+    final brands = authUser.getUser().brands;
+    QueryResult result = await client
+        .query(QueryOptions(document: gql(FETCH_MESSAGEBLE_USERS), variables: {
+      "where": {"id_IN": brands.map((e) => e.id).toList()}
+    }));
+    if (result.hasException ||
+        result.data == null ||
+        (result.data!['brands'] as List).isEmpty) {
+      return [];
+    }
+
+    List<UserModel> _users = [];
+    for (var b in result.data!['brands']) {
+      BrandModel _brand = BrandModel.fromJson(b);
+      _users.addAll([..._brand.employees, ..._brand.members].where((element) =>
+          element.queryUserHasBlocked == false &&
+          element.queryUserIsBlocked == false &&
+          element.id != authUser.getUser().id));
+    }
+    return [
+      ...{..._users}
+    ];
+  }
+
+  Future<List<UserModel>?> fetchUserDisplayData(
+      {List<String>? userIds, List<String>? firebaseIds}) async {
+    Map<String, dynamic> whereClause = {};
+    if (userIds == null && firebaseIds == null) {
+      return null;
+    } else {
+      whereClause = (userIds != null)
+          ? {"id_IN": userIds}
+          : {"firebaseId_IN": firebaseIds};
+    }
+    QueryResult result = await client.query(QueryOptions(
+        document: gql(FETCH_USER_DISPLAY_DATA),
+        variables: {"where": whereClause}));
+
+    if (result.hasException ||
+        result.data == null ||
+        (result.data!['users'] as List).isEmpty) {
+      return null;
+    } else {
+      return (result.data!['users'] as List)
+          .map((el) => UserModel.fromJson(el))
+          .toList();
+    }
+  }
 
   /////////////////////////////////////////////////////////////
   /// Manage members and team

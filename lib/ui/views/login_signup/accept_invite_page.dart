@@ -175,10 +175,7 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
             padding: const EdgeInsets.symmetric(horizontal: 50),
             child: isLoading
                 ? const CircularProgressIndicator()
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: _fullDetails()),
+                : ListView(children: _fullDetails()),
           ));
     });
   }

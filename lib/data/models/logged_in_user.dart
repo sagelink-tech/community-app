@@ -3,6 +3,8 @@ import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 
 String getUserQuery = """
 query Users(\$where: UserWhere) {
@@ -13,6 +15,7 @@ query Users(\$where: UserWhere) {
     accountPictureUrl
     deviceTokens
     lastDeviceTokenUpdate
+    firebaseId
     memberOfBrands{
       id
       logoUrl
@@ -186,6 +189,11 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       await onComplete(result.data);
     }
     if (success) {
+      await FirebaseChatCore.instance.createUserInFirestore(
+        types.User(
+          id: user.firebaseId,
+        ),
+      );
       updateWithUserId(result.data!['createUsers']['users'][0]['id']);
     }
   }

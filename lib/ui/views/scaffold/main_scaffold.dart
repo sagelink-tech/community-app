@@ -2,6 +2,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
+import 'package:sagelink_communities/ui/views/messages/rooms_page.dart';
+import 'package:sagelink_communities/ui/views/messages/users_page.dart';
 import 'package:sagelink_communities/ui/views/pages/brands_page.dart';
 import 'package:sagelink_communities/ui/views/pages/home_page.dart';
 import 'package:sagelink_communities/ui/views/pages/perks_page.dart';
@@ -75,6 +77,22 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         .listen((RemoteMessage message) => _handleMessage(message));
   }
 
+  void createPostAction(BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => loggedInUser.getUser().brands.length == 1
+                ? NewPostPage(
+                    brandId: loggedInUser.getUser().brands[0].id,
+                    onCompleted: () => {})
+                : const NewPostBrandSelection()));
+  }
+
+  void createMessageAction(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const UsersPage()));
+  }
+
   void _handleMessage(RemoteMessage message) {
     if (message.data['type'] == 'post') {
       Navigator.push(
@@ -99,29 +117,19 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     }
   }
 
-  List<TabItem> consumerPageOptions = [
-    TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
-    TabItem("Shop", "Shop", const Icon(Icons.shopping_cart_outlined),
-        const PerksPage()),
-    TabItem("My Brands", "Brands", const Icon(Icons.collections_outlined),
-        const BrandsPage(),
-        showFloatingAction: false),
-    TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
-        const SettingsPage(),
-        showFloatingAction: false)
-  ];
-
   List<TabItem> _pageOptions() {
     var _pages = [
-      TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
+      TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage(),
+          onAction: createPostAction, showFloatingAction: true),
       TabItem("Shop", "Shop", const Icon(Icons.shopping_cart_outlined),
-          const PerksPage()),
+          const PerksPage(),
+          onAction: createPostAction, showFloatingAction: true),
       TabItem("My Brands", "Brands", const Icon(Icons.collections_outlined),
           const BrandsPage(),
           showFloatingAction: false),
       TabItem("Messages", "Messages", const Icon(Icons.mail_outline),
-          const SettingsPage(),
-          showFloatingAction: false)
+          const RoomsPage(),
+          onAction: createMessageAction, showFloatingAction: true)
     ];
 
     if (loggedInUser.isAdmin) {
@@ -169,18 +177,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       body: _pageOptions()[_selectedIndex].body,
       floatingActionButton: _pageOptions()[_selectedIndex].showFloatingAction
           ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            loggedInUser.getUser().brands.length == 1
-                                ? NewPostPage(
-                                    brandId:
-                                        loggedInUser.getUser().brands[0].id,
-                                    onCompleted: () => {})
-                                : const NewPostBrandSelection()));
-              },
+              onPressed: () => _pageOptions()[_selectedIndex].onAction != null
+                  ? _pageOptions()[_selectedIndex].onAction!(context)
+                  : createPostAction(context),
               child: Icon(Icons.add,
                   color: Theme.of(context).colorScheme.background),
               backgroundColor: Theme.of(context).colorScheme.secondary,
