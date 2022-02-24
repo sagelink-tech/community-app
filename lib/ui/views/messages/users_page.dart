@@ -36,7 +36,7 @@ class _UsersPageState extends ConsumerState<UsersPage> {
     var _filteredUsers = text != null
         ? users
             .where((element) =>
-                element.name.toLowerCase().contains(text!.toLowerCase()))
+                element.name.toLowerCase().contains(text.toLowerCase()))
             .toList()
         : users;
     setState(() {
