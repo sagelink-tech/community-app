@@ -177,9 +177,11 @@ class UserService {
           element.queryUserIsBlocked == false &&
           element.id != authUser.getUser().id));
     }
-    return [
+    var output = [
       ...{..._users}
     ];
+    output.sort((a, b) => a.name.compareTo(b.name));
+    return output;
   }
 
   Future<List<UserModel>?> fetchUserDisplayData(
