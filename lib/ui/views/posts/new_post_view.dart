@@ -75,10 +75,17 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
 
   bool isDisposed = false;
 
+  late FocusNode _focusNode;
+  final TextEditingController _linkEditingController = TextEditingController();
+
+  Widget? preview;
+
   @override
   void dispose() {
     isDisposed = true;
     _imagePicker.clearImages();
+    _focusNode.dispose();
+    _linkEditingController.dispose();
     super.dispose();
   }
 
@@ -88,6 +95,22 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
       _fetchCommunityGuidelines();
     });
+
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        var _preview = (linkUrl != null && linkUrl!.isNotEmpty)
+            ? LinkPreview(
+                linkUrl,
+                key: Key(linkUrl!),
+              )
+            : null;
+        setState(() {
+          preview = _preview;
+        });
+      }
+    });
+
     if (isUpdating) {
       selectedType = widget.post!.type;
       title = widget.post!.title;
@@ -97,6 +120,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
           break;
         case (PostType.link):
           linkUrl = widget.post!.linkUrl;
+          _linkEditingController.text = widget.post!.linkUrl!;
           break;
         case (PostType.images):
           isLoading = true;
@@ -175,9 +199,8 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   }
 
   void complete() {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text("Post submitted!"),
-        backgroundColor: Theme.of(context).colorScheme.error));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text("Post submitted!")));
     Navigator.of(context).pop();
     widget.onCompleted();
   }
@@ -396,19 +419,18 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
         border: OutlineInputBorder(),
       ),
       keyboardType: TextInputType.url,
+      controller: _linkEditingController,
+      focusNode: _focusNode,
       autocorrect: false,
       minLines: 1,
       maxLines: 1,
-      initialValue: linkUrl,
       onChanged: (value) => setState(() => linkUrl = value),
       enabled: enabled,
     );
 
-    Widget? preview = linkUrl != null ? LinkPreview(linkUrl) : null;
-
     return Column(
       children: preview != null
-          ? [form, const ListSpacer(height: 20), preview]
+          ? [form, const ListSpacer(height: 20), preview!]
           : [form],
     );
   }

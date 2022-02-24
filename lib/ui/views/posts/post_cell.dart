@@ -1,8 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sagelink_communities/ui/components/activity_badge.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
 import 'package:sagelink_communities/ui/components/link_preview.dart';
+import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
+import 'package:sagelink_communities/ui/components/stacked_avatars.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/ui/views/posts/post_view.dart';
@@ -57,7 +60,6 @@ class PostCell extends StatelessWidget {
             brandId: post.brand.id,
             post: post,
             onEdit: () => {
-              print('push'),
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (BuildContext context) => NewPostPage(
                       brandId: post.brand.id,
@@ -68,37 +70,47 @@ class PostCell extends StatelessWidget {
         });
   }
 
+  String timestamp() {
+    return " · " + timeago.format(post.createdAt, locale: "en_short");
+  }
+
   @override
   Widget build(BuildContext context) {
     _buildTitle() {
       return InkWell(
           onTap: () => _handleBrandClick(context),
-          child: Container(
-              margin: const EdgeInsets.all(10),
-              child: Row(
+          child: Row(
+            children: [
+              BrandAuthorStackedAvatars(post.creator, post.brand),
+              const SizedBox(width: 20),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClickableAvatar(
-                    avatarText: post.brand.name[0],
-                    avatarURL: post.brand.logoUrl,
-                    backgroundColor: post.brand.mainColor,
+                  Text(
+                    post.creator.name,
+                    style: Theme.of(context).textTheme.bodyText1,
                   ),
-                  const SizedBox(width: 10),
-                  Text(post.brand.name),
-                  const Spacer(),
-                  IconButton(
-                      onPressed: () => _showOptionsModal(context),
-                      color: Theme.of(context).colorScheme.primary,
-                      icon: const Icon(Icons.more_horiz_outlined))
+                  Text(
+                    post.brand.name + timestamp(),
+                    style: Theme.of(context).textTheme.caption,
+                  ),
                 ],
-              )));
+              ),
+              const Spacer(),
+              IconButton(
+                  onPressed: () => _showOptionsModal(context),
+                  color: Theme.of(context).colorScheme.primary,
+                  icon: const Icon(Icons.more_horiz_outlined))
+            ],
+          ));
     }
 
     _buildBody() {
       Widget detail;
       switch (post.type) {
         case PostType.text:
-          detail = Text(post.body ?? "",
-              style: Theme.of(context).textTheme.bodyText1);
+          detail = const SizedBox();
           break;
         case PostType.images:
           detail = EmbeddedImageCarousel(
@@ -111,53 +123,58 @@ class PostCell extends StatelessWidget {
           detail = LinkPreview(post.linkUrl ?? "");
           break;
       }
+      Widget bodyText = post.type == PostType.text
+          ? Text(post.body ?? "", style: Theme.of(context).textTheme.bodyText1)
+          : const SizedBox();
 
-      return Container(
-          margin: const EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Text(post.title, style: Theme.of(context).textTheme.headline4),
-              Row(
-                children: [
-                  ClickableAvatar(
-                      avatarText: post.creator.name[0],
-                      avatarURL: post.creator.accountPictureUrl),
-                  const SizedBox(width: 10),
-                  Text(
-                    post.creator.name + " • " + timeago.format(post.createdAt),
-                    style: Theme.of(context).textTheme.caption,
-                  )
-                ],
-              ),
-              detail,
-              OutlinedButton(
-                  onPressed: () =>
-                      _handleClick(context, post.id, withTextFocus: true),
-                  child: const Text("Comment"))
-            ],
-          ));
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          detail,
+          const ListSpacer(
+            height: 10,
+          ),
+          Text(post.title,
+              style: Theme.of(context).textTheme.headline6,
+              textAlign: TextAlign.start),
+          bodyText
+        ],
+      );
     }
 
     _buildDetail() {
       return InkWell(
           onTap: () => _handleClick(context, post.id),
-          child: Container(
-              padding: const EdgeInsets.all(10),
-              child: Row(children: [
-                const Text("Full conversation"),
-                const Icon(Icons.navigate_next),
-                const Spacer(),
-                ActivityChip(activityCount: post.commentCount),
-              ])));
+          child: Row(children: [
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(
+                "View post",
+                style: Theme.of(context).textTheme.bodyText1,
+              ),
+              Text(
+                "${post.commentCount} comments",
+                style: Theme.of(context).textTheme.caption,
+              )
+            ]),
+            const Spacer(),
+            const Icon(Icons.arrow_forward_outlined),
+          ]));
     }
 
     List<Widget> _composeChildren() {
       return showBrand
           ? ([
               _buildTitle(),
-              const Divider(),
+              const ListSpacer(
+                height: 10,
+              ),
               _buildBody(),
-              const Divider(),
+              const ListSpacer(
+                height: 10,
+              ),
+              Divider(
+                color: Colors.grey.shade800,
+              ),
               _buildDetail()
             ])
           : ([_buildBody(), const Divider(), _buildDetail()]);
@@ -166,19 +183,13 @@ class PostCell extends StatelessWidget {
     return Align(
         alignment: Alignment.center,
         child: Container(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 20,
+            ),
             constraints: const BoxConstraints(minWidth: 200, maxWidth: 600),
-            child: Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10), // if you need this
-                  side: BorderSide(
-                    color: Colors.grey.withOpacity(0.4),
-                    width: 1,
-                  ),
-                ),
-                child: Column(
-                  children: _composeChildren(),
-                ))));
+            child: Column(
+              children: _composeChildren(),
+            )));
   }
 }

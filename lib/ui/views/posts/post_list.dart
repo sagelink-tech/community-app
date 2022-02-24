@@ -20,10 +20,14 @@ class PostListView extends StatelessWidget {
     // Render list of widgets
 
     return posts.isNotEmpty
-        ? ListView.builder(
+        ? ListView.separated(
             itemCount: posts.length,
             cacheExtent: 20,
             controller: ScrollController(),
+            separatorBuilder: (context, index) => Divider(
+                  thickness: 8,
+                  color: Colors.grey.shade300,
+                ),
             itemBuilder: (context, index) => PostCell(index, posts[index],
                 onDetailClick: onSelection, showBrand: showBrand))
         : const EmptyResult(text: "Looks like no posts just yet...");
