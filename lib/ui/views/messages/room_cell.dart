@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
@@ -41,6 +42,51 @@ class _RoomCellState extends ConsumerState<RoomCell> {
     return user;
   }
 
+  Widget timestamp() {
+    String timeString = "";
+    if (widget.room.updatedAt != null) {
+      timeString = " · " +
+          timeago.format(
+              DateTime.fromMillisecondsSinceEpoch(widget.room.updatedAt!),
+              locale: "en_short");
+    }
+    return Text(timeString, style: Theme.of(context).textTheme.caption);
+  }
+
+  Widget subtitle() {
+    String textString = "";
+
+    if (widget.room.lastMessages != null &&
+        widget.room.lastMessages!.isNotEmpty) {
+      types.Message lastMessage = widget.room.lastMessages![0];
+      textString = lastMessage.author.id == loggedInUserId ? "You: " : "";
+      switch (lastMessage.type) {
+        case types.MessageType.custom:
+          textString += "sent a message";
+          break;
+        case types.MessageType.file:
+          textString += "sent an attachment";
+          break;
+        case types.MessageType.image:
+          textString += "sent an image";
+          break;
+        case types.MessageType.text:
+          textString += (lastMessage as types.TextMessage).text;
+          break;
+        case types.MessageType.unsupported:
+          textString += "sent a message";
+          break;
+      }
+    }
+    return Text(
+      textString,
+      softWrap: true,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: Theme.of(context).textTheme.caption,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = getOtherUser();
@@ -48,11 +94,9 @@ class _RoomCellState extends ConsumerState<RoomCell> {
         leading: ClickableAvatar(
             avatarText: user.name.isNotEmpty ? user.name[0] : "",
             avatarImage: user.profileImage()),
-        title: Text(user.name),
-        // subtitle: widget.room.updatedAt != null
-        //     ? Text(timeago.format(
-        //         DateTime.fromMillisecondsSinceEpoch(widget.room.updatedAt!)))
-        //     : null,
+        trailing: const Icon(Icons.arrow_forward_outlined),
+        title: Row(children: [Text(user.name), timestamp()]),
+        subtitle: subtitle(),
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
