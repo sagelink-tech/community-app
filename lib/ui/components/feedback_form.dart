@@ -18,6 +18,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
   bool isSaving = false;
 
   Widget buildFeedbackForm({bool enabled = true}) => TextFormField(
+        autofocus: true,
         key: const Key("feedback_key"),
         decoration: const InputDecoration(
           hintText:
@@ -77,12 +78,11 @@ class _FeedbackFormState extends State<FeedbackForm> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 50),
-        child: Center(
-          child: isSaving
-              ? const CircularProgressIndicator()
-              : Column(
-                  mainAxisSize: MainAxisSize.min, children: _feedbackWidgets()),
-        ));
+      padding: const EdgeInsets.all(50),
+      child: isSaving
+          ? const CircularProgressIndicator()
+          : Column(
+              mainAxisSize: MainAxisSize.min, children: _feedbackWidgets()),
+    );
   }
 }

@@ -68,10 +68,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   void _showFeedbackForm() async {
     showModalBottomSheet(
+        isScrollControlled: true,
         context: context,
-        builder: (BuildContext context) => FeedbackForm(
-            onSubmit: () => _dismissFeedbackForm(context),
-            onCancel: () => _dismissFeedbackForm(context)));
+        builder: (BuildContext context) => FractionallySizedBox(
+            heightFactor: 0.85,
+            child: FeedbackForm(
+                onSubmit: () => _dismissFeedbackForm(context),
+                onCancel: () => _dismissFeedbackForm(context))));
   }
 
   _buildMainSelection() {

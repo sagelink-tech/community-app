@@ -154,10 +154,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   void _showFeedbackForm() async {
     showModalBottomSheet(
+        isScrollControlled: true,
         context: context,
-        builder: (BuildContext context) => FeedbackForm(
-            onSubmit: () => _dismissFeedbackForm(context),
-            onCancel: () => _dismissFeedbackForm(context)));
+        builder: (BuildContext context) => FractionallySizedBox(
+            heightFactor: 0.85,
+            child: FeedbackForm(
+                onSubmit: () => _dismissFeedbackForm(context),
+                onCancel: () => _dismissFeedbackForm(context))));
   }
 
   Widget buildEmailForm({bool enabled = true}) => TextFormField(
