@@ -8,6 +8,7 @@ import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 
 class ChatPage extends ConsumerStatefulWidget {
   const ChatPage({
@@ -55,19 +56,27 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     );
   }
 
+  void _goToAccount(String userId) async {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
+  }
+
   @override
   Widget build(BuildContext context) {
     UserModel otherUser = getOtherUser();
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.light,
-        title: Row(children: [
-          ClickableAvatar(
-              avatarText: otherUser.name.isNotEmpty ? otherUser.name[0] : "",
-              avatarImage: otherUser.profileImage()),
-          const ListSpacer(width: 10),
-          Text(otherUser.name),
-        ]),
+        title: InkWell(
+            onTap: () => _goToAccount(otherUser.id),
+            child: Row(children: [
+              ClickableAvatar(
+                  avatarText:
+                      otherUser.name.isNotEmpty ? otherUser.name[0] : "",
+                  avatarImage: otherUser.profileImage()),
+              const ListSpacer(width: 10),
+              Text(otherUser.name),
+            ])),
         elevation: 0,
         backgroundColor: Theme.of(context).backgroundColor,
       ),

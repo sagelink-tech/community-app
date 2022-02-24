@@ -172,6 +172,9 @@ class UserService {
     List<UserModel> _users = [];
     for (var b in result.data!['brands']) {
       BrandModel _brand = BrandModel.fromJson(b);
+      _brand.employees.forEach((element) {
+        element.employerBrand = _brand;
+      });
       _users.addAll([..._brand.employees, ..._brand.members].where((element) =>
           element.queryUserHasBlocked == false &&
           element.queryUserIsBlocked == false &&

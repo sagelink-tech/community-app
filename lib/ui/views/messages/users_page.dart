@@ -7,6 +7,7 @@ import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/views/messages/chat_page.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 
 class UsersPage extends ConsumerStatefulWidget {
   const UsersPage({Key? key}) : super(key: key);
@@ -96,6 +97,23 @@ class _UsersPageState extends ConsumerState<UsersPage> {
     );
   }
 
+  void _goToAccount(String userId) async {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
+  }
+
+  Widget? subtitle(UserModel user) {
+    return (user is EmployeeModel)
+        ? Text(
+            user.jobTitle +
+                (user.employerBrand != null
+                    ? " of ${user.employerBrand!.name}"
+                    : ""),
+            style: Theme.of(context).textTheme.caption,
+          )
+        : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,9 +137,11 @@ class _UsersPageState extends ConsumerState<UsersPage> {
                   return ListTile(
                     key: Key(user.id),
                     leading: ClickableAvatar(
+                        onTap: () => _goToAccount(user.id),
                         avatarText: user.name[0],
                         avatarImage: user.profileImage()),
                     title: Text(user.name),
+                    subtitle: subtitle(user),
                     onTap: () {
                       _handlePressed(user, context);
                     },

@@ -122,6 +122,7 @@ class EmployeeModel extends UserModel {
   bool owner = false;
   String jobTitle = "";
   String inviteEmail = "";
+  BrandModel? employerBrand;
   EmployeeModel() : super();
 
   @override
