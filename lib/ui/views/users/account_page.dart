@@ -5,6 +5,7 @@ import 'package:sagelink_communities/data/models/cause_model.dart';
 import 'package:sagelink_communities/ui/components/brand_chip.dart';
 import 'package:sagelink_communities/ui/components/causes_chips.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
@@ -219,8 +220,14 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       _isEditing = false;
     });
 
-    return !result.hasException &&
+    bool success = !result.hasException &&
         result.data!['updateUsers']['users'][0]['id'] == _user.id;
+    success
+        ? CustomWidgets.buildSnackBar(
+            context, "Changes saved!", SLSnackBarType.success)
+        : CustomWidgets.buildSnackBar(context,
+            "Error saving changes. Please try again.", SLSnackBarType.error);
+    return success;
   }
 
   TextEditingController causesTextController = TextEditingController();

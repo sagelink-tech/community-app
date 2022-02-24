@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/invite_model.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
@@ -35,10 +36,8 @@ class _InvitePageState extends ConsumerState<InvitePage> {
 
   parseInviteData() {
     if (inviteData == null || inviteData!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: const Text("No input data detected..."),
-          backgroundColor: Theme.of(context).errorColor));
+      CustomWidgets.buildSnackBar(
+          context, "No input data detected..", SLSnackBarType.error);
       return [];
     }
     List<String> rows = inviteData!.trim().split('\n');
@@ -48,12 +47,11 @@ class _InvitePageState extends ConsumerState<InvitePage> {
         for (int i = 0; i < rows.length; i++) {
           final data = rows[i].trim().split(',');
           if (data.length != 3) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              behavior: SnackBarBehavior.floating,
-              content: Text(
-                  "Error parsing input data at line $i. Expected 3 comma separated variables but got ${data.length}"),
-              backgroundColor: Theme.of(context).errorColor,
-            ));
+            CustomWidgets.buildSnackBar(
+                context,
+                "Error parsing input data at line $i. Expected 3 comma separated variables but got ${data.length}",
+                SLSnackBarType.error);
+
             return [];
           }
           invites.add(MemberInviteModel(
@@ -69,12 +67,11 @@ class _InvitePageState extends ConsumerState<InvitePage> {
         for (int i = 0; i < rows.length; i++) {
           final data = rows[i].trim().split(',');
           if (data.length != 3) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              behavior: SnackBarBehavior.floating,
-              content: Text(
-                  "Error parsing input data at line $i. Expected 4 comma separated variables but got ${data.length}"),
-              backgroundColor: Theme.of(context).errorColor,
-            ));
+            CustomWidgets.buildSnackBar(
+                context,
+                "Error parsing input data at line $i. Expected 4 comma separated variables but got ${data.length}",
+                SLSnackBarType.error);
+
             return [];
           }
           invites.add(EmployeeInviteModel(
@@ -95,10 +92,9 @@ class _InvitePageState extends ConsumerState<InvitePage> {
     if (widget.onSubmit != null) {
       widget.onSubmit!();
     }
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      behavior: SnackBarBehavior.floating,
-      content: Text("Successfully created invites!"),
-    ));
+    CustomWidgets.buildSnackBar(
+        context, "Successfully created invites!", SLSnackBarType.success);
+
     Navigator.of(context).pop();
   }
 

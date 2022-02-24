@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 /// Generates a cryptographically secure random nonce, to be included in a
@@ -60,14 +61,11 @@ class Authentication {
       String email, BuildContext context) async {
     try {
       await authInstance.sendPasswordResetEmail(email: email);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Check your inbox for a reset link!"),
-      ));
+      CustomWidgets.buildSnackBar(
+          context, "Check your inbox for a reset link!", SLSnackBarType.error);
     } on FirebaseException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Error sending password reset: $e"),
-        backgroundColor: Theme.of(context).errorColor,
-      ));
+      CustomWidgets.buildSnackBar(
+          context, "Error sending password reset: $e", SLSnackBarType.error);
     }
   }
 
@@ -78,10 +76,8 @@ class Authentication {
       await authInstance.signInWithEmailAndPassword(
           email: email, password: password);
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Error signing in: $e"),
-        backgroundColor: Theme.of(context).errorColor,
-      ));
+      CustomWidgets.buildSnackBar(
+          context, "Error signing in: $e", SLSnackBarType.error);
     }
   }
 
@@ -94,11 +90,10 @@ class Authentication {
         password: password,
       );
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text(e.message ?? "Error creating this account. Please try again."),
-        backgroundColor: Theme.of(context).errorColor,
-      ));
+      CustomWidgets.buildSnackBar(
+          context,
+          e.message ?? "Error creating this account. Please try again.",
+          SLSnackBarType.error);
     }
   }
 
@@ -120,10 +115,10 @@ class Authentication {
     try {
       await authInstance.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e.message ?? "Error with google sign in: ${e.message}"),
-        backgroundColor: Theme.of(context).errorColor,
-      ));
+      CustomWidgets.buildSnackBar(
+          context,
+          e.message ?? "Error with google sign in: ${e.message}",
+          SLSnackBarType.error);
     }
   }
 
@@ -154,10 +149,10 @@ class Authentication {
 
       await authInstance.signInWithCredential(oauthCredential);
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e.message ?? "Error with apple sign in: ${e.message}"),
-        backgroundColor: Theme.of(context).errorColor,
-      ));
+      CustomWidgets.buildSnackBar(
+          context,
+          e.message ?? "Error with apple sign in: ${e.message}",
+          SLSnackBarType.error);
     } catch (e) {
       print(e);
       return;

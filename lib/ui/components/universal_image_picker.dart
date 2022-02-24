@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:collection/src/iterable_extensions.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -117,10 +118,11 @@ class UniversalImagePicker {
         if (xfiles != null) {
           for (var xf in xfiles) {
             if (selection.length >= maxImages) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(
-                      "Selected too many photos. Adding the first $maxImages."),
-                  backgroundColor: Theme.of(context).colorScheme.error));
+              CustomWidgets.buildSnackBar(
+                  context,
+                  "Selected too many photos. Adding the first $maxImages.",
+                  SLSnackBarType.neutral);
+
               break;
             }
             selection.add(File(xf.path));
@@ -268,9 +270,9 @@ class UniversalImagePicker {
 
     QueryResult result = await client.mutate(options);
     if (result.hasException) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text("Error uploading images"),
-          backgroundColor: Theme.of(context).colorScheme.error));
+      CustomWidgets.buildSnackBar(
+          context, "Error uploading images", SLSnackBarType.error);
+
       return ImageUploadResult(false, []);
     }
 

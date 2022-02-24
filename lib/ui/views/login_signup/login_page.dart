@@ -6,6 +6,7 @@ import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/feedback_form.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -40,10 +41,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
     }
     if (email == null || password == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text("Enter email and password"),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ));
+      CustomWidgets.buildSnackBar(
+          context, "Enter email and password", SLSnackBarType.error);
     } else {
       setState(() {
         isLoggingIn = true;
@@ -63,10 +62,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
     }
     if (email == null || password == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text("Enter email and password"),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ));
+      CustomWidgets.buildSnackBar(
+          context, "Enter email and password", SLSnackBarType.error);
     } else {
       setState(() {
         isLoggingIn = true;
@@ -209,11 +206,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   .copyWith(decoration: TextDecoration.underline)),
           onTap: () => email != null
               ? authState.sendForgotPasswordEmail(email!, context)
-              : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: const Text(
-                      "Enter your email into the email field to have a reset link sent to you."),
-                  backgroundColor: Theme.of(context).errorColor,
-                ))));
+              : CustomWidgets.buildSnackBar(
+                  context,
+                  "Enter your email into the email field to have a reset link sent to you.",
+                  SLSnackBarType.error)));
 
   Widget buildTermsText() => RichText(
         text: TextSpan(

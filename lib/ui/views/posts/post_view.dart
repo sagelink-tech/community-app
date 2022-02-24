@@ -1,5 +1,6 @@
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
 import 'package:sagelink_communities/ui/components/link_preview.dart';
@@ -203,7 +204,9 @@ class _PostViewState extends State<PostView> {
             comment: editingComment,
             onCompleted: () => {
               setAddingComment(false),
-              if (refetch != null) {refetch()}
+              if (refetch != null) {refetch()},
+              CustomWidgets.buildSnackBar(
+                  context, "Comment saved!", SLSnackBarType.success)
             },
             onLostFocus: () => setAddingComment(false),
           )),

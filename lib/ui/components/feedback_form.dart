@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -39,13 +40,10 @@ class _FeedbackFormState extends State<FeedbackForm> {
       "body": feedbackText,
     });
     bool success = await launch(_emailLaunchUri.toString());
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: success
-          ? const Text("Successful!")
-          : const Text("Error launching mail app"),
-      backgroundColor:
-          success ? Colors.greenAccent : Theme.of(context).colorScheme.error,
-    ));
+    CustomWidgets.buildSnackBar(
+        context,
+        success ? "Successful!" : "Error launching mail app",
+        success ? SLSnackBarType.success : SLSnackBarType.error);
     if (widget.onSubmit != null) {
       widget.onSubmit!();
     }

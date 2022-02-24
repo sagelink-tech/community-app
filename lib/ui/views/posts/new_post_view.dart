@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/data/services/post_service.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/link_preview.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
@@ -199,8 +200,8 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   }
 
   void complete() {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text("Post submitted!")));
+    CustomWidgets.buildSnackBar(
+        context, "Post submitted!", SLSnackBarType.success);
     Navigator.of(context).pop();
     widget.onCompleted();
   }
@@ -234,9 +235,8 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     QueryResult result = await client.mutate(MutationOptions(
         document: gql(createPostMutation), variables: mutationVariables()));
     if (result.hasException) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text("Error saving post, please try again."),
-          backgroundColor: Theme.of(context).colorScheme.error));
+      CustomWidgets.buildSnackBar(context,
+          "Error saving post, please try again.", SLSnackBarType.error);
     }
     if (result.data != null) {
       if (selectedType == PostType.images) {
@@ -244,9 +244,8 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
             result.data!['createPosts']['posts'][0]['id']);
 
         if (!uploadResult) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: const Text("Error saving post, please try again."),
-              backgroundColor: Theme.of(context).colorScheme.error));
+          CustomWidgets.buildSnackBar(context,
+              "Error saving post, please try again.", SLSnackBarType.error);
         }
       }
     }
@@ -273,9 +272,8 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
             context: context,
             client: client);
         if (!imageResults.success) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: const Text("Error saving post, please try again."),
-              backgroundColor: Theme.of(context).colorScheme.error));
+          CustomWidgets.buildSnackBar(context,
+              "Error saving post, please try again.", SLSnackBarType.error);
         }
         updateData["images"] = imageResults.locations;
         break;

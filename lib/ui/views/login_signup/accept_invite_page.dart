@@ -6,6 +6,7 @@ import 'package:sagelink_communities/data/providers.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/data/services/user_service.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/feedback_form.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/views/pages/settings_page.dart';
@@ -40,18 +41,13 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
     }
     bool success = await userService.acceptInvitationWithCode(inviteCode!);
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        behavior: SnackBarBehavior.floating,
-        content: const Text("Check your email to verify"),
-        backgroundColor: Theme.of(context).primaryColor,
-      ));
+      CustomWidgets.buildSnackBar(
+          context, "Check your email to verify", SLSnackBarType.success);
+
       widget.onComplete();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        behavior: SnackBarBehavior.floating,
-        content: const Text("There was an error with this invite code"),
-        backgroundColor: Theme.of(context).errorColor,
-      ));
+      CustomWidgets.buildSnackBar(context,
+          "There was an error with this invite code", SLSnackBarType.error);
     }
   }
 
