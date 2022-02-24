@@ -1,5 +1,6 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:sagelink_communities/data/models/cause_model.dart';
 import 'package:sagelink_communities/ui/components/brand_chip.dart';
 import 'package:sagelink_communities/ui/components/causes_chips.dart';
@@ -14,6 +15,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/components/universal_image_picker.dart';
+import 'package:sagelink_communities/ui/views/messages/chat_page.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 String getUserQuery = """
 query UsersQuery(\$where: UserWhere, \$options: UserOptions) {
@@ -24,6 +27,7 @@ query UsersQuery(\$where: UserWhere, \$options: UserOptions) {
     accountPictureUrl
     queryUserHasBlocked
     queryUserIsBlocked
+    firebaseId
     memberOfBrands {
       id
       name
@@ -344,6 +348,20 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       _user.queryUserHasBlocked ||
       _user.queryUserIsBlocked);
 
+  void _handleMessagePressed() async {
+    types.User user = types.User(id: _user.firebaseId);
+    final room = await FirebaseChatCore.instance.createRoom(user);
+
+    Navigator.of(context).pop();
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ChatPage(
+          room: room,
+        ),
+      ),
+    );
+  }
+
   List<Widget> _buildMessageButton() {
     return canMessage()
         ? [
@@ -352,7 +370,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                   primary: Theme.of(context).colorScheme.secondary,
                   // onPrimary: Theme.of(context).colorScheme.onSecondary,
                   minimumSize: const Size.fromHeight(48)),
-              onPressed: () => {},
+              onPressed: _handleMessagePressed,
               child: Text('Message',
                   style: TextStyle(
                       fontWeight: FontWeight.w600,
