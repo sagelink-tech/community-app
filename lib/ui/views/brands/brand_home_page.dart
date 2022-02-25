@@ -7,7 +7,6 @@ import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_overview.dart';
-import 'package:sagelink_communities/ui/views/brands/community_guidelines.dart';
 import 'package:sagelink_communities/ui/views/perks/perk_list.dart';
 import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/ui/views/posts/post_list.dart';
@@ -147,7 +146,7 @@ class _BrandHomepageState extends State<BrandHomepage>
       SliverList(
         delegate: SliverChildListDelegate([
           SizedBox(
-              height: 200.0,
+              height: 290.0,
               width: double.infinity,
               child: _brand.backgroundImageUrl.isEmpty
                   ? AssetUtils.defaultImage()
@@ -162,24 +161,34 @@ class _BrandHomepageState extends State<BrandHomepage>
                           ),
                       fit: BoxFit.fitWidth)),
           Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Column(children: [
-                Text(_brand.name, style: Theme.of(context).textTheme.headline3),
-                InkWell(
-                    onTap: () => {
-                          showModalBottomSheet(
-                              context: context,
-                              builder: (BuildContext bc) {
-                                return UserListView(
-                                    [..._brand.employees, ..._brand.members]);
-                              })
-                        },
-                    child: StackedAvatars(
-                      [..._brand.employees, ..._brand.members],
-                      showOverflow: (_brand.totalCommunityCount > 3),
-                    )),
-                const Text("VIP Community"),
-              ])),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_brand.name,
+                        style: Theme.of(context).textTheme.headline2),
+                    InkWell(
+                        onTap: () => {
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: (BuildContext bc) {
+                                    return UserListView([
+                                      ..._brand.employees,
+                                      ..._brand.members
+                                    ]);
+                                  })
+                            },
+                        child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: StackedAvatars(
+                              [..._brand.employees, ..._brand.members],
+                              height: 44,
+                              showOverflow: (_brand.totalCommunityCount > 5),
+                              overflowText:
+                                  ("${_brand.totalCommunityCount} members"),
+                            ))),
+                  ])),
         ]),
       ),
       SliverAppBar(
@@ -194,9 +203,9 @@ class _BrandHomepageState extends State<BrandHomepage>
               labelColor: Theme.of(context).colorScheme.onBackground,
               controller: _tabController,
               tabs: const [
-                Tab(text: "Conversations"),
+                Tab(text: "Convos"),
                 Tab(text: "Shop"),
-                Tab(text: "Overview"),
+                Tab(text: "About"),
               ])),
     ];
   }

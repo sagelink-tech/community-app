@@ -52,7 +52,7 @@ class StackedAvatars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        alignment: Alignment.center,
+        alignment: Alignment.centerLeft,
         width: double.infinity,
         height: height,
         color: Theme.of(context).backgroundColor,

@@ -61,6 +61,14 @@ class _PerksPageState extends ConsumerState<PerksPage> {
   List<PerkModel> perks = [];
   bool _isFetching = false;
 
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -85,7 +93,6 @@ class _PerksPageState extends ConsumerState<PerksPage> {
         updatedIds.remove(brand.id);
       }
     }
-
     setState(() {
       selectedBrandIds = updatedIds;
     });
@@ -123,10 +130,12 @@ class _PerksPageState extends ConsumerState<PerksPage> {
       List perkJsons = result.data!['perks'] as List;
       _perks = perkJsons.map((e) => PerkModel.fromJson(e)).toList();
     }
-    setState(() {
-      _isFetching = false;
-      perks = _perks;
-    });
+    if (!_disposed) {
+      setState(() {
+        _isFetching = false;
+        perks = _perks;
+      });
+    }
   }
 
   @override

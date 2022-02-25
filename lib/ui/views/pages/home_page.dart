@@ -58,6 +58,14 @@ class _HomePageState extends ConsumerState<HomePage> {
       userBrands.length > 1 ? [null, ...userBrands] : userBrands;
   bool _isFetching = false;
 
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -122,10 +130,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       _posts.removeWhere(
           (p) => p.isFlaggedByUser || p.creator.queryUserHasBlocked);
     }
-    setState(() {
-      _isFetching = false;
-      posts = _posts;
-    });
+    if (!_disposed) {
+      setState(() {
+        _isFetching = false;
+        posts = _posts;
+      });
+    }
   }
 
   @override

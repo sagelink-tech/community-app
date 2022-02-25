@@ -59,18 +59,19 @@ class BrandOverview extends StatelessWidget {
   }
 
   Widget peopleList(BuildContext context) {
-    return ListView(
+    return ListView.separated(
+        itemBuilder: (BuildContext context, int index) => ListTile(
+              leading: ClickableAvatar(
+                  avatarText: brand.employees[index].name[0],
+                  avatarURL: brand.employees[index].accountPictureUrl),
+              title: Text(brand.employees[index].name),
+              subtitle: Text(brand.employees[index].jobTitle),
+              onTap: () => _goToAccount(context, brand.employees[index].id),
+            ),
+        separatorBuilder: (BuildContext context, int index) => const Divider(),
+        itemCount: brand.employees.length,
         shrinkWrap: true,
-        primary: false,
-        children: brand.employees
-            .map((e) => ListTile(
-                  leading: ClickableAvatar(
-                      avatarText: e.name[0], avatarURL: e.accountPictureUrl),
-                  title: Text(e.name),
-                  subtitle: Text(e.jobTitle),
-                  onTap: () => _goToAccount(context, e.id),
-                ))
-            .toList());
+        primary: false);
   }
 
   Widget externalLinks(BuildContext context) {
@@ -80,8 +81,9 @@ class BrandOverview extends StatelessWidget {
     ];
     links.addAll(brand.links);
 
-    return ListView.builder(
+    return ListView.separated(
         itemCount: links.length,
+        separatorBuilder: (BuildContext context, int index) => const Divider(),
         itemBuilder: (BuildContext context, int index) => InkWell(
             child: Container(
                 padding: const EdgeInsets.all(10.0),
@@ -104,13 +106,12 @@ class BrandOverview extends StatelessWidget {
         primary: primary,
         padding: const EdgeInsets.all(10),
         children: [
-          Text("People", style: Theme.of(context).textTheme.headline4),
           peopleList(context),
-          Text("Mission", style: Theme.of(context).textTheme.headline4),
-          Text(brand.description, style: Theme.of(context).textTheme.bodyText1),
-          const ListSpacer(),
           Text("Causes", style: Theme.of(context).textTheme.headline4),
           CausesChips(causes: brand.causes),
+          const ListSpacer(),
+          Text("Mission", style: Theme.of(context).textTheme.headline4),
+          Text(brand.description, style: Theme.of(context).textTheme.caption),
           const ListSpacer(),
           Text("Links", style: Theme.of(context).textTheme.headline4),
           externalLinks(context),

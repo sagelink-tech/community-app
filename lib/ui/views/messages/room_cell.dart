@@ -23,16 +23,26 @@ class _RoomCellState extends ConsumerState<RoomCell> {
       loggedInUserProvider.select((value) => value.getUser().firebaseId));
   List<UserModel> users = [];
 
+  bool _isDisposed = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
       final _users = await userService.fetchUserDisplayData(
           firebaseIds: widget.room.users.map((e) => e.id).toList());
-      setState(() {
-        users = _users ?? [];
-      });
+      if (!_isDisposed) {
+        setState(() {
+          users = _users ?? [];
+        });
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
   }
 
   UserModel getOtherUser() {

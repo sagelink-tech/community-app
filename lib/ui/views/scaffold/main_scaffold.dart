@@ -132,14 +132,14 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           onAction: createMessageAction, showFloatingAction: true)
     ];
 
-    if (loggedInUser.isAdmin) {
-      _pages.add(TabItem(
-          "",
-          "Admin",
-          const Icon(Icons.admin_panel_settings_outlined),
-          const GoToAdminPage(),
-          showFloatingAction: false));
-    }
+    // if (loggedInUser.isAdmin) {
+    //   _pages.add(TabItem(
+    //       "",
+    //       "Admin",
+    //       const Icon(Icons.admin_panel_settings_outlined),
+    //       const GoToAdminPage(),
+    //       showFloatingAction: false));
+    // }
     return _pages;
   }
 
