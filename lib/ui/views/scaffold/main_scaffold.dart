@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
@@ -132,14 +133,14 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           onAction: createMessageAction, showFloatingAction: true)
     ];
 
-    // if (loggedInUser.isAdmin) {
-    //   _pages.add(TabItem(
-    //       "",
-    //       "Admin",
-    //       const Icon(Icons.admin_panel_settings_outlined),
-    //       const GoToAdminPage(),
-    //       showFloatingAction: false));
-    // }
+    if (loggedInUser.isAdmin && kIsWeb) {
+      _pages.add(TabItem(
+          "",
+          "Admin",
+          const Icon(Icons.admin_panel_settings_outlined),
+          const GoToAdminPage(),
+          showFloatingAction: false));
+    }
     return _pages;
   }
 
