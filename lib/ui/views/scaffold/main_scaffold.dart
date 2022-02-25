@@ -125,7 +125,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       TabItem("Shop", "Shop", const Icon(Icons.shopping_cart_outlined),
           const PerksPage(),
           onAction: createPostAction, showFloatingAction: true),
-      TabItem("My Brands", "Brands", const Icon(Icons.collections_outlined),
+      TabItem("My Brands", "Brands", const Icon(Icons.group_work_outlined),
           const BrandsPage(),
           showFloatingAction: false),
       TabItem("Messages", "Messages", const Icon(Icons.mail_outline),
