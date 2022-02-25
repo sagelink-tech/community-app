@@ -23,6 +23,7 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   late final loggedInUser = ref.watch(loggedInUserProvider);
   late final notifier = ref.watch(loggedInUserProvider.notifier);
   late final userService = ref.watch(userServiceProvider);
+  late final client = ref.watch(gqlClientProvider).value;
 
   late UserModel user = loggedInUser.getUser();
 
@@ -71,7 +72,7 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   }
 
   // Save changes
-  void _saveChanges(BuildContext context, GraphQLClient client) async {
+  void _saveChanges(BuildContext context) async {
     // Start saving
     setState(() {
       _isSaving = true;
@@ -97,7 +98,6 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
       setState(() {
         _isSaving = false;
       });
-      print("Should go to brand verify page");
     });
   }
 
@@ -120,17 +120,42 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
       radius: 58,
       onTap: () => _profileImagePicker.openImagePicker(),
     );
-    return DottedBorder(
-        borderType: BorderType.Circle,
-        radius: const Radius.circular(10),
-        dashPattern: const [5],
-        color: Theme.of(context).primaryColor,
-        child: Container(
-            alignment: Alignment.center,
-            decoration: const ShapeDecoration(
-              shape: CircleBorder(),
-            ),
-            child: avatar));
+    return Row(
+      children: [
+        avatar,
+        const ListSpacer(width: 25),
+        OutlinedButton(
+            style: OutlinedButton.styleFrom(
+                primary: Theme.of(context).colorScheme.secondary,
+                minimumSize: const Size(163, 56)),
+            onPressed: () => _profileImagePicker.openImagePicker(),
+            child: const Text("Select photo"))
+      ],
+    );
+  }
+
+  bool canSubmit() {
+    return !_isSaving && newName.isNotEmpty;
+  }
+
+  Widget _buildSubmit() {
+    return Visibility(
+        visible: canSubmit(),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+              ),
+              primary: Theme.of(context).colorScheme.secondary,
+              onPrimary: Theme.of(context).colorScheme.onSecondary,
+              minimumSize: const Size.fromHeight(48)),
+          onPressed: canSubmit() ? () => _saveChanges(context) : null,
+          child: Text("Create profile",
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16.0,
+                  color: Theme.of(context).colorScheme.onError)),
+        ));
   }
 
   Widget _buildNameText() {
@@ -150,7 +175,7 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
     List<Widget> components = [
       Text(
         "Description",
-        style: Theme.of(context).textTheme.headline4,
+        style: Theme.of(context).textTheme.headline5,
       ),
       const ListSpacer(),
       TextFormField(
@@ -193,9 +218,15 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
             {newCauses.remove(cause), setState(() => newCauses = newCauses)});
 
     return [
+      const ListSpacer(
+        height: 10,
+      ),
       Text(
         "Causes",
-        style: Theme.of(context).textTheme.headline4,
+        style: Theme.of(context).textTheme.headline5,
+      ),
+      const ListSpacer(
+        height: 10,
       ),
       causeInput,
       causesDisplay
@@ -206,10 +237,21 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   _buildHeader(BuildContext context) {
     return Column(
         mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            "Profile",
+            textAlign: TextAlign.start,
+            style: Theme.of(context).textTheme.headline2,
+          ),
           _buildProfileImage(),
           const ListSpacer(height: 20),
+          Text(
+            "Full name",
+            textAlign: TextAlign.start,
+            style: Theme.of(context).textTheme.headline5,
+          ),
+          const ListSpacer(height: 10),
           _buildNameText(),
           const ListSpacer(height: 20),
         ]);
@@ -227,26 +269,18 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GraphQLConsumer(builder: (GraphQLClient client) {
-      return Scaffold(
-          appBar: AppBar(
-              title: const Text("Setup Your Profile"),
-              actions: [
-                IconButton(
-                  onPressed: newName.isNotEmpty
-                      ? () => _saveChanges(context, client)
-                      : null,
-                  icon: const Icon(Icons.done),
-                )
-              ],
-              backgroundColor: Theme.of(context).backgroundColor,
-              elevation: 0),
-          body: _isSaving
-              ? const Loading()
-              : ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+    return Scaffold(
+        appBar: AppBar(
+            backgroundColor: Theme.of(context).backgroundColor, elevation: 0),
+        body: _isSaving
+            ? const Loading()
+            : Stack(alignment: Alignment.bottomCenter, children: [
+                ListView(
+                  padding:
+                      const EdgeInsets.only(left: 20, right: 20, bottom: 70),
                   children: [_buildHeader(context), _buildBody(context)],
-                ));
-    });
+                ),
+                _buildSubmit()
+              ]));
   }
 }

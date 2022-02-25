@@ -23,7 +23,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
         key: const Key("feedback_key"),
         decoration: const InputDecoration(
           hintText:
-              'Share some feedback...\n\nWhat brands do you love?\nWhat interests and causes do you care about?\nWhat brought you to Sagelink?',
+              "What made you interested in joining? What brands would you like to see in this app?",
           border: OutlineInputBorder(),
         ),
         minLines: 7,
@@ -50,6 +50,19 @@ class _FeedbackFormState extends State<FeedbackForm> {
   }
 
   List<Widget> _feedbackWidgets() => [
+        Row(
+          children: [
+            const Spacer(),
+            IconButton(
+                icon: Icon(Icons.close_outlined),
+                onPressed: () {
+                  if (widget.onCancel != null) {
+                    widget.onCancel!();
+                  }
+                })
+          ],
+        ),
+        const ListSpacer(height: 20),
         buildFeedbackForm(),
         const ListSpacer(height: 20),
         ElevatedButton(
@@ -60,23 +73,14 @@ class _FeedbackFormState extends State<FeedbackForm> {
             onPressed: feedbackText != null && feedbackText!.isNotEmpty
                 ? () => _submitFeedback()
                 : null,
-            child: const Text("Send Feedback")),
+            child: const Text("Send feedback as email")),
         const ListSpacer(height: 20),
-        OutlinedButton(
-            style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48)),
-            onPressed: () {
-              if (widget.onCancel != null) {
-                widget.onCancel!();
-              }
-            },
-            child: const Text("Cancel")),
       ];
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(50),
+      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
       child: isSaving
           ? const CircularProgressIndicator()
           : Column(

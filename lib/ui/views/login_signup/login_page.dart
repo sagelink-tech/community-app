@@ -119,8 +119,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             children: const <Widget>[
               Text(
                   'Before you create an account, make sure that you have an invite code from a brand to join their community!'),
-              Text(
-                  "If you don't have one, we'd still love to hear from you! Share what brands you like and what brought you here!"),
             ],
           ),
           actions: <Widget>[
