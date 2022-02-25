@@ -152,7 +152,7 @@ class PostCell extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyText1,
               ),
               Text(
-                "${post.commentCount} comments",
+                "${post.commentCount} comment${post.commentCount != 1 ? 's' : ''}",
                 style: Theme.of(context).textTheme.caption,
               )
             ]),

@@ -103,8 +103,6 @@ class PerkCell extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Column(
-                      children: [_buildBody(), const Divider()],
-                    )))));
+                    child: _buildBody()))));
   }
 }

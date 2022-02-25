@@ -9,6 +9,7 @@ import 'package:sagelink_communities/data/models/perk_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/ui/views/comments/comment_list.dart';
 import 'package:sagelink_communities/ui/views/comments/new_comment.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 String getPerkQuery = """
 query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions: CommentOptions) {
@@ -136,6 +137,19 @@ class _PerkViewState extends State<PerkView>
     });
   }
 
+  Future<void> _launchURL(String url) async {
+    try {
+      !await launch(
+        url,
+        forceSafariVC: true,
+        forceWebView: true,
+      );
+    } catch (e) {
+      print(e);
+      return;
+    }
+  }
+
   _buildHeader(BuildContext context, bool boxIsScrolled) {
     return <Widget>[
       SliverList(
@@ -244,7 +258,9 @@ class _PerkViewState extends State<PerkView>
                   primary: Theme.of(context).colorScheme.secondary,
                   onPrimary: Theme.of(context).colorScheme.onError,
                   minimumSize: const Size.fromHeight(48)),
-              onPressed: () => {},
+              onPressed: () => _perk.redemptionUrl.isNotEmpty
+                  ? _launchURL(_perk.redemptionUrl)
+                  : {},
               child: const Text("Redeem")));
     }
   }

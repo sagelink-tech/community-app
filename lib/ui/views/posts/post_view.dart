@@ -134,9 +134,11 @@ class _PostViewState extends State<PostView> {
 
   List<Widget> _buildBodyView(VoidCallback? refetch) {
     Widget detail;
+    Widget detailText;
     switch (_post.type) {
       case PostType.text:
-        detail = Text(_post.body ?? "",
+        detail = const SizedBox();
+        detailText = Text(_post.body ?? "",
             style: Theme.of(context).textTheme.bodyText1);
         break;
       case PostType.images:
@@ -144,9 +146,11 @@ class _PostViewState extends State<PostView> {
           _post.images ?? [],
           height: 200,
         );
+        detailText = const SizedBox();
         break;
       case PostType.link:
         detail = LinkPreview(_post.linkUrl ?? "");
+        detailText = const SizedBox();
         break;
     }
 
@@ -175,9 +179,11 @@ class _PostViewState extends State<PostView> {
             icon: const Icon(Icons.more_horiz_outlined))
       ]),
       const ListSpacer(),
+      detail,
+      const ListSpacer(),
       Text(_post.title, style: Theme.of(context).textTheme.headline4),
       const ListSpacer(),
-      detail,
+      detailText,
       const ListSpacer(),
     ];
   }
@@ -234,7 +240,17 @@ class _PostViewState extends State<PostView> {
           }
           return Scaffold(
               appBar: AppBar(
-                  title: const Text(''),
+                  title: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ClickableAvatar(
+                        avatarText: _post.brand.name[0],
+                        avatarImage: _post.brand.logoImage(),
+                      ),
+                      Text(_post.brand.name)
+                    ],
+                  ),
                   backgroundColor: Theme.of(context).backgroundColor,
                   elevation: 1),
               body: (result.hasException
@@ -252,9 +268,12 @@ class _PostViewState extends State<PostView> {
                                 _buildCommentButton(),
                                 // Responses header
                                 const ListSpacer(),
-                                Text('RESPONSES',
-                                    style:
-                                        Theme.of(context).textTheme.headline5),
+                                Text(
+                                    "${_post.commentCount} comment${_post.commentCount != 1 ? 's' : ''}",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2!
+                                        .copyWith(fontWeight: FontWeight.bold)),
                                 const ListSpacer(),
                                 // Comment view
                                 CommentListView(

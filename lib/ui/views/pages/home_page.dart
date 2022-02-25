@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/brand_chip.dart';
-import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
@@ -50,11 +49,22 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   late final userBrands = ref.watch(brandsProvider);
+  late final client = ref.watch(gqlClientProvider).value;
+
   late List<String> selectedBrandIds =
       brands.where((e) => e != null).map((e) => e!.id).toList();
   List<PostModel> posts = [];
   late List<BrandModel?> brands =
       userBrands.length > 1 ? [null, ...userBrands] : userBrands;
+  bool _isFetching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      _getPosts();
+    });
+  }
 
   void _handleBrandFilter(BrandModel? brand, bool selected) {
     List<String> updatedIds = selectedBrandIds;
@@ -78,33 +88,44 @@ class _HomePageState extends ConsumerState<HomePage> {
     });
   }
 
-  Future<List<PostModel>> _getPosts(GraphQLClient client) async {
+  QueryOptions qOptions() {
     Map<String, dynamic> variables = {
       "options": {
         "sort": [
           {"createdAt": "DESC"}
-        ]
+        ],
       },
       "where": {}
     };
     if (selectedBrandIds.isNotEmpty) {
       variables['where']['inBrandCommunity'] = {"id_IN": selectedBrandIds};
     }
-
-    QueryResult result = await client.query(QueryOptions(
+    return QueryOptions(
       document: gql(getPostsQuery),
       variables: variables,
-    ));
+    );
+  }
+
+  Future<void> _getPosts() async {
+    setState(() {
+      _isFetching = true;
+      posts = [];
+    });
+
+    QueryResult result = await client.query(qOptions());
+
+    List<PostModel> _posts = [];
 
     if (result.data != null && (result.data!['posts'] as List).isNotEmpty) {
       List postJsons = result.data!['posts'] as List;
-      List<PostModel> posts =
-          postJsons.map((e) => PostModel.fromJson(e)).toList();
-      posts.removeWhere(
+      _posts = postJsons.map((e) => PostModel.fromJson(e)).toList();
+      _posts.removeWhere(
           (p) => p.isFlaggedByUser || p.creator.queryUserHasBlocked);
-      return posts;
     }
-    return [];
+    setState(() {
+      _isFetching = false;
+      posts = _posts;
+    });
   }
 
   @override
@@ -112,40 +133,30 @@ class _HomePageState extends ConsumerState<HomePage> {
     _buildBrandChips() {
       return SizedBox(
           height: 50,
-          child: GraphQLConsumer(builder: (GraphQLClient client) {
-            return ListView.separated(
-                padding: const EdgeInsets.all(5),
-                scrollDirection: Axis.horizontal,
-                separatorBuilder: (BuildContext context, int index) {
-                  return const SizedBox(width: 5);
-                },
-                itemCount: brands.length,
-                itemBuilder: (context, index) => BrandChip(
-                      brand: brands[index],
-                      selected: (index > 0
-                          ? selectedBrandIds
-                              .contains((brands[index] as BrandModel).id)
-                          : selectedBrandIds.isEmpty),
-                      onSelection: _handleBrandFilter,
-                    ));
-          }));
+          child: ListView.separated(
+              padding: const EdgeInsets.all(5),
+              scrollDirection: Axis.horizontal,
+              separatorBuilder: (BuildContext context, int index) {
+                return const SizedBox(width: 5);
+              },
+              itemCount: brands.length,
+              itemBuilder: (context, index) => BrandChip(
+                    brand: brands[index],
+                    selected: (index > 0
+                        ? selectedBrandIds
+                            .contains((brands[index] as BrandModel).id)
+                        : selectedBrandIds.isEmpty),
+                    onSelection: _handleBrandFilter,
+                  )));
     }
 
     _buildPostCells() {
-      return GraphQLConsumer(builder: (GraphQLClient client) {
-        return FutureBuilder(
-            future: _getPosts(client),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasError) {
-                return const ErrorView();
-              } else if (snapshot.hasData) {
-                posts = snapshot.data;
-                return PostListView(posts, (context, postId) => {});
-              } else {
-                return const Loading();
-              }
-            });
-      });
+      return RefreshIndicator(
+        child: _isFetching
+            ? const Loading()
+            : PostListView(posts, (context, postId) => {}),
+        onRefresh: _getPosts,
+      );
     }
 
     return Column(

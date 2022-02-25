@@ -52,11 +52,22 @@ class PerksPage extends ConsumerStatefulWidget {
 
 class _PerksPageState extends ConsumerState<PerksPage> {
   late final userBrands = ref.watch(brandsProvider);
+  late final client = ref.watch(gqlClientProvider).value;
+
   late List<String> selectedBrandIds =
       brands.where((e) => e != null).map((e) => e!.id).toList();
   late List<BrandModel?> brands =
       userBrands.length > 1 ? [null, ...userBrands] : userBrands;
   List<PerkModel> perks = [];
+  bool _isFetching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      _getPerks();
+    });
+  }
 
   void _handleBrandFilter(BrandModel? brand, bool selected) {
     List<String> updatedIds = selectedBrandIds;
@@ -80,33 +91,42 @@ class _PerksPageState extends ConsumerState<PerksPage> {
     });
   }
 
-  Future<List<PerkModel>> _getPerks(GraphQLClient client) async {
+  QueryOptions qOptions() {
     Map<String, dynamic> variables = {
       "options": {
         "sort": [
           {"createdAt": "DESC"}
-        ]
-      }
+        ],
+      },
+      "where": {}
     };
-
     if (selectedBrandIds.isNotEmpty) {
-      variables['where'] = {
-        "inBrandCommunityConnection": {
-          "node": {"id_IN": selectedBrandIds}
-        }
-      };
+      variables['where']['inBrandCommunity'] = {"id_IN": selectedBrandIds};
     }
-
-    QueryResult result = await client.query(QueryOptions(
+    return QueryOptions(
       document: gql(getPerksQuery),
       variables: variables,
-    ));
+    );
+  }
+
+  Future<void> _getPerks() async {
+    setState(() {
+      _isFetching = true;
+      perks = [];
+    });
+
+    List<PerkModel> _perks = [];
+
+    QueryResult result = await client.query(qOptions());
 
     if (result.data != null && (result.data!['perks'] as List).isNotEmpty) {
       List perkJsons = result.data!['perks'] as List;
-      return perkJsons.map((e) => PerkModel.fromJson(e)).toList();
+      _perks = perkJsons.map((e) => PerkModel.fromJson(e)).toList();
     }
-    return [];
+    setState(() {
+      _isFetching = false;
+      perks = _perks;
+    });
   }
 
   @override
@@ -114,40 +134,30 @@ class _PerksPageState extends ConsumerState<PerksPage> {
     _buildBrandChips() {
       return SizedBox(
           height: 50,
-          child: GraphQLConsumer(builder: (GraphQLClient client) {
-            return ListView.separated(
-                padding: const EdgeInsets.all(5),
-                scrollDirection: Axis.horizontal,
-                separatorBuilder: (BuildContext context, int index) {
-                  return const SizedBox(width: 5);
-                },
-                itemCount: brands.length,
-                itemBuilder: (context, index) => BrandChip(
-                      brand: brands[index],
-                      selected: (index > 0
-                          ? selectedBrandIds
-                              .contains((brands[index] as BrandModel).id)
-                          : selectedBrandIds.isEmpty),
-                      onSelection: _handleBrandFilter,
-                    ));
-          }));
+          child: ListView.separated(
+              padding: const EdgeInsets.all(5),
+              scrollDirection: Axis.horizontal,
+              separatorBuilder: (BuildContext context, int index) {
+                return const SizedBox(width: 5);
+              },
+              itemCount: brands.length,
+              itemBuilder: (context, index) => BrandChip(
+                    brand: brands[index],
+                    selected: (index > 0
+                        ? selectedBrandIds
+                            .contains((brands[index] as BrandModel).id)
+                        : selectedBrandIds.isEmpty),
+                    onSelection: _handleBrandFilter,
+                  )));
     }
 
     _buildPerkCells() {
-      return GraphQLConsumer(builder: (GraphQLClient client) {
-        return FutureBuilder(
-            future: _getPerks(client),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasError) {
-                return const ErrorView();
-              } else if (snapshot.hasData) {
-                perks = snapshot.data;
-                return PerkListView(perks, (context, perkId) => {});
-              } else {
-                return const Loading();
-              }
-            });
-      });
+      return RefreshIndicator(
+        child: _isFetching
+            ? const Loading()
+            : PerkListView(perks, (context, postId) => {}),
+        onRefresh: _getPerks,
+      );
     }
 
     return Column(

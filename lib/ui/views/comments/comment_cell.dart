@@ -96,14 +96,14 @@ class CommentCell extends StatelessWidget {
     List<Widget> _buttons = [
       Text(timeago.format(comment.createdAt, locale: "en_short"),
           style: Theme.of(context).textTheme.caption),
-      TextButton(
-          onPressed: () => {
-                if (onUpdate != null) {onUpdate!(comment.id)}
-              },
-          style: TextButton.styleFrom(
-            primary: Theme.of(context).colorScheme.secondary,
-          ),
-          child: const Text("React")),
+      // TextButton(
+      //     onPressed: () => {
+      //           if (onUpdate != null) {onUpdate!(comment.id)}
+      //         },
+      //     style: TextButton.styleFrom(
+      //       primary: Theme.of(context).colorScheme.secondary,
+      //     ),
+      //     child: const Text("React")),
       TextButton(
           onPressed: () => {
                 if (onShowThread != null) {onShowThread!(comment.id)},
@@ -114,10 +114,10 @@ class CommentCell extends StatelessWidget {
           ),
           child: const Text("Reply")),
       const Spacer(),
-      Text(
-        "reactions",
-        style: Theme.of(context).textTheme.caption,
-      )
+      // Text(
+      //   "reactions",
+      //   style: Theme.of(context).textTheme.caption,
+      // )
     ];
 
     // If in thread view, remove the "reply" button option

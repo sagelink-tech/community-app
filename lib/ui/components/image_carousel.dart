@@ -3,6 +3,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 class EmbeddedImageCarousel extends StatefulWidget {
   final List<String> imageUrls;
@@ -132,15 +134,15 @@ class _FullPageImageCarouselState extends State<FullPageImageCarousel> {
             Stack(alignment: Alignment.center, children: <Widget>[
               CachedNetworkImage(
                 imageUrl: imageUrl,
+                imageBuilder: (context, imageProvider) => PhotoView(
+                  imageProvider: imageProvider,
+                ),
                 placeholderFadeInDuration: const Duration(milliseconds: 10),
                 placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: height,
                 ),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: height,
               ),
               Container(
                   height: height,

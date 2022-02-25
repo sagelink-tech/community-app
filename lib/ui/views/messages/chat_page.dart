@@ -69,14 +69,17 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         systemOverlayStyle: SystemUiOverlayStyle.light,
         title: InkWell(
             onTap: () => _goToAccount(otherUser.id),
-            child: Row(children: [
-              ClickableAvatar(
-                  avatarText:
-                      otherUser.name.isNotEmpty ? otherUser.name[0] : "",
-                  avatarImage: otherUser.profileImage()),
-              const ListSpacer(width: 10),
-              Text(otherUser.name),
-            ])),
+            child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ClickableAvatar(
+                      avatarText:
+                          otherUser.name.isNotEmpty ? otherUser.name[0] : "",
+                      avatarImage: otherUser.profileImage()),
+                  const ListSpacer(width: 10),
+                  Text(otherUser.name),
+                ])),
         elevation: 0,
         backgroundColor: Theme.of(context).backgroundColor,
       ),

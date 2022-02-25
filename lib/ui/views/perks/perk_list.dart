@@ -20,10 +20,14 @@ class PerkListView extends StatelessWidget {
     // Render list of widgets
 
     return perks.isNotEmpty
-        ? ListView.builder(
+        ? ListView.separated(
             itemCount: perks.length,
             cacheExtent: 20,
             controller: ScrollController(),
+            separatorBuilder: (context, index) => Divider(
+                  thickness: 8,
+                  color: Colors.grey.shade300,
+                ),
             itemBuilder: (context, index) => PerkCell(
                   index,
                   perks[index],
