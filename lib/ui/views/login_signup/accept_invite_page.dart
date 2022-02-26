@@ -146,7 +146,7 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
         ],
         decoration: const InputDecoration(
             counterText: "",
-            labelText: 'Invite code',
+            hintText: 'Enter your invite code',
             border: OutlineInputBorder()),
         onChanged: (value) => setState(() => inviteCode = value),
         enabled: enabled,

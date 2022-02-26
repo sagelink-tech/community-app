@@ -15,6 +15,21 @@ enum PerkType {
   exclusiveProduct,
 }
 
+extension PerkTypeManager on PerkType {
+  String toShortString() {
+    return toString().split('.').last;
+  }
+
+  static PerkType fromShortString(String type) {
+    for (var v in PerkType.values) {
+      if (type == v.toShortString()) {
+        return v;
+      }
+    }
+    return PerkType.undefined;
+  }
+}
+
 enum Currencies {
   usd,
   euro,
@@ -106,11 +121,11 @@ class PerkModel extends ChangeNotifier {
     imageUrls = List<String>.from(json["imageUrls"] ?? []);
     price = json['price'];
     currency = json['currency'] ?? Currencies.usd;
-    if (json.containsKey('type') && json['type'] != null) {
-      type = PerkType.values[json['type']];
-    } else {
-      type = json['type'] ?? PerkType.exclusiveProduct;
-    }
+
+    var pType = json.containsKey("type")
+        ? json['type']
+        : PerkType.undefined.toShortString();
+    type = PerkTypeManager.fromShortString(pType);
 
     if (json.containsKey('startDate') && json['startDate'] != null) {
       startDate =

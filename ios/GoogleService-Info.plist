@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>365461850788-422d4veu7o8h24tb3ud709hgbligjdo0.apps.googleusercontent.com</string>
+	<string>7241848546-qqc9oqg0i8f08c7v400ibq7fdmcemtqs.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.365461850788-422d4veu7o8h24tb3ud709hgbligjdo0</string>
+	<string>com.googleusercontent.apps.7241848546-qqc9oqg0i8f08c7v400ibq7fdmcemtqs</string>
 	<key>API_KEY</key>
-	<string>AIzaSyC4mVykrxd_9ARflIQTTXXCZf2SVkVNbJ8</string>
+	<string>AIzaSyCe6Ou4dwMPys9o2P-Gx3TW6IFo2DbNPqA</string>
 	<key>GCM_SENDER_ID</key>
-	<string>365461850788</string>
+	<string>7241848546</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.sagelink.community-app.dev</string>
+	<string>com.sagelink.community-app</string>
 	<key>PROJECT_ID</key>
-	<string>sagelink-community-dev</string>
+	<string>sagelink-community</string>
 	<key>STORAGE_BUCKET</key>
-	<string>sagelink-community-dev.appspot.com</string>
+	<string>sagelink-community.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,8 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:365461850788:ios:34af71f420a9e6ef4f3431</string>
-	<key>DATABASE_URL</key>
-	<string>https://sagelink-community-dev-default-rtdb.firebaseio.com</string>
+	<string>1:7241848546:ios:b8eaf2f134611b190670bb</string>
 </dict>
 </plist>

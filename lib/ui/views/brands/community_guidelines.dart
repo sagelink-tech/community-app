@@ -31,7 +31,7 @@ class CommunityGuidelines extends StatelessWidget {
     return Container(
         alignment: Alignment.topCenter,
         padding: const EdgeInsets.all(15),
-        child: Column(children: [
+        child: ListView(children: [
           Text(
             "Guidelines",
             textAlign: TextAlign.center,

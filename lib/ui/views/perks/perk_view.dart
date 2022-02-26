@@ -19,6 +19,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
     description
     details
     imageUrls
+    redemptionUrl
     productName
     productId
     price

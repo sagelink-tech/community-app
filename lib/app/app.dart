@@ -71,6 +71,7 @@ class BaseApp extends ConsumerWidget {
     final loggedInUser = ref.watch(loggedInUserProvider);
     final appState = ref.watch(appStateProvider);
     final appStateNotifier = ref.watch(appStateProvider.notifier);
+    final messager = ref.watch(messagingProvider);
 
     ThemeData _theme() {
       // Theme setup

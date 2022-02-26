@@ -133,7 +133,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           onAction: createMessageAction, showFloatingAction: true)
     ];
 
-    if (loggedInUser.isAdmin && kIsWeb) {
+    if (loggedInUser.isAdmin) {
       _pages.add(TabItem(
           "",
           "Admin",

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
 
@@ -50,10 +51,20 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   }
 
   void _handleSendPressed(types.PartialText message) {
-    FirebaseChatCore.instance.sendMessage(
-      message,
-      widget.room.id,
-    );
+    bool canSend = true;
+    for (var element in users) {
+      canSend =
+          canSend && element.queryUserHasBlocked || element.queryUserIsBlocked;
+    }
+    canSend
+        ? FirebaseChatCore.instance.sendMessage(
+            message,
+            widget.room.id,
+          )
+        : CustomWidgets.buildSnackBar(
+            context,
+            "Cannot send message. At least one user has blocked messaging",
+            SLSnackBarType.error);
   }
 
   void _goToAccount(String userId) async {

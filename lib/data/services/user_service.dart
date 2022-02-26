@@ -24,6 +24,8 @@ query Query(\$where: UserWhere) {
     firebaseId
     name
     accountPictureUrl
+    queryUserIsBlocked
+    queryUserHasBlocked
   }
 }
 ''';
