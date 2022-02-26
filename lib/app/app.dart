@@ -72,6 +72,7 @@ class BaseApp extends ConsumerWidget {
     final appState = ref.watch(appStateProvider);
     final appStateNotifier = ref.watch(appStateProvider.notifier);
     final messager = ref.watch(messagingProvider);
+    final observer = ref.watch(analyticsObserverProvider);
 
     ThemeData _theme() {
       // Theme setup
@@ -103,6 +104,7 @@ class BaseApp extends ConsumerWidget {
       }
     }
 
-    return MaterialApp(theme: _theme(), home: _home());
+    return MaterialApp(
+        theme: _theme(), navigatorObservers: [observer], home: _home());
   }
 }

@@ -4,7 +4,6 @@ import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 
 class EmbeddedImageCarousel extends StatefulWidget {
   final List<String> imageUrls;

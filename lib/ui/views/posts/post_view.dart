@@ -1,4 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/comment_model.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
@@ -60,7 +62,7 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
 }
 """;
 
-class PostView extends StatefulWidget {
+class PostView extends ConsumerStatefulWidget {
   const PostView(
       {Key? key, required this.postId, this.autofocusCommentField = false})
       : super(key: key);
@@ -73,12 +75,23 @@ class PostView extends StatefulWidget {
   _PostViewState createState() => _PostViewState();
 }
 
-class _PostViewState extends State<PostView> {
+class _PostViewState extends ConsumerState<PostView> {
   PostModel _post = PostModel();
   String? _threadId;
   CommentModel? editingComment;
   bool showingThread = false;
   late bool addingComment = widget.autofocusCommentField;
+  late final analytics = ref.watch(analyticsProvider);
+
+  @override
+  void initState() {
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Post View");
+      analytics.logScreenView(
+          screenClass: "Post View", screenName: widget.postId);
+    });
+    super.initState();
+  }
 
   void setAddingComment(bool addCommentFlag) {
     setState(() {

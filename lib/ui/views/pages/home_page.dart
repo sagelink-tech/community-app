@@ -50,6 +50,7 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   late final userBrands = ref.watch(brandsProvider);
   late final client = ref.watch(gqlClientProvider).value;
+  late final analytics = ref.watch(analyticsProvider);
 
   late List<String> selectedBrandIds =
       brands.where((e) => e != null).map((e) => e!.id).toList();
@@ -70,6 +71,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Home View");
+      analytics.logScreenView(screenName: "Home View");
       _getPosts();
     });
   }

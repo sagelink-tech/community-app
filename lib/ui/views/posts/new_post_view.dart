@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -73,6 +74,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   late PostService postService = ref.watch(postServiceProvider);
   late LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
   late GraphQLClient client = ref.watch(gqlClientProvider).value;
+  late FirebaseAnalytics analytics = ref.watch(analyticsProvider);
 
   bool isDisposed = false;
 
@@ -94,6 +96,17 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      isUpdating
+          ? {
+              analytics.setCurrentScreen(screenName: "Edit Post View"),
+              analytics.logScreenView(
+                  screenClass: "Edit Post View", screenName: widget.post!.id)
+            }
+          : {
+              analytics.setCurrentScreen(screenName: "New Post View"),
+              analytics.logScreenView(screenName: "New Post View")
+            };
+
       _fetchCommunityGuidelines();
     });
 
@@ -232,9 +245,12 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     setState(() {
       isSaving = true;
     });
+    bool success = true;
+
     QueryResult result = await client.mutate(MutationOptions(
         document: gql(createPostMutation), variables: mutationVariables()));
     if (result.hasException) {
+      success = false;
       CustomWidgets.buildSnackBar(context,
           "Error saving post, please try again.", SLSnackBarType.error);
     }
@@ -244,6 +260,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
             result.data!['createPosts']['posts'][0]['id']);
 
         if (!uploadResult) {
+          success = false;
           CustomWidgets.buildSnackBar(context,
               "Error saving post, please try again.", SLSnackBarType.error);
         }
@@ -252,7 +269,13 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     setState(() {
       isSaving = false;
     });
-    complete();
+
+    analytics
+        .logEvent(name: "post_submit_click", parameters: {"status": success});
+
+    if (success) {
+      complete();
+    }
   }
 
   void updatePost() async {

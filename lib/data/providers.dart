@@ -1,5 +1,7 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:sagelink_communities/app/app_config.dart';
 import 'package:sagelink_communities/app/graphql_config.dart';
 import 'package:sagelink_communities/data/models/auth_model.dart';
 import 'package:sagelink_communities/data/models/app_state_model.dart';
@@ -39,14 +41,17 @@ final gqlClientProvider = Provider((ref) {
 });
 
 final commentServiceProvider = Provider((ref) => CommentService(
+    analytics: ref.watch(analyticsProvider),
     client: ref.watch(gqlClientProvider).value,
     user: ref.watch(loggedInUserProvider)));
 
 final postServiceProvider = Provider((ref) => PostService(
+    analytics: ref.watch(analyticsProvider),
     client: ref.watch(gqlClientProvider).value,
     user: ref.watch(loggedInUserProvider)));
 
 final userServiceProvider = Provider((ref) => UserService(
+    analytics: ref.watch(analyticsProvider),
     client: ref.watch(gqlClientProvider).value,
     authUser: ref.watch(loggedInUserProvider)));
 
@@ -113,3 +118,23 @@ final messagingProvider = Provider<Messaging>((ref) {
   }
   return messager;
 });
+
+////////////////////////////////////////
+// Analytics providers                //
+////////////////////////////////////////
+
+final analyticsProvider = Provider<FirebaseAnalytics>((ref) {
+  FirebaseAnalytics instance = FirebaseAnalytics.instance;
+  instance.setAnalyticsCollectionEnabled(FlutterAppConfig.isProduction);
+
+  final authState = ref.watch(authStateChangesProvider);
+  authState.when(
+      data: (user) {
+        instance.setUserId(id: user?.uid);
+      },
+      error: (e, trace) => instance.setUserId(id: null),
+      loading: () => {});
+  return instance;
+});
+final analyticsObserverProvider = Provider<FirebaseAnalyticsObserver>((ref) =>
+    FirebaseAnalyticsObserver(analytics: (ref.watch(analyticsProvider))));

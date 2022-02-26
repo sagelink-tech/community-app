@@ -19,6 +19,7 @@ class _NotificationSettingsPageState
     extends ConsumerState<NotificationSettingsPage> {
   late final messager = ref.watch(messagingProvider);
   late final userService = ref.watch(userServiceProvider);
+  late final analytics = ref.watch(analyticsProvider);
 
   bool _isLoading = false;
 
@@ -52,6 +53,8 @@ class _NotificationSettingsPageState
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      analytics.setCurrentScreen(screenName: "Notification Settings");
+      analytics.logScreenView(screenName: "Notification Settings");
       _fetchSettings();
     });
   }

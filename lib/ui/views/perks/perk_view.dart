@@ -1,4 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/comment_model.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/empty_result.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
@@ -57,7 +59,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
 }
 """;
 
-class PerkView extends StatefulWidget {
+class PerkView extends ConsumerStatefulWidget {
   const PerkView({Key? key, required this.perkId}) : super(key: key);
   final String perkId;
 
@@ -67,7 +69,7 @@ class PerkView extends StatefulWidget {
   _PerkViewState createState() => _PerkViewState();
 }
 
-class _PerkViewState extends State<PerkView>
+class _PerkViewState extends ConsumerState<PerkView>
     with SingleTickerProviderStateMixin {
   PerkModel _perk = PerkModel();
   bool showingThread = false;
@@ -77,6 +79,8 @@ class _PerkViewState extends State<PerkView>
   int _currentIndex = 0;
   bool addingComment = false;
   CommentModel? editingComment;
+
+  late final analytics = ref.watch(analyticsProvider);
 
   late ScrollController _scrollController;
   late TabController _tabController;
@@ -111,6 +115,13 @@ class _PerkViewState extends State<PerkView>
   @override
   initState() {
     super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Perk View");
+      analytics.logScreenView(
+          screenClass: "Perk View", screenName: widget.perkId);
+      analytics.logEvent(
+          name: "perk_view_opened", parameters: {"id": widget.perkId});
+    });
     _tabController = TabController(length: 3, vsync: this);
     _scrollController = ScrollController(initialScrollOffset: 0.0);
     _scrollController.addListener(_scrollListener);
@@ -139,6 +150,9 @@ class _PerkViewState extends State<PerkView>
   }
 
   Future<void> _launchURL(String url) async {
+    analytics.logEvent(
+        name: "perk_redemption_clicked",
+        parameters: {"perkId": _perk.id, "brandId": _perk.brand.id});
     try {
       !await launch(
         url,
@@ -146,7 +160,6 @@ class _PerkViewState extends State<PerkView>
         forceWebView: true,
       );
     } catch (e) {
-      print(e);
       return;
     }
   }

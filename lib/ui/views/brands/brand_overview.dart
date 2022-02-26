@@ -41,7 +41,6 @@ class BrandOverview extends StatelessWidget {
         forceWebView: true,
       );
     } catch (e) {
-      print(e);
       return;
     }
   }

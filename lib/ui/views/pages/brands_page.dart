@@ -41,6 +41,10 @@ class BrandsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     List<String> brandIds = ref.watch(brandsProvider).map((e) => e.id).toList();
     List<BrandModel> brands = [];
+    final analytics = ref.watch(analyticsProvider);
+
+    analytics.setCurrentScreen(screenName: "Brands View");
+    analytics.logScreenView(screenName: "Brands View");
 
     return Query(
         options: QueryOptions(document: gql(getBrandsQuery), variables: {
@@ -63,7 +67,6 @@ class BrandsPage extends ConsumerWidget {
             _handleBrandSelection,
             onNewSelected: refetch,
           );
-          ;
         });
   }
 }

@@ -27,6 +27,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   late final userService = ref.watch(userServiceProvider);
   late final loggedInUserId = ref.watch(
       loggedInUserProvider.select((value) => value.getUser().firebaseId));
+  late final analytics = ref.watch(analyticsProvider);
 
   List<UserModel> users = [];
   bool _isLoading = true;
@@ -35,6 +36,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Chat View");
+      analytics.logScreenView(
+          screenClass: "Chat View", screenName: widget.room.id);
+
       final _users = await userService.fetchMessagebleUers();
       setState(() {
         users = _users;
@@ -53,18 +58,23 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   void _handleSendPressed(types.PartialText message) {
     bool canSend = true;
     for (var element in users) {
-      canSend =
-          canSend && element.queryUserHasBlocked || element.queryUserIsBlocked;
+      canSend = canSend &&
+          !(element.queryUserHasBlocked || element.queryUserIsBlocked);
     }
-    canSend
-        ? FirebaseChatCore.instance.sendMessage(
-            message,
-            widget.room.id,
-          )
-        : CustomWidgets.buildSnackBar(
-            context,
-            "Cannot send message. At least one user has blocked messaging",
-            SLSnackBarType.error);
+    if (canSend) {
+      analytics.logEvent(
+          name: "message_sent",
+          parameters: {"roomId": widget.room.id, "type": "text"});
+      FirebaseChatCore.instance.sendMessage(
+        message,
+        widget.room.id,
+      );
+    } else {
+      CustomWidgets.buildSnackBar(
+          context,
+          "Cannot send message. At least one user has blocked messaging",
+          SLSnackBarType.error);
+    }
   }
 
   void _goToAccount(String userId) async {

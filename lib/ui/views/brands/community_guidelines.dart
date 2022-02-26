@@ -21,7 +21,6 @@ class CommunityGuidelines extends StatelessWidget {
         headers: <String, String>{'my_header_key': 'my_header_value'},
       );
     } catch (e) {
-      print(e);
       return;
     }
   }
@@ -31,19 +30,18 @@ class CommunityGuidelines extends StatelessWidget {
     return Container(
         alignment: Alignment.topCenter,
         padding: const EdgeInsets.all(15),
-        child: ListView(children: [
+        child: ListView(shrinkWrap: true, children: [
           Text(
             "Guidelines",
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headline3,
           ),
           const ListSpacer(height: 20),
-          Expanded(
-              child: MarkdownBody(
+          MarkdownBody(
             data: guidelineText,
             onTapLink: (String text, String? href, String title) =>
                 _launchURL(href),
-          ))
+          )
         ]));
   }
 }

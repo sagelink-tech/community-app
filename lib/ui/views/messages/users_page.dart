@@ -18,6 +18,7 @@ class UsersPage extends ConsumerStatefulWidget {
 
 class _UsersPageState extends ConsumerState<UsersPage> {
   late final userService = ref.watch(userServiceProvider);
+  late final analytics = ref.watch(analyticsProvider);
   List<UserModel> users = [];
   bool _isLoading = true;
   bool _isSearching = false;
@@ -75,6 +76,8 @@ class _UsersPageState extends ConsumerState<UsersPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "New Message View");
+      analytics.logScreenView(screenName: "New Message View");
       final _users = await userService.fetchMessagebleUers();
       setState(() {
         users = _users;
@@ -85,7 +88,11 @@ class _UsersPageState extends ConsumerState<UsersPage> {
 
   void _handlePressed(UserModel otherUser, BuildContext context) async {
     types.User user = types.User(id: otherUser.firebaseId);
+
     final room = await FirebaseChatCore.instance.createRoom(user);
+    analytics.logEvent(
+        name: "dm_get_or_create",
+        parameters: {"id": room.id, "origin": "New Message View"});
 
     Navigator.of(context).pop();
     await Navigator.of(context).push(

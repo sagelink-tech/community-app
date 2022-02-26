@@ -32,9 +32,6 @@ class CommentCell extends StatelessWidget {
       Key? key})
       : super(key: key);
 
-  bool get _isHidden =>
-      comment.isFlaggedByUser || comment.creator.queryUserHasBlocked;
-
   void _goToAccount(BuildContext context, String userId) async {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
@@ -83,7 +80,7 @@ class CommentCell extends StatelessWidget {
           collapseText: "show less",
           animation: true,
           linkEllipsis: true,
-          linkColor: Theme.of(context).colorScheme.secondaryVariant,
+          linkColor: Theme.of(context).colorScheme.secondary,
           collapseOnTextTap: true,
           style: Theme.of(context).textTheme.bodyText2,
           maxLines: 3,

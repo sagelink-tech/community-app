@@ -1,4 +1,3 @@
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/services.dart';
 import 'package:sagelink_communities/data/models/cause_model.dart';
 import 'package:sagelink_communities/ui/components/causes_chips.dart';
@@ -24,10 +23,20 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   late final notifier = ref.watch(loggedInUserProvider.notifier);
   late final userService = ref.watch(userServiceProvider);
   late final client = ref.watch(gqlClientProvider).value;
+  late final analytics = ref.watch(analyticsProvider);
 
   late UserModel user = loggedInUser.getUser();
 
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Profile Creation View");
+      analytics.logScreenView(screenName: "Profile Creation View");
+    });
+  }
 
   // Editing data
   late String newDescription = user.description;
@@ -73,6 +82,8 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
 
   // Save changes
   void _saveChanges(BuildContext context) async {
+    analytics.logEvent(name: "user_creation");
+
     // Start saving
     setState(() {
       _isSaving = true;

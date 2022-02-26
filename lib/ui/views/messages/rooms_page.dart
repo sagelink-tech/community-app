@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/empty_result.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/views/messages/room_cell.dart';
@@ -15,9 +16,14 @@ class RoomsPage extends ConsumerStatefulWidget {
 
 class _RoomsPageState extends ConsumerState<RoomsPage> {
   List<Widget> roomList = [];
+  late final analytics = ref.watch(analyticsProvider);
 
   @override
   void initState() {
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      analytics.setCurrentScreen(screenName: "Messages View");
+      analytics.logScreenView(screenName: "Messages View");
+    });
     super.initState();
   }
 

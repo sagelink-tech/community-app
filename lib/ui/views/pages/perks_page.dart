@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/brand_chip.dart';
-import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/data/models/perk_model.dart';
@@ -53,6 +52,7 @@ class PerksPage extends ConsumerStatefulWidget {
 class _PerksPageState extends ConsumerState<PerksPage> {
   late final userBrands = ref.watch(brandsProvider);
   late final client = ref.watch(gqlClientProvider).value;
+  late final analytics = ref.watch(analyticsProvider);
 
   late List<String> selectedBrandIds =
       brands.where((e) => e != null).map((e) => e!.id).toList();
@@ -73,6 +73,8 @@ class _PerksPageState extends ConsumerState<PerksPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Shop View");
+      analytics.logScreenView(screenName: "Shop View");
       _getPerks();
     });
   }
@@ -164,7 +166,7 @@ class _PerksPageState extends ConsumerState<PerksPage> {
       return RefreshIndicator(
         child: _isFetching
             ? const Loading()
-            : PerkListView(perks, (context, postId) => {}),
+            : PerkListView(perks, (context, perkId) => {}),
         onRefresh: _getPerks,
       );
     }

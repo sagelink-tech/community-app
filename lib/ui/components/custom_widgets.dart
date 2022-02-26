@@ -11,7 +11,7 @@ class CustomWidgets {
         case SLSnackBarType.error:
           return Theme.of(context).errorColor;
         case SLSnackBarType.success:
-          return const Color(0xAA5ACCAA);
+          return const Color(0xFF5ACCAA);
         case SLSnackBarType.neutral:
           return Theme.of(context).primaryColor;
       }

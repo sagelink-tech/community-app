@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-import 'package:collection/src/iterable_extensions.dart';
 import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -242,7 +241,7 @@ class UniversalImagePicker {
       List<File>? imagesToUpload}) async {
     imagesToUpload ??= images;
     List<MultipartFile> files = [];
-    var uuid = Uuid();
+    var uuid = const Uuid();
 
     bool singleFileUpload = maxImages == 1 || imagesToUpload.length == 1;
 

@@ -51,7 +51,6 @@ class Authentication {
       String token = await authInstance.currentUser!.getIdToken(true);
       return token;
     } catch (e) {
-      print(e);
       return null;
     }
   }
@@ -154,7 +153,6 @@ class Authentication {
           e.message ?? "Error with apple sign in: ${e.message}",
           SLSnackBarType.error);
     } catch (e) {
-      print(e);
       return;
     }
   }

@@ -26,6 +26,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   late final Authentication authState = ref.watch(authProvider);
   late final AppStateStatus appState = ref.watch(appStateProvider);
+  late final analytics = ref.watch(analyticsProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Login View");
+      analytics.logScreenView(screenName: "Login View");
+    });
+  }
 
   bool get isValid =>
       email != null &&
@@ -44,6 +54,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       CustomWidgets.buildSnackBar(
           context, "Enter email and password", SLSnackBarType.error);
     } else {
+      analytics.logEvent(name: "login_with_email");
       setState(() {
         isLoggingIn = true;
       });
@@ -55,6 +66,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   void _handleSignup(BuildContext context) async {
+    analytics.logEvent(name: "signup_with_email");
+
     if (!appState.hasSignedIn) {
       bool? result = await _showAlertDialog();
       if (result == null || !result) {
@@ -76,6 +89,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   void _handleGoogleSignIn(BuildContext context) async {
+    analytics.logEvent(name: "signin_with_google");
+
     if (!appState.hasSignedIn) {
       bool? result = await _showAlertDialog();
       if (result == null || !result) {
@@ -92,6 +107,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   void _handleAppleSignIn(BuildContext context) async {
+    analytics.logEvent(name: "signin_with_apple");
     if (!appState.hasSignedIn) {
       bool? result = await _showAlertDialog();
       if (result == null || !result) {

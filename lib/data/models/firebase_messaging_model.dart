@@ -1,9 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:sagelink_communities/data/services/user_service.dart';
-import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
-import 'package:sagelink_communities/ui/views/perks/perk_view.dart';
-import 'package:sagelink_communities/ui/views/posts/post_view.dart';
 
 const slAnnouncementsTopic = "sagelink_announcments";
 const brandAnnouncementsTopic = "_announcements";

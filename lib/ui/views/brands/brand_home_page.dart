@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/stacked_avatars.dart';
 import 'package:sagelink_communities/data/models/perk_model.dart';
 import 'package:sagelink_communities/ui/utils/asset_utils.dart';
@@ -74,6 +76,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
     perks(options: \$perksOptions) {
       id
       title
+      type
       description
       imageUrls
       productName
@@ -91,7 +94,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
 }
 """;
 
-class BrandHomepage extends StatefulWidget {
+class BrandHomepage extends ConsumerStatefulWidget {
   const BrandHomepage({Key? key, required this.brandId}) : super(key: key);
   final String brandId;
 
@@ -101,8 +104,9 @@ class BrandHomepage extends StatefulWidget {
   _BrandHomepageState createState() => _BrandHomepageState();
 }
 
-class _BrandHomepageState extends State<BrandHomepage>
+class _BrandHomepageState extends ConsumerState<BrandHomepage>
     with SingleTickerProviderStateMixin {
+  late final analytics = ref.watch(analyticsProvider);
   BrandModel _brand = BrandModel();
   List<PostModel> _posts = [];
   List<PerkModel> _perks = [];
@@ -131,6 +135,11 @@ class _BrandHomepageState extends State<BrandHomepage>
   initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Brand Home View");
+      analytics.logScreenView(
+          screenName: "Brand Home View", screenClass: widget.brandId);
+    });
   }
 
   @override
@@ -293,6 +302,9 @@ class _BrandHomepageState extends State<BrandHomepage>
   Widget buildNewPostButton(OnCompletionCallback onCompleted) => IconButton(
       icon: const Icon(Icons.add),
       onPressed: () => {
+            analytics.logEvent(
+                name: "new_post_initiated",
+                parameters: {"origin": "brand_home_view"}),
             Navigator.push(
                 context,
                 MaterialPageRoute(

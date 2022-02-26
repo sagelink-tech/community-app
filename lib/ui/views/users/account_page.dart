@@ -70,6 +70,7 @@ class AccountPage extends ConsumerStatefulWidget {
 }
 
 class _AccountPageState extends ConsumerState<AccountPage> {
+  late final analytics = ref.watch(analyticsProvider);
   UserModel _user = UserModel();
   late final loggedInUser = ref.watch(loggedInUserProvider);
   bool _isLoggedInUser() {
@@ -84,6 +85,18 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     }
     setState(() {
       _isEditing = !_isEditing;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Account View");
+      analytics.logScreenView(
+          screenClass: "Account View", screenName: widget.userId);
+      analytics.logEvent(
+          name: "account_view_opened", parameters: {"id": widget.userId});
     });
   }
 
@@ -358,6 +371,9 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   void _handleMessagePressed() async {
     types.User user = types.User(id: _user.firebaseId);
     final room = await FirebaseChatCore.instance.createRoom(user);
+    analytics.logEvent(
+        name: "dm_get_or_create",
+        parameters: {"id": room.id, "origin": "Account Page"});
 
     Navigator.of(context).pop();
     await Navigator.of(context).push(

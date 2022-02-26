@@ -1,5 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sagelink_communities/ui/components/activity_badge.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
 import 'package:sagelink_communities/ui/components/link_preview.dart';
@@ -9,6 +7,7 @@ import 'package:sagelink_communities/ui/components/stacked_avatars.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/ui/views/posts/post_view.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
@@ -37,6 +36,14 @@ class PostCell extends StatelessWidget {
     if (onDetailClick != null) {
       onDetailClick!(context, postId);
     }
+    return;
+  }
+
+  void _handleUserClick(context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => AccountPage(userId: post.creator.id)));
     return;
   }
 
@@ -77,33 +84,46 @@ class PostCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _buildTitle() {
-      return InkWell(
-          onTap: () => _handleBrandClick(context),
-          child: Row(
+      return Row(
+        children: [
+          InkWell(
+              onTap: () => showBrand
+                  ? _handleBrandClick(context)
+                  : _handleUserClick(context),
+              child: showBrand
+                  ? BrandAuthorStackedAvatars(post.creator, post.brand)
+                  : ClickableAvatar(
+                      avatarText: post.creator.name.isNotEmpty
+                          ? post.creator.name[0]
+                          : "",
+                      avatarImage: post.creator.profileImage(),
+                    )),
+          const SizedBox(width: 20),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              BrandAuthorStackedAvatars(post.creator, post.brand),
-              const SizedBox(width: 20),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+              InkWell(
+                  onTap: () => _handleUserClick(context),
+                  child: Text(
                     post.creator.name,
                     style: Theme.of(context).textTheme.bodyText1,
-                  ),
-                  Text(
+                  )),
+              InkWell(
+                  onTap: () => _handleBrandClick(context),
+                  child: Text(
                     post.brand.name + timestamp(),
                     style: Theme.of(context).textTheme.caption,
-                  ),
-                ],
-              ),
-              const Spacer(),
-              IconButton(
-                  onPressed: () => _showOptionsModal(context),
-                  color: Theme.of(context).colorScheme.primary,
-                  icon: const Icon(Icons.more_horiz_outlined))
+                  )),
             ],
-          ));
+          ),
+          const Spacer(),
+          IconButton(
+              onPressed: () => _showOptionsModal(context),
+              color: Theme.of(context).colorScheme.primary,
+              icon: const Icon(Icons.more_horiz_outlined))
+        ],
+      );
     }
 
     _buildBody() {
@@ -162,22 +182,20 @@ class PostCell extends StatelessWidget {
     }
 
     List<Widget> _composeChildren() {
-      return showBrand
-          ? ([
-              _buildTitle(),
-              const ListSpacer(
-                height: 10,
-              ),
-              _buildBody(),
-              const ListSpacer(
-                height: 10,
-              ),
-              Divider(
-                color: Colors.grey.shade800,
-              ),
-              _buildDetail()
-            ])
-          : ([_buildBody(), const Divider(), _buildDetail()]);
+      return [
+        _buildTitle(),
+        const ListSpacer(
+          height: 10,
+        ),
+        _buildBody(),
+        const ListSpacer(
+          height: 10,
+        ),
+        Divider(
+          color: Colors.grey.shade800,
+        ),
+        _buildDetail()
+      ];
     }
 
     return Align(

@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
@@ -40,14 +41,16 @@ const String REACT_TO_POST_MUTATION = '''
 class PostService {
   final GraphQLClient client;
   final LoggedInUser user;
+  final FirebaseAnalytics analytics;
 
-  const PostService({required this.client, required this.user});
+  const PostService(
+      {required this.client, required this.user, required this.analytics});
 
   /////////////////////////////////////////////////////////////
   /// Removing posts
   /////////////////////////////////////////////////////////////
 
-  // Remove a comment and it's thread
+  // Remove a post and it's comments
   Future<bool> removePost(PostModel post,
       {OnMutationCompleted? onComplete}) async {
     if (post.creator.id != user.getUser().id &&
@@ -78,18 +81,20 @@ class PostService {
     MutationOptions options = MutationOptions(
         document: gql(REMOVE_POST_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['deletePosts']['nodesDeleted'] > 0);
 
+    analytics.logEvent(name: "remove_post", parameters: {
+      "status": success,
+      "postId": post.id,
+      "removedBy": user.getUser().firebaseId
+    });
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   /////////////////////////////////////////////////////////////
@@ -118,18 +123,20 @@ class PostService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_POST_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updatePosts']['posts'][0]['id'] == post.id);
+
+    analytics.logEvent(name: "flagged_post", parameters: {
+      "status": success,
+      "flagged_by": user.getUser().firebaseId
+    });
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   // Update post with update dictionary
@@ -147,18 +154,20 @@ class PostService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_POST_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updatePosts']['posts'][0]['id'] == post.id);
+
+    analytics.logEvent(name: "update_post", parameters: {
+      "status": success,
+      "postId": post.id,
+    });
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   /////////////////////////////////////////////////////////////

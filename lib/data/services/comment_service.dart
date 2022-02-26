@@ -1,8 +1,7 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
-import 'package:sagelink_communities/data/models/perk_model.dart';
-import 'package:sagelink_communities/data/models/post_model.dart';
 
 // ignore: constant_identifier_names
 const String REMOVE_COMMENT_MUTATION = '''
@@ -42,8 +41,10 @@ const String REACT_TO_COMMENT_MUTATION = '''
 class CommentService {
   final GraphQLClient client;
   final LoggedInUser user;
+  final FirebaseAnalytics analytics;
 
-  const CommentService({required this.client, required this.user});
+  const CommentService(
+      {required this.client, required this.user, required this.analytics});
 
   /////////////////////////////////////////////////////////////
   /// Removing comments
@@ -75,18 +76,19 @@ class CommentService {
     MutationOptions options = MutationOptions(
         document: gql(REMOVE_COMMENT_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['deleteComments']['nodesDeleted'] > 0);
+
+    analytics.logEvent(
+        name: "comment_deleted",
+        parameters: {"status": success, "commentId": comment.id});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   /////////////////////////////////////////////////////////////
@@ -115,18 +117,19 @@ class CommentService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_COMMENT_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updateComments']['comments'][0]['id'] == comment.id);
+
+    analytics.logEvent(
+        name: "flag_comment",
+        parameters: {"status": success, "commentId": comment.id});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   // Update comment with body text
@@ -144,18 +147,19 @@ class CommentService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_COMMENT_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updateComments']['comments'][0]['id'] == comment.id);
+
+    analytics.logEvent(
+        name: "comment_udpated",
+        parameters: {"status": success, "commentId": comment.id});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   /////////////////////////////////////////////////////////////
@@ -190,17 +194,21 @@ class CommentService {
     MutationOptions options = MutationOptions(
         document: gql(CREATE_COMMENT_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         (result.data!['createComments']['comments'] as List).length == 1);
+
+    analytics.logEvent(name: "comment_created", parameters: {
+      "status": success,
+      "type": "reply",
+      "parentId": commentId
+    });
+
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   // Comment on a post
@@ -231,18 +239,19 @@ class CommentService {
     MutationOptions options = MutationOptions(
         document: gql(CREATE_COMMENT_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         (result.data!['createComments']['comments'] as List).length == 1);
+
+    analytics.logEvent(
+        name: "comment_created",
+        parameters: {"status": success, "type": "post", "parentId": postId});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   // Comment on a perk
@@ -273,13 +282,13 @@ class CommentService {
     MutationOptions options = MutationOptions(
         document: gql(CREATE_COMMENT_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         (result.data!['createComments']['comments'] as List).length == 1);
+    analytics.logEvent(
+        name: "comment_created",
+        parameters: {"status": success, "type": "perk", "parentId": perkId});
 
     if (success && onComplete != null) {
       onComplete(result.data);

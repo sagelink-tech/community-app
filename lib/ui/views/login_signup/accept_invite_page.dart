@@ -30,6 +30,16 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
   bool isLoading = false;
   late final UserService userService = ref.watch(userServiceProvider);
   late final LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
+  late final analytics = ref.watch(analyticsProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Accept Brand Invite Page");
+      analytics.logScreenView(screenName: "Accept Brand Invite Page");
+    });
+  }
 
   void _handleRefresh() {
     ref.refresh(loggedInUserProvider);

@@ -21,6 +21,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   late final _user =
       ref.watch(loggedInUserProvider.select((value) => value.getUser()));
   late final auth = ref.watch(authProvider);
+  late final analytics = ref.watch(analyticsProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Settings View");
+      analytics.logScreenView(screenName: "Settings View");
+    });
+  }
 
   void _goToAccount() {
     Navigator.push(context,
@@ -34,9 +44,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             builder: (context) => const NotificationSettingsPage()));
   }
 
-  void _goToDataSettings() {
-    print("GO TO DATA SETTINGS");
-  }
+  // void _goToDataSettings() {
+  //   print("GO TO DATA SETTINGS");
+  // }
 
   void _goToPrivacy() async {
     try {
@@ -44,7 +54,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         "https://sage.link/privacy",
       );
     } catch (e) {
-      print(e);
       return;
     }
   }
@@ -55,7 +64,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         "https://sage.link/terms",
       );
     } catch (e) {
-      print(e);
       return;
     }
   }

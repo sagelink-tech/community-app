@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/data/models/firebase_messaging_model.dart';
@@ -152,8 +153,10 @@ query Query(\$where: UserWhere, \$options: UserOptions, \$sort: [UserEmployeeOfB
 class UserService {
   final GraphQLClient client;
   final LoggedInUser authUser;
+  final FirebaseAnalytics analytics;
 
-  const UserService({required this.client, required this.authUser});
+  const UserService(
+      {required this.client, required this.authUser, required this.analytics});
 
   /////////////////////////////////////////////////////////////
   /// Finding users
@@ -174,9 +177,9 @@ class UserService {
     List<UserModel> _users = [];
     for (var b in result.data!['brands']) {
       BrandModel _brand = BrandModel.fromJson(b);
-      _brand.employees.forEach((element) {
+      for (var element in _brand.employees) {
         element.employerBrand = _brand;
-      });
+      }
       _users.addAll([..._brand.employees, ..._brand.members].where((element) =>
           element.queryUserHasBlocked == false &&
           element.queryUserIsBlocked == false &&
@@ -327,7 +330,11 @@ class UserService {
     QueryResult result = await client.mutate(MutationOptions(
         document: gql(ACCEPT_INVITE_MUTATION), variables: variables));
 
-    if (result.hasException || result.data == null) {
+    bool success = result.hasException || result.data == null;
+    analytics.logEvent(
+        name: "invitation_code_submitted",
+        parameters: {"status": success, "code": inviteCode});
+    if (!success) {
       return false;
     }
     return result.data!['acceptInvite'];
@@ -356,18 +363,19 @@ class UserService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_USER_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updateUsers']['users'][0]['id'] == user.id);
+
+    analytics.logEvent(
+        name: "community_ban_user",
+        parameters: {"status": success, "userId": user.id, "brandId": brandId});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   // Remove a user from a community
@@ -393,18 +401,19 @@ class UserService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_USER_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updateUsers']['users'][0]['id'] == user.id);
+
+    analytics.logEvent(
+        name: "community_unban_user",
+        parameters: {"status": success, "userId": user.id, "brandId": brandId});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   // Change admin status
@@ -441,18 +450,18 @@ class UserService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_USER_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updateUsers']['users'][0]['id'] == authUser.getUser().id);
+
+    analytics.logEvent(
+        name: "block_user", parameters: {"status": success, "userId": user.id});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   // Unblock a user
@@ -472,18 +481,19 @@ class UserService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_USER_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updateUsers']['users'][0]['id'] == authUser.getUser().id);
+
+    analytics.logEvent(
+        name: "unblock_user",
+        parameters: {"status": success, "userId": user.id});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   // Unflag a user
@@ -508,18 +518,19 @@ class UserService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_USER_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updateUsers']['users'][0]['id'] == user.id);
+
+    analytics.logEvent(
+        name: "unflag_user",
+        parameters: {"status": success, "userId": user.id, "brandId": brandId});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   // Flag a user
@@ -544,18 +555,19 @@ class UserService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_USER_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         result.data!['updateUsers']['users'][0]['id'] == user.id);
+
+    analytics.logEvent(
+        name: "flag_user",
+        parameters: {"status": success, "userId": user.id, "brandId": brandId});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   /////////////////////////////////////////////////////////////
@@ -660,19 +672,19 @@ class UserService {
     MutationOptions options = MutationOptions(
         document: gql(UPDATE_USER_MUTATION), variables: variables);
     QueryResult result = await client.mutate(options);
-    if (result.hasException) {
-      print(result.exception);
-      return false;
-    }
 
-    bool success = (result.data != null &&
+    bool success = (!result.hasException &&
+        result.data != null &&
         (result.data!['updateUsers']['users'] as List).isNotEmpty &&
         result.data!['updateUsers']['users'][0]['id'] == userId);
+
+    analytics
+        .logEvent(name: "updated_profile", parameters: {"status": success});
 
     if (success && onComplete != null) {
       onComplete(result.data);
     }
-    return true;
+    return success;
   }
 
   /////////////////////////////////////////////////////////////

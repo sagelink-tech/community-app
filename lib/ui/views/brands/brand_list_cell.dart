@@ -1,4 +1,3 @@
-import 'package:sagelink_communities/ui/components/activity_badge.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';

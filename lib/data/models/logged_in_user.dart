@@ -92,10 +92,10 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   }
 
   // Fetch logged in user's data from the SL backend
-  Future<Object?> fetchUserData(
+  Future<void> fetchUserData(
       {String userId = "", String email = "", User? firebaseUser}) async {
     if (userId.isEmpty && email.isEmpty && firebaseUser == null) {
-      return Exception(
+      throw Exception(
           "missing required uid fields [email, userId, firebaseUser]");
     }
 

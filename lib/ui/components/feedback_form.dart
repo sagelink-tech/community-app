@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class FeedbackForm extends StatefulWidget {
+class FeedbackForm extends ConsumerStatefulWidget {
   final VoidCallback? onSubmit;
   final VoidCallback? onCancel;
   const FeedbackForm({this.onSubmit, this.onCancel, Key? key})
@@ -13,10 +15,11 @@ class FeedbackForm extends StatefulWidget {
   _FeedbackFormState createState() => _FeedbackFormState();
 }
 
-class _FeedbackFormState extends State<FeedbackForm> {
+class _FeedbackFormState extends ConsumerState<FeedbackForm> {
   final formKey = GlobalKey<FormState>();
   String? feedbackText;
   bool isSaving = false;
+  late final analytics = ref.watch(analyticsProvider);
 
   Widget buildFeedbackForm({bool enabled = true}) => TextFormField(
         autofocus: true,
@@ -34,6 +37,8 @@ class _FeedbackFormState extends State<FeedbackForm> {
       );
 
   void _submitFeedback() async {
+    analytics.logEvent(name: "submit_feedback_clicked");
+
     final Uri _emailLaunchUri =
         Uri(scheme: 'mailto', path: 'support@sage.link', queryParameters: {
       "subject": "Future User - Feedback",
@@ -54,7 +59,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
           children: [
             const Spacer(),
             IconButton(
-                icon: Icon(Icons.close_outlined),
+                icon: const Icon(Icons.close_outlined),
                 onPressed: () {
                   if (widget.onCancel != null) {
                     widget.onCancel!();

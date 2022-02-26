@@ -24,14 +24,26 @@ class DefaultFirebaseOptions {
     AppEnvironment buildEnv = FlutterAppConfig.environment;
 
     if (kIsWeb) {
-      return buildEnv == AppEnvironment.dev ? webDev : webDemo;
+      return buildEnv == AppEnvironment.dev
+          ? webDev
+          : buildEnv == AppEnvironment.prod
+              ? webProd
+              : webDemo;
     }
     // ignore: missing_enum_constant_in_switch
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return buildEnv == AppEnvironment.dev ? androidDev : androidDemo;
+        return buildEnv == AppEnvironment.dev
+            ? androidDev
+            : buildEnv == AppEnvironment.prod
+                ? androidProd
+                : androidDemo;
       case TargetPlatform.iOS:
-        return buildEnv == AppEnvironment.dev ? iosDev : iosDemo;
+        return buildEnv == AppEnvironment.dev
+            ? iosDev
+            : buildEnv == AppEnvironment.prod
+                ? iosProd
+                : iosDemo;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
