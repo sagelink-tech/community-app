@@ -225,7 +225,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   .copyWith(fontWeight: FontWeight.bold, fontSize: 12.0),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  launch('https://sage.link/privacy');
+                  launch('https://sage.link/terms');
                 },
             ),
             TextSpan(

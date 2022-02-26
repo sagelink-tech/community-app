@@ -41,7 +41,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   void _goToPrivacy() async {
     try {
       !await launch(
-        "https://sage.link/privayc",
+        "https://sage.link/privacy",
       );
     } catch (e) {
       print(e);
