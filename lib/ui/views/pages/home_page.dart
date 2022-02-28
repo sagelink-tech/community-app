@@ -97,6 +97,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     setState(() {
       selectedBrandIds = updatedIds;
     });
+    _getPosts();
   }
 
   QueryOptions qOptions() {

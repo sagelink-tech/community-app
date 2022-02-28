@@ -192,11 +192,11 @@ class UserService {
     return output;
   }
 
-  Future<List<UserModel>?> fetchUserDisplayData(
+  Future<List<UserModel>> fetchUserDisplayData(
       {List<String>? userIds, List<String>? firebaseIds}) async {
     Map<String, dynamic> whereClause = {};
     if (userIds == null && firebaseIds == null) {
-      return null;
+      return [];
     } else {
       whereClause = (userIds != null)
           ? {"id_IN": userIds}
@@ -209,7 +209,7 @@ class UserService {
     if (result.hasException ||
         result.data == null ||
         (result.data!['users'] as List).isEmpty) {
-      return null;
+      return [];
     } else {
       return (result.data!['users'] as List)
           .map((el) => UserModel.fromJson(el))
@@ -330,7 +330,7 @@ class UserService {
     QueryResult result = await client.mutate(MutationOptions(
         document: gql(ACCEPT_INVITE_MUTATION), variables: variables));
 
-    bool success = result.hasException || result.data == null;
+    bool success = !result.hasException && result.data != null;
     analytics.logEvent(
         name: "invitation_code_submitted",
         parameters: {"status": success, "code": inviteCode});

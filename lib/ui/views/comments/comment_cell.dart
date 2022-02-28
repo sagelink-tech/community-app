@@ -20,6 +20,7 @@ class CommentCell extends StatelessWidget {
   final VoidCommentIDCallback? onUpdate;
   final VoidCommentCallback? onShouldEdit;
   final bool inThreadView;
+  final bool canReply;
 
   const CommentCell(this.itemNo, this.comment,
       {required this.brandId,
@@ -29,6 +30,7 @@ class CommentCell extends StatelessWidget {
       this.onUpdate,
       this.onShouldEdit,
       this.inThreadView = false,
+      this.canReply = true,
       Key? key})
       : super(key: key);
 
@@ -118,8 +120,8 @@ class CommentCell extends StatelessWidget {
     ];
 
     // If in thread view, remove the "reply" button option
-    if (inThreadView) {
-      _buttons.removeAt(2);
+    if (!canReply) {
+      _buttons.removeAt(1);
     }
 
     return Row(children: _buttons);

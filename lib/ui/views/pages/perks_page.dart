@@ -98,6 +98,7 @@ class _PerksPageState extends ConsumerState<PerksPage> {
     setState(() {
       selectedBrandIds = updatedIds;
     });
+    _getPerks();
   }
 
   QueryOptions qOptions() {

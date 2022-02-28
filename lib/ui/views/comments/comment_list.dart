@@ -69,7 +69,9 @@ class _CommentListViewState extends State<CommentListView> {
   List<CommentModel> showingComments = [];
   List<CommentModel> initialComments = [];
 
-  bool showingThread = false;
+  String? parentCommentId;
+
+  bool get showingThread => parentCommentId != null;
   bool fetching = false;
 
   @override
@@ -90,7 +92,7 @@ class _CommentListViewState extends State<CommentListView> {
     }
     setState(() {
       fetching = false;
-      showingThread = false;
+      parentCommentId = null;
       showingComments = initialComments;
     });
   }
@@ -107,7 +109,7 @@ class _CommentListViewState extends State<CommentListView> {
         .removeWhere((c) => c.isFlaggedByUser || c.creator.queryUserHasBlocked);
     setState(() {
       fetching = false;
-      showingThread = true;
+      parentCommentId = parentComment.id;
       showingComments = updatedComments;
     });
   }
@@ -150,6 +152,8 @@ class _CommentListViewState extends State<CommentListView> {
         showingComments[index],
         brandId: widget.brandId,
         inThreadView: showingThread,
+        canReply:
+            !showingThread || showingComments[index].id == parentCommentId,
         onAddReply: widget.onAddReply,
         onShouldReply: widget.onShouldReply,
         onShowThread: (commentId) =>

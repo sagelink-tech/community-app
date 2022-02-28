@@ -39,6 +39,7 @@ class _NewCommentState extends ConsumerState<NewComment> {
   final TextEditingController _editingController = TextEditingController();
 
   late FocusNode _focusNode;
+  bool isSaving = false;
 
   @override
   void initState() {
@@ -85,7 +86,7 @@ class _NewCommentState extends ConsumerState<NewComment> {
           mainAxisSize: MainAxisSize.min,
           children: [
             buildBodyForm(context),
-            buildSubmit(enabled: body != null && body!.isNotEmpty)
+            buildSubmit(enabled: !isSaving && body != null && body!.isNotEmpty)
           ],
         ));
   }
@@ -110,26 +111,39 @@ class _NewCommentState extends ConsumerState<NewComment> {
             enabled: enabled));
   }
 
-  void updateComment() {
-    commentService.updateComment(widget.comment!, body!,
+  Future<void> updateComment() async {
+    setState(() {
+      isSaving = true;
+    });
+
+    await commentService.updateComment(widget.comment!, body!,
         onComplete: (data) => {
               if (widget.onLostFocus != null) {widget.onLostFocus!()},
               widget.onCompleted()
             });
+    setState(() {
+      isSaving = false;
+    });
   }
 
-  void createComment() {
+  Future<void> createComment() async {
     if (body != null) {
+      setState(() {
+        isSaving = true;
+      });
       if (widget.isReply) {
-        commentService.replyToCommentWithID(widget.parentId, body!,
+        await commentService.replyToCommentWithID(widget.parentId, body!,
             onComplete: (data) => widget.onCompleted());
       } else if (widget.isOnPerk) {
-        commentService.commentOnPerkWithID(widget.parentId, body!,
+        await commentService.commentOnPerkWithID(widget.parentId, body!,
             onComplete: (data) => widget.onCompleted());
       } else {
-        commentService.commentOnPostWithID(widget.parentId, body!,
+        await commentService.commentOnPostWithID(widget.parentId, body!,
             onComplete: (data) => widget.onCompleted());
       }
+      setState(() {
+        isSaving = false;
+      });
     }
   }
 
@@ -152,11 +166,13 @@ class _NewCommentState extends ConsumerState<NewComment> {
               }
             : null,
         child: Text(
-            isUpdate
-                ? "Save Changes"
-                : widget.isReply
-                    ? 'Reply'
-                    : 'Comment',
+            isSaving
+                ? "Saving..."
+                : isUpdate
+                    ? "Save Changes"
+                    : widget.isReply
+                        ? 'Reply'
+                        : 'Comment',
             style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 16.0,

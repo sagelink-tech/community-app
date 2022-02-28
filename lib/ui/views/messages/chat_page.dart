@@ -32,6 +32,14 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   List<UserModel> users = [];
   bool _isLoading = true;
 
+  bool _isDisposed = false;
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -40,11 +48,14 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       analytics.logScreenView(
           screenClass: "Chat View", screenName: widget.room.id);
 
-      final _users = await userService.fetchMessagebleUers();
-      setState(() {
-        users = _users;
-        _isLoading = false;
-      });
+      final _users = await userService.fetchUserDisplayData(
+          firebaseIds: widget.room.users.map((e) => e.id).toList());
+      if (!_isDisposed) {
+        setState(() {
+          users = _users;
+          _isLoading = false;
+        });
+      }
     });
   }
 

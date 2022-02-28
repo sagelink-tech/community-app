@@ -12,13 +12,13 @@ class BrandLink {
 }
 
 class BrandModel extends ChangeNotifier {
-  String id = "df487c75-7186-48ea-a507-25b80aa92c64";
-  String name = "brand name";
-  String description = "brand description";
+  String id = "";
+  String name = " ";
+  String description = "";
   String communityGuidelines = "";
   String logoUrl = "";
   String backgroundImageUrl = "";
-  String website = "www.brand.com";
+  String website = "";
   Color mainColor = Colors.blueGrey;
 
   List<BrandLink> links = [];

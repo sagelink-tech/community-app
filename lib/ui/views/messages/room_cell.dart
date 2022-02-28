@@ -32,7 +32,7 @@ class _RoomCellState extends ConsumerState<RoomCell> {
           firebaseIds: widget.room.users.map((e) => e.id).toList());
       if (!_isDisposed) {
         setState(() {
-          users = _users ?? [];
+          users = _users;
         });
       }
     });
