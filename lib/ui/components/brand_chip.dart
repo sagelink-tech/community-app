@@ -24,7 +24,7 @@ class BrandChip extends StatelessWidget {
     return InputChip(
         avatar: brand != null
             ? ClickableAvatar(
-                avatarText: brand!.name[0],
+                avatarText: brand!.initials,
                 avatarURL: brand!.logoUrl,
                 backgroundColor: brand!.mainColor,
                 radius: 15,

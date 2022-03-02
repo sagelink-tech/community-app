@@ -61,7 +61,7 @@ class BrandOverview extends StatelessWidget {
     return ListView.separated(
         itemBuilder: (BuildContext context, int index) => ListTile(
               leading: ClickableAvatar(
-                  avatarText: brand.employees[index].name[0],
+                  avatarText: brand.employees[index].initials,
                   avatarURL: brand.employees[index].accountPictureUrl),
               title: Text(brand.employees[index].name),
               subtitle: Text(brand.employees[index].jobTitle),

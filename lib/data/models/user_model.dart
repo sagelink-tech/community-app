@@ -15,6 +15,9 @@ class UserModel extends ChangeNotifier {
   bool queryUserIsBlocked = false;
   bool queryUserHasBlocked = false;
 
+  String get initials =>
+      name.split(" ").map((e) => e.isNotEmpty ? e[0] : "").join(" ");
+
   Image profileImage() => accountPictureUrl.isNotEmpty
       ? Image.network(
           accountPictureUrl,

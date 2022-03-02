@@ -17,7 +17,7 @@ class BrandListCell extends StatelessWidget {
   List<Widget> brandDetails(BuildContext context) {
     return [
       ClickableAvatar(
-        avatarText: brand!.name[0],
+        avatarText: brand!.initials,
         avatarURL: brand!.logoUrl,
         backgroundColor: brand!.mainColor,
         radius: 25,

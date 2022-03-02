@@ -101,10 +101,13 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
   TextEditingController causesTextController = TextEditingController();
   // Text controller functions
   void formatAndEnterCause(String value) {
-    causes.add(
-        CauseModel("tmp_" + causes.length.toString(), value.toLowerCase()));
+    List<CauseModel> _newCauses = value.split(',').map((element) {
+      element.trim();
+      return CauseModel("tmp_" + element, element.toLowerCase().trim());
+    }).toList();
+
     setState(() {
-      causes = causes;
+      causes = _newCauses;
     });
     causesTextController.clear();
   }
@@ -278,7 +281,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
       InkWell(
           onTap: () => _logoPicker.openImagePicker(),
           child: ClickableAvatar(
-            avatarText: previewBrand.name[0],
+            avatarText: previewBrand.initials,
             avatarImage: newLogoImage ?? previewBrand.logoImage(),
             radius: 40,
           )),
@@ -340,7 +343,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
             ),
             child: ClickableAvatar(
                 onTap: _logoPicker.openImagePicker,
-                avatarText: _brand.name[0],
+                avatarText: _brand.initials,
                 avatarImage: newLogoImage ?? _brand.logoImage(),
                 radius: 40)));
 
@@ -358,16 +361,15 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
 
     var causeInput = TextFormField(
         decoration: const InputDecoration(
-          hintText: "Type a cause then hit enter",
+          hintText: "climate change, wellness, black-owned business, ...",
           border: OutlineInputBorder(),
         ),
         controller: causesTextController,
         inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ \n]*"))
+          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ ,-]*"))
         ],
-        maxLength: 20,
         minLines: 1,
-        maxLines: 1,
+        maxLines: 2,
         textInputAction: TextInputAction.done,
         onFieldSubmitted: formatAndEnterCause,
         textCapitalization: TextCapitalization.none,

@@ -130,7 +130,7 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
           const SettingsPage(),
           showFloatingAction: false,
           leading: ClickableAvatar(
-            avatarText: loggedInUser.getUser().name[0],
+            avatarText: loggedInUser.getUser().initials,
             avatarURL: loggedInUser.getUser().accountPictureUrl,
             radius: 15,
             padding: const EdgeInsets.all(0),

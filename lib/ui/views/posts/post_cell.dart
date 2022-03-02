@@ -93,9 +93,7 @@ class PostCell extends StatelessWidget {
               child: showBrand
                   ? BrandAuthorStackedAvatars(post.creator, post.brand)
                   : ClickableAvatar(
-                      avatarText: post.creator.name.isNotEmpty
-                          ? post.creator.name[0]
-                          : "",
+                      avatarText: post.creator.initials,
                       avatarImage: post.creator.profileImage(),
                     )),
           const SizedBox(width: 20),

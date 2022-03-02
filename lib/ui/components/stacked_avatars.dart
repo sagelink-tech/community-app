@@ -42,7 +42,7 @@ class StackedAvatars extends StatelessWidget {
                 backgroundColor: Theme.of(context).backgroundColor,
                 child: ClickableAvatar(
                   radius: height / 2 - borderWidth,
-                  avatarText: users[index].name[0],
+                  avatarText: users[index].initials,
                   avatarURL: users[index].accountPictureUrl,
                 ),
               ));
@@ -83,7 +83,7 @@ class BrandAuthorStackedAvatars extends StatelessWidget {
                 backgroundColor: Theme.of(context).backgroundColor,
                 child: ClickableAvatar(
                   radius: height / 2 - borderWidth,
-                  avatarText: brand.name[0],
+                  avatarText: brand.initials,
                   avatarImage: brand.logoImage(),
                 ),
               )),
@@ -93,7 +93,7 @@ class BrandAuthorStackedAvatars extends StatelessWidget {
                 backgroundColor: Theme.of(context).backgroundColor,
                 child: ClickableAvatar(
                   radius: height / 2 - borderWidth,
-                  avatarText: user.name.isNotEmpty ? user.name[0] : "",
+                  avatarText: user.initials,
                   avatarImage: user.profileImage(),
                 ),
               )),

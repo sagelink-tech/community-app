@@ -171,7 +171,7 @@ class _PostViewState extends ConsumerState<PostView> {
       Row(children: [
         ClickableAvatar(
           radius: 30,
-          avatarText: _post.creator.name[0],
+          avatarText: _post.creator.initials,
           avatarURL: _post.creator.accountPictureUrl,
         ),
         const ListSpacer(),
@@ -258,7 +258,7 @@ class _PostViewState extends ConsumerState<PostView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ClickableAvatar(
-                        avatarText: _post.brand.name[0],
+                        avatarText: _post.brand.initials,
                         avatarImage: _post.brand.logoImage(),
                       ),
                       Text(_post.brand.name)

@@ -73,6 +73,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   late final analytics = ref.watch(analyticsProvider);
   UserModel _user = UserModel();
   late final loggedInUser = ref.watch(loggedInUserProvider);
+  late final loggedInUserNotifier = ref.watch(loggedInUserProvider.notifier);
   bool _isLoggedInUser() {
     return _user.id == loggedInUser.getUser().id;
   }
@@ -235,6 +236,11 @@ class _AccountPageState extends ConsumerState<AccountPage> {
 
     bool success = !result.hasException &&
         result.data!['updateUsers']['users'][0]['id'] == _user.id;
+    if (success) {
+      CustomWidgets.buildSnackBar(
+          context, "Changes saved!", SLSnackBarType.success);
+      loggedInUserNotifier.refreshUser();
+    }
     success
         ? CustomWidgets.buildSnackBar(
             context, "Changes saved!", SLSnackBarType.success)
@@ -246,10 +252,13 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   TextEditingController causesTextController = TextEditingController();
   // Text controller functions
   void formatAndEnterCause(String value) {
-    newCauses.add(
-        CauseModel("tmp_" + newCauses.length.toString(), value.toLowerCase()));
+    List<CauseModel> _newCauses = value.split(',').map((element) {
+      element.trim();
+      return CauseModel("tmp_" + element, element.toLowerCase().trim());
+    }).toList();
+
     setState(() {
-      newCauses = newCauses;
+      newCauses = _newCauses;
     });
     causesTextController.clear();
   }
@@ -257,7 +266,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   // Build editable components
   Widget _buildProfileImage() {
     Widget avatar = ClickableAvatar(
-      avatarText: _user.name[0],
+      avatarText: _user.initials,
       avatarImage: _isEditing
           ? (newProfileImage ?? _user.profileImage())
           : _user.profileImage(),
@@ -331,11 +340,10 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         ),
         controller: causesTextController,
         inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ \n]*"))
+          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ ,-]*"))
         ],
-        maxLength: 20,
         minLines: 1,
-        maxLines: 1,
+        maxLines: 2,
         textInputAction: TextInputAction.done,
         onFieldSubmitted: formatAndEnterCause,
         textCapitalization: TextCapitalization.none);

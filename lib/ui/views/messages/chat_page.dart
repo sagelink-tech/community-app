@@ -106,8 +106,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ClickableAvatar(
-                      avatarText:
-                          otherUser.name.isNotEmpty ? otherUser.name[0] : "",
+                      avatarText: otherUser.initials,
                       avatarImage: otherUser.profileImage()),
                   const ListSpacer(width: 10),
                   Text(otherUser.name),

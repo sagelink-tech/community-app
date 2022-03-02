@@ -22,7 +22,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final formKey = GlobalKey<FormState>();
   String? email;
   String? password;
-  bool isLoggingIn = false;
 
   late final Authentication authState = ref.watch(authProvider);
   late final AppStateStatus appState = ref.watch(appStateProvider);
@@ -55,13 +54,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           context, "Enter email and password", SLSnackBarType.error);
     } else {
       analytics.logEvent(name: "login_with_email");
-      setState(() {
-        isLoggingIn = true;
-      });
       await authState.signInWithEmailAndPassword(email!, password!, context);
-      setState(() {
-        isLoggingIn = false;
-      });
     }
   }
 
@@ -78,13 +71,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       CustomWidgets.buildSnackBar(
           context, "Enter email and password", SLSnackBarType.error);
     } else {
-      setState(() {
-        isLoggingIn = true;
-      });
       await authState.signUpWithEmailAndPassword(email!, password!, context);
-      setState(() {
-        isLoggingIn = false;
-      });
     }
   }
 
@@ -97,13 +84,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         return;
       }
     }
-    setState(() {
-      isLoggingIn = true;
-    });
     await authState.signInWithGoogle(context);
-    setState(() {
-      isLoggingIn = false;
-    });
   }
 
   void _handleAppleSignIn(BuildContext context) async {
@@ -114,13 +95,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         return;
       }
     }
-    setState(() {
-      isLoggingIn = true;
-    });
     await authState.signInWithApple(context);
-    setState(() {
-      isLoggingIn = false;
-    });
   }
 
   Future<bool?> _showAlertDialog() async {
@@ -312,18 +287,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return Container(
           padding: const EdgeInsets.symmetric(horizontal: 50),
           child: Center(
-            child: isLoggingIn
-                ? const CircularProgressIndicator()
-                : ListView(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                        const Image(
-                            image: AssetImage('assets/splash.png'),
-                            fit: BoxFit.scaleDown,
-                            height: 40),
-                        ..._loginWidgets()
-                      ]),
+            child: ListView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  const Image(
+                      image: AssetImage('assets/splash.png'),
+                      fit: BoxFit.scaleDown,
+                      height: 40),
+                  ..._loginWidgets()
+                ]),
           ));
     }));
   }

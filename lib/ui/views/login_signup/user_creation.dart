@@ -115,10 +115,13 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   TextEditingController causesTextController = TextEditingController();
   // Text controller functions
   void formatAndEnterCause(String value) {
-    newCauses.add(
-        CauseModel("tmp_" + newCauses.length.toString(), value.toLowerCase()));
+    List<CauseModel> _newCauses = value.split(',').map((element) {
+      element.trim();
+      return CauseModel("tmp_" + element, element.toLowerCase().trim());
+    }).toList();
+
     setState(() {
-      newCauses = newCauses;
+      newCauses = _newCauses;
     });
     causesTextController.clear();
   }
@@ -126,7 +129,7 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   // Build editable components
   Widget _buildProfileImage() {
     Widget avatar = ClickableAvatar(
-      avatarText: user.name.isNotEmpty ? user.name[0] : user.email[0],
+      avatarText: user.initials,
       avatarImage: (newProfileImage ?? user.profileImage()),
       radius: 58,
       onTap: () => _profileImagePicker.openImagePicker(),
@@ -173,7 +176,7 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
     return TextFormField(
         decoration: const InputDecoration(
           labelText: null,
-          hintText: "Your name",
+          hintText: "How others will see your name...",
           border: OutlineInputBorder(),
         ),
         minLines: 1,
@@ -208,16 +211,16 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   List<Widget> _buildCauseComponents() {
     var causeInput = TextFormField(
         decoration: const InputDecoration(
-          hintText: "Type a cause then hit enter",
+          hintText: "climate change, wellness, black-owned business, ...",
           border: OutlineInputBorder(),
         ),
         controller: causesTextController,
         inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ \n]*"))
+          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ ,-]*"))
         ],
-        maxLength: 20,
+        maxLength: 100,
         minLines: 1,
-        maxLines: 1,
+        maxLines: 2,
         textInputAction: TextInputAction.done,
         onFieldSubmitted: formatAndEnterCause,
         textCapitalization: TextCapitalization.none);
@@ -258,7 +261,7 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
           _buildProfileImage(),
           const ListSpacer(height: 20),
           Text(
-            "Full name",
+            "Your name",
             textAlign: TextAlign.start,
             style: Theme.of(context).textTheme.headline5,
           ),

@@ -19,9 +19,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 ////////////////////////////////////////
 final gqlConfigProvider = ChangeNotifierProvider((ref) {
   var gqlConfig = GraphQLConfiguration();
-  final authState = ref.watch(authStateChangesProvider);
+  final tokenState = ref.watch(idTokenChangesProvider);
   final auth = ref.watch(authProvider);
-  authState.when(
+  tokenState.when(
       data: (user) async {
         if (user != null) {
           var token = await auth.getJWT();
@@ -63,13 +63,13 @@ final loggedInUserProvider =
     StateNotifierProvider<LoggedInUserStateNotifier, LoggedInUser>((ref) {
   final client = ref.watch(gqlClientProvider);
   final gqlConfig = ref.watch(gqlConfigProvider);
-  final authState = ref.watch(authStateChangesProvider);
+  final authUserState = ref.watch(userChangesProvider);
   final appState = ref.watch(appStateProvider.notifier);
 
   var notifier = LoggedInUserStateNotifier(LoggedInUser(),
       client: client.value, appState: appState);
 
-  authState.when(
+  authUserState.when(
       data: (user) {
         gqlConfig.isAuthenticated ? notifier.updateUserWithState(user) : {};
       },
@@ -84,8 +84,12 @@ final brandsProvider = Provider<List<BrandModel>>((ref) =>
 
 final authProvider = Provider((ref) => Authentication());
 
-final authStateChangesProvider =
-    StreamProvider<User?>((ref) => Authentication().idTokenChanges);
+final authStateChangesProvider = StreamProvider<User?>(
+    (ref) => ref.watch(authProvider.select((value) => value.authStateChange)));
+final idTokenChangesProvider = StreamProvider<User?>(
+    (ref) => ref.watch(authProvider.select((value) => value.idTokenChanges)));
+final userChangesProvider = StreamProvider<User?>(
+    (ref) => ref.watch(authProvider.select((value) => value.userChanges)));
 
 ////////////////////////////////////////
 // App state providers                //

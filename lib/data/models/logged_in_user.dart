@@ -76,19 +76,30 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
   final AppState appState;
 
   void updateUserWithState(User? user) {
+    setIsLoading();
     if (user == null &&
         (state.status != LoginState.isLoggedOut ||
             state.status != LoginState.isLoggingIn)) {
       LoggedInUser _loggedInUser =
           LoggedInUser(user: UserModel(), status: LoginState.isLoggedOut);
-      state = _loggedInUser;
+      if (mounted) {
+        state = _loggedInUser;
+      }
     } else if (user != null && state.status != LoginState.isLoggedIn) {
       fetchUserData(firebaseUser: user);
     }
   }
 
+  void refreshUser() {
+    if (state.status == LoginState.isLoggedIn) {
+      fetchUserData(userId: state.getUser().id);
+    }
+  }
+
   void setIsLoading() {
-    state = LoggedInUser(user: UserModel(), status: LoginState.isLoggingIn);
+    if (mounted) {
+      state = LoggedInUser(user: UserModel(), status: LoginState.isLoggingIn);
+    }
   }
 
   // Fetch logged in user's data from the SL backend
@@ -98,8 +109,9 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
       throw Exception(
           "missing required uid fields [email, userId, firebaseUser]");
     }
-
-    state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
+    if (mounted) {
+      state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
+    }
     final QueryResult result = await client.query(QueryOptions(
       document: gql(getUserQuery),
       variables: {
@@ -116,6 +128,7 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
     }
 
     if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
+      // RETURNED A USER, setup logged in user
       Map<String, dynamic> _userData = result.data?['users'][0];
       UserModel _user = UserModel.fromJson(_userData);
       String? brandId;
@@ -144,12 +157,28 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
           lastDeviceTokenUpdate: lastDeviceTokenUpdate);
       // update app state that the user has successfully logged in
       appState.didSignIn();
-      state = _loggedInUser;
+      if (mounted) {
+        state = _loggedInUser;
+      }
     } else if (result.data != null && firebaseUser != null) {
-      LoggedInUser _loggedInUser = LoggedInUser(
-          user: UserModel.fromFirebaseUser(firebaseUser),
-          status: LoginState.needToCreateUser);
-      state = _loggedInUser;
+      // Logged in on firebase but not on SL
+      if (firebaseUser.displayName != null &&
+          firebaseUser.displayName!.isNotEmpty) {
+        // create a user since there is at least a display name
+        await createNewUser(UserModel.fromFirebaseUser(firebaseUser));
+        fetchUserData(firebaseUser: firebaseUser);
+      } else {
+        // need to create a user since there is no display name
+        if (mounted) {
+          state = LoggedInUser(
+              user: UserModel.fromFirebaseUser(firebaseUser),
+              status: LoginState.needToCreateUser);
+        }
+      }
+    } else {
+      if (mounted) {
+        state = LoggedInUser();
+      }
     }
   }
 
@@ -158,7 +187,8 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
     fetchUserData(userId: userId);
   }
 
-  void createNewUser(UserModel user, {OnMutationCompleted? onComplete}) async {
+  Future<void> createNewUser(UserModel user,
+      {OnMutationCompleted? onComplete}) async {
     // initialize mutation variables
     Map<String, dynamic> mutationVariables = user.toJson();
     mutationVariables.remove('id');

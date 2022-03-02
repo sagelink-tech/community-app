@@ -97,6 +97,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         leading: ClickableAvatar(
             avatarText: _user.name,
             avatarImage: _user.profileImage(),
+            showBadge: _user.name.length < 2 || _user.accountPictureUrl.isEmpty,
             radius: 15),
         title: const Text("My profile"),
         onTap: _goToAccount,

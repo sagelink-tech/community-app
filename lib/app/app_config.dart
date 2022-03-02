@@ -60,7 +60,7 @@ class FlutterAppConfig {
     await initHiveForFlutter();
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp(
-      name: isProduction ? "prod" : "dev",
+      //name: isProduction ? "prod" : "dev",
       options: DefaultFirebaseOptions.currentPlatform,
     );
     if (FlutterAppConfig.useEmulator) {

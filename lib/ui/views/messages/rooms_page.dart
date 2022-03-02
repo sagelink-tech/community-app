@@ -51,7 +51,7 @@ class _RoomsPageState extends ConsumerState<RoomsPage> {
           itemBuilder: (context, index) {
             final room = snapshot.data![index];
 
-            return RoomCell(room, onTap: () {});
+            return RoomCell(room, key: Key(room.id), onTap: () {});
           },
           separatorBuilder: (context, index) => const Divider(),
         );

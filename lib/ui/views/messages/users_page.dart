@@ -145,7 +145,7 @@ class _UsersPageState extends ConsumerState<UsersPage> {
                     key: Key(user.id),
                     leading: ClickableAvatar(
                         onTap: () => _goToAccount(user.id),
-                        avatarText: user.name[0],
+                        avatarText: user.initials,
                         avatarImage: user.profileImage()),
                     title: Text(user.name),
                     subtitle: subtitle(user),

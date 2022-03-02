@@ -15,7 +15,7 @@ import 'package:sagelink_communities/ui/views/posts/post_list.dart';
 import 'package:sagelink_communities/ui/views/users/user_list.dart';
 
 String getBrandQuery = """
-query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions, \$perksOptions: PerkOptions, \$membersFirst: Int, \$employeesFirst: Int) {
+query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions, \$perksOptions: PerkOptions, \$memberSort: [BrandMembersConnectionSort!], \$employeeSort: [BrandEmployeesConnectionSort!]) {
   brands(where: \$where, options: \$options) {
     id
     name
@@ -49,7 +49,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
       type
       createdAt
     }
-    employeesConnection(first: \$employeesFirst) {
+    employeesConnection (sort: \$employeeSort) {
       totalCount
       edges {
         node {
@@ -63,7 +63,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
         jobTitle
       }
     }
-    membersConnection(first: \$membersFirst) {
+    membersConnection (sort: \$memberSort) {
       totalCount
       edges {
         node {
@@ -246,14 +246,22 @@ class _BrandHomepageState extends ConsumerState<BrandHomepage>
                 {"createdAt": "DESC"}
               ]
             },
-            "membersFirst": 5,
-            "employeesFirst": 5,
             "perksOptions": {
               "limit": 10,
               "sort": [
                 {"createdAt": "DESC"}
               ]
-            }
+            },
+            "memberSort": [
+              {
+                "node": {"name": "ASC"}
+              }
+            ],
+            "employeeSort": [
+              {
+                "node": {"name": "ASC"}
+              }
+            ]
           },
         ),
         builder: (QueryResult result,

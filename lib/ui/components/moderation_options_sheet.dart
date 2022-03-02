@@ -232,7 +232,7 @@ class _ModerationOptionsSheetState
         ? [
             ClickableAvatar(
               radius: 35,
-              avatarText: _relatedUserDetails.name[0],
+              avatarText: _relatedUserDetails.initials,
               avatarImage: _relatedUserDetails.profileImage(),
             ),
             const ListSpacer(height: 10),

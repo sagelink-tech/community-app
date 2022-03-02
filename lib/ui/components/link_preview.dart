@@ -15,7 +15,7 @@ class LinkPreview extends StatelessWidget {
   _buildPreview(BuildContext context) {
     return AnyLinkPreview(
       link: linkUrl!,
-      displayDirection: UIDirection.UIDirectionHorizontal,
+      displayDirection: uiDirection.uiDirectionHorizontal,
       backgroundColor: Theme.of(context).cardColor,
       titleStyle: Theme.of(context).textTheme.headline6,
       bodyStyle: Theme.of(context).textTheme.caption,

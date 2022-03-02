@@ -62,7 +62,7 @@ class PerkCell extends StatelessWidget {
             child: Row(
               children: [
                 ClickableAvatar(
-                    avatarText: perk.brand.name[0],
+                    avatarText: perk.brand.initials,
                     backgroundColor: perk.brand.mainColor,
                     avatarURL: perk.brand.logoUrl,
                     radius: 15),

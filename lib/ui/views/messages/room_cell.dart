@@ -101,8 +101,7 @@ class _RoomCellState extends ConsumerState<RoomCell> {
     var user = getOtherUser();
     return ListTile(
         leading: ClickableAvatar(
-            avatarText: user.name.isNotEmpty ? user.name[0] : "",
-            avatarImage: user.profileImage()),
+            avatarText: user.initials, avatarImage: user.profileImage()),
         trailing: const Icon(Icons.arrow_forward_outlined),
         title: Row(children: [Text(user.name), timestamp()]),
         subtitle: subtitle(),

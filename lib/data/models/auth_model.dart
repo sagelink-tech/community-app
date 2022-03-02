@@ -32,6 +32,7 @@ class Authentication {
   //  It will be used to check if the user is logged in or not.
   Stream<User?> get authStateChange => authInstance.authStateChanges();
   Stream<User?> get idTokenChanges => authInstance.idTokenChanges();
+  Stream<User?> get userChanges => authInstance.userChanges();
 
   // Now This Class Contains 3 Functions currently
   // 1. signInWithGoogle
@@ -140,13 +141,20 @@ class Authentication {
         nonce: nonce,
       );
 
+      final displayName =
+          "${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}";
+
       // Create an `OAuthCredential` from the credential returned by Apple.
       final oauthCredential = OAuthProvider("apple.com").credential(
         idToken: appleCredential.identityToken,
         rawNonce: rawNonce,
       );
 
-      await authInstance.signInWithCredential(oauthCredential);
+      UserCredential cred =
+          await authInstance.signInWithCredential(oauthCredential);
+      if (displayName != " ") {
+        await cred.user?.updateDisplayName(displayName);
+      }
     } on FirebaseAuthException catch (e) {
       CustomWidgets.buildSnackBar(
           context,
@@ -163,6 +171,11 @@ class Authentication {
   }
 
   Future<void> reloadUser() async {
-    await authInstance.currentUser?.reload();
+    try {
+      //authInstance.currentUser?.reload();
+    } catch (e) {
+      print(e);
+      return;
+    }
   }
 }

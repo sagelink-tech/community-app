@@ -21,6 +21,8 @@ class BrandModel extends ChangeNotifier {
   String website = "";
   Color mainColor = Colors.blueGrey;
 
+  String get initials => name.isNotEmpty ? name[0] : "";
+
   List<BrandLink> links = [];
 
   Image bannerImage() => backgroundImageUrl.isNotEmpty

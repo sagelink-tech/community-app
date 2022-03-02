@@ -81,7 +81,7 @@ class _AcceptInvitePageeState extends ConsumerState<AcceptInvitePage> {
                 onPressed: () => _goToAccount(loggedInUser.getUser().id),
                 icon: ClickableAvatar(
                     radius: 15,
-                    avatarText: loggedInUser.getUser().name[0],
+                    avatarText: loggedInUser.getUser().initials,
                     avatarImage: loggedInUser.getUser().profileImage()),
                 label: const Text("View account")),
             const ListSpacer(height: 20),

@@ -19,7 +19,7 @@ class UserCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: ClickableAvatar(
-        avatarText: user.name[0],
+        avatarText: user.initials,
         avatarImage: user.profileImage(),
       ),
       title: Text(user.name, style: Theme.of(context).textTheme.headline6),

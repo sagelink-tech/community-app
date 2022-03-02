@@ -147,7 +147,7 @@ class CommentCell extends StatelessWidget {
       Align(
           alignment: Alignment.topCenter,
           child: ClickableAvatar(
-            avatarText: comment.creator.name[0],
+            avatarText: comment.creator.initials,
             avatarURL: comment.creator.accountPictureUrl,
             radius: 20,
             onTap: () => _goToAccount(context, comment.creator.id),
