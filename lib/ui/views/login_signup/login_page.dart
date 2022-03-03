@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
@@ -99,6 +100,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<bool?> _showAlertDialog() async {
+    if (kIsWeb) {
+      return true;
+    }
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -273,6 +277,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             padding: EdgeInsets.zero,
             elevation: 1,
             onPressed: () => _handleGoogleSignIn(context)),
+        const ListSpacer(height: 10),
         SignInButton(Buttons.Apple,
             onPressed: () => {
                   _handleAppleSignIn(context),
@@ -283,21 +288,36 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: GraphQLConsumer(builder: (GraphQLClient client) {
-      return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 50),
-          child: Center(
-            child: ListView(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  const Image(
-                      image: AssetImage('assets/splash.png'),
-                      fit: BoxFit.scaleDown,
-                      height: 40),
-                  ..._loginWidgets()
-                ]),
-          ));
-    }));
+    return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+        body: GraphQLConsumer(builder: (GraphQLClient client) {
+          return Center(
+              child: Container(
+                  margin:
+                      kIsWeb ? const EdgeInsets.symmetric(vertical: 10) : null,
+                  decoration: kIsWeb
+                      ? BoxDecoration(
+                          color: Theme.of(context).backgroundColor,
+                          borderRadius: BorderRadius.circular(5),
+                          border:
+                              Border.all(color: Theme.of(context).dividerColor),
+                        )
+                      : null,
+                  constraints:
+                      const BoxConstraints(maxWidth: 500, minWidth: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 50),
+                  child: Center(
+                    child: ListView(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [
+                          const Image(
+                              image: AssetImage('assets/splash.png'),
+                              fit: BoxFit.scaleDown,
+                              height: 40),
+                          ..._loginWidgets()
+                        ]),
+                  )));
+        }));
   }
 }

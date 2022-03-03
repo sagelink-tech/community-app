@@ -33,12 +33,17 @@ class SLColorFields {
   Color info;
   Color warning;
   Color danger;
+  Color darkBackground;
+  Color darkDivider;
 
-  SLColorFields(
-      {this.success = const Color(0xFF28a745),
-      this.info = const Color(0xFF17a2b8),
-      this.warning = const Color(0xFFffc107),
-      this.danger = const Color(0xFFdc3545)});
+  SLColorFields({
+    this.success = const Color(0xFF28a745),
+    this.info = const Color(0xFF17a2b8),
+    this.warning = const Color(0xFFffc107),
+    this.danger = const Color(0xFFdc3545),
+    this.darkBackground = const Color(0xFF232323),
+    this.darkDivider = const Color(0xFF616161),
+  });
 }
 
 class AppTheme {
@@ -63,13 +68,15 @@ class AppTheme {
   Color txt;
   Color accentTxt;
   Color errorTxt;
+  Color darkBg1;
+  Color darkDivider;
 
   /// Default constructor
   AppTheme({
     required this.isDark,
     required this.bg1,
-    required this.surface,
     required this.bg2,
+    required this.surface,
     required this.accent1,
     required this.accent1Dark,
     required this.accent1Darker,
@@ -84,6 +91,8 @@ class AppTheme {
     required this.txt,
     required this.accentTxt,
     required this.errorTxt,
+    required this.darkBg1,
+    required this.darkDivider,
   });
 
   /// fromType factory constructor
@@ -109,6 +118,8 @@ class AppTheme {
           error: const Color(0xffE57777),
           success: const Color(0xff5accaa),
           focus: Colors.blueGrey,
+          darkBg1: const Color(0xff232323),
+          darkDivider: const Color(0xff616161),
         );
 
       case ThemeType.darkMode:
@@ -131,6 +142,8 @@ class AppTheme {
           error: const Color(0xffE57777),
           success: const Color(0xff5accaa),
           focus: Colors.blueGrey,
+          darkBg1: const Color(0xff232323),
+          darkDivider: const Color(0xff616161),
         );
     }
   }
@@ -182,9 +195,8 @@ class AppTheme {
       colorScheme: ColorScheme(
           brightness: isDark ? Brightness.dark : Brightness.light,
           primary: accent1,
-          primaryVariant: accent1Darker,
           secondary: accent2,
-          secondaryVariant: accent3,
+          tertiary: accent3,
           background: bg1,
           surface: surface,
           onBackground: txt,
@@ -192,7 +204,8 @@ class AppTheme {
           onError: errorTxt,
           onPrimary: accentTxt,
           onSecondary: accentTxt,
-          error: error),
+          error: error,
+          surfaceVariant: bg2),
     );
     return t.copyWith(
         textTheme: _customTextTheme(

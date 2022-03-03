@@ -1,8 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/empty_result.dart';
 import 'package:sagelink_communities/ui/components/page_scaffold.dart';
 import 'package:sagelink_communities/ui/components/split_view.dart';
+import 'package:sagelink_communities/ui/theme.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/brand_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/conversations_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/go_to_admin_page.dart';
@@ -11,6 +13,8 @@ import 'package:sagelink_communities/ui/views/admin_pages/members_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/perks_page.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/team_page.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
+import 'package:sagelink_communities/ui/views/messages/rooms_page.dart';
+import 'package:sagelink_communities/ui/views/messages/users_page.dart';
 import 'package:sagelink_communities/ui/views/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -96,6 +100,11 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
             brandId: loggedInUser.adminBrandId!, onCompleted: () => {})));
   }
 
+  void createMessageAction(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const UsersPage()));
+  }
+
   List<TabItem> _pageOptions() {
     var _pages = [
       TabItem(
@@ -107,13 +116,13 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
       TabItem(
         "Conversations",
         "Conversations",
-        const Icon(Icons.forum_outlined),
+        const Icon(Icons.chat_bubble_outline),
         const AdminConversationsPage(),
         onAction: createPostAction,
       ),
-      TabItem("Messages", "Messages", const Icon(Icons.chat_bubble_outlined),
-          const EmptyResult(text: "Messages"),
-          onAction: createPostAction),
+      TabItem("Messages", "Messages", const Icon(Icons.mail_outline),
+          const RoomsPage(),
+          onAction: createMessageAction, showFloatingAction: true),
       TabItem("Shop", "Shop", const Icon(Icons.shopping_cart_outlined),
           const AdminPerksPage(),
           onAction: createPerkAction),
@@ -154,13 +163,21 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
 
     Widget _buildDrawer() {
       return Container(
-          color: Theme.of(context).primaryColor,
+          color: SLColorFields().darkBackground,
           width: 250,
           child: Scaffold(
               backgroundColor: Colors.transparent,
               appBar: AppBar(
                   automaticallyImplyLeading: false,
-                  elevation: 1,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  centerTitle: false,
+                  bottom: PreferredSize(
+                      child: Container(
+                        color: SLColorFields().darkDivider,
+                        height: 0.5,
+                      ),
+                      preferredSize: const Size.fromHeight(0.5)),
                   title: Text(
                     "SAGELINK",
                     style: Theme.of(context)
@@ -168,7 +185,11 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
                         .headline6!
                         .copyWith(color: Colors.white),
                   )),
-              body: ListView.builder(
+              body: ListView.separated(
+                  separatorBuilder: (context, index) => Divider(
+                        height: 0,
+                        color: SLColorFields().darkDivider,
+                      ),
                   itemCount: _pageOptions().length,
                   itemBuilder: (BuildContext bc, int index) => ListTile(
                       onTap: () => {_handlePageSelection(index)},
@@ -177,7 +198,7 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
                           _pageOptions()[index].icon,
                       tileColor: null,
                       selected: _selectedIndex == index,
-                      selectedTileColor: Theme.of(bc).colorScheme.secondary,
+                      selectedTileColor: const Color(0x33FFFFFF),
                       selectedColor: Theme.of(bc).colorScheme.onError,
                       iconColor: Theme.of(bc).colorScheme.onError,
                       textColor: Theme.of(bc).colorScheme.onError))));
@@ -204,7 +225,13 @@ class _MainScaffoldState extends ConsumerState<AdminScaffold> {
           actions: _pageOptions()[_selectedIndex].scaffoldAction != null
               ? [_pageOptions()[_selectedIndex].scaffoldAction!]
               : [],
-          body: _pageOptions()[_selectedIndex].body,
+          body: Center(
+              child: Container(
+            color: Theme.of(context).backgroundColor,
+            //constraints: const BoxConstraints(maxWidth: 1000, minWidth: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 50),
+            child: _pageOptions()[_selectedIndex].body,
+          )),
           floatingActionButton: _buildActionButton(),
         ));
   }

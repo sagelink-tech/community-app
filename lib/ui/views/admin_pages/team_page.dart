@@ -109,8 +109,8 @@ class _AdminTeamPageState extends ConsumerState<AdminTeamPage> {
                           DataCell(
                               Row(children: [
                                 ClickableAvatar(
-                                  avatarText: e.name,
-                                  avatarURL: e.accountPictureUrl,
+                                  avatarText: e.initials,
+                                  avatarImage: e.profileImage(),
                                   radius: 30,
                                 ),
                                 const ListSpacer(),

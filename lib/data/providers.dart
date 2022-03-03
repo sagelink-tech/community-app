@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/app/app_config.dart';
 import 'package:sagelink_communities/app/graphql_config.dart';
@@ -116,8 +117,9 @@ final messagingProvider = Provider<Messaging>((ref) {
       userService: ref.watch(userServiceProvider),
       lastTokenUpdate: lastTokenUpdate);
 
-  if (loginStatus == LoginState.needToCreateUser ||
-      loginStatus == LoginState.isLoggedIn) {
+  if (!kIsWeb &&
+      (loginStatus == LoginState.needToCreateUser ||
+          loginStatus == LoginState.isLoggedIn)) {
     messager.requestPermissionAndUpdateToken();
   }
   return messager;

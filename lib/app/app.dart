@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/views/login_signup/accept_invite_page.dart';
 import 'package:sagelink_communities/ui/views/login_signup/login_page.dart';
@@ -85,7 +86,7 @@ class BaseApp extends ConsumerWidget {
       if (appState.loadingPrefs) {
         return const Scaffold(body: LoginPage());
       }
-      if (!appState.tutorialComplete) {
+      if (!appState.tutorialComplete && !kIsWeb) {
         return TutorialPages(onComplete: appStateNotifier.completedTutorial);
       }
       switch (loggedInUser.status) {

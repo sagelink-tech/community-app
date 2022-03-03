@@ -31,6 +31,7 @@ query Users(\$where: UserWhere, \$options: UserOptions, \$inviteWhere: InviteWhe
       edges {
         tier
         customerId
+        inviteEmail
         createdAt
         updatedAt
       }
@@ -169,7 +170,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                     ),
                     DataColumn(
                       label: Text(
-                        'Email',
+                        'Invite Email',
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                     ),
@@ -196,8 +197,8 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                           DataCell(
                               Row(children: [
                                 ClickableAvatar(
-                                  avatarText: e.name,
-                                  avatarURL: e.accountPictureUrl,
+                                  avatarText: e.initials,
+                                  avatarImage: e.profileImage(),
                                   radius: 30,
                                 ),
                                 const ListSpacer(),

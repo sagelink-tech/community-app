@@ -218,7 +218,6 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ ,-]*"))
         ],
-        maxLength: 100,
         minLines: 1,
         maxLines: 2,
         textInputAction: TextInputAction.done,
