@@ -32,8 +32,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
-      analytics.setCurrentScreen(screenName: "Login View");
-      analytics.logScreenView(screenName: "Login View");
+      if (mounted) {
+        analytics.setCurrentScreen(screenName: "Login View");
+        analytics.logScreenView(screenName: "Login View");
+      }
     });
   }
 

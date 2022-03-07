@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
@@ -99,26 +100,40 @@ class Authentication {
 
   //  SignIn the user Google
   Future<void> signInWithGoogle(BuildContext context) async {
-    // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    if (kIsWeb) {
+      GoogleAuthProvider googleProvider = GoogleAuthProvider();
 
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser!.authentication;
+      // Once signed in, return the UserCredential
+      try {
+        await FirebaseAuth.instance.signInWithPopup(googleProvider);
+      } on FirebaseAuthException catch (e) {
+        CustomWidgets.buildSnackBar(
+            context,
+            e.message ?? "Error with google sign in: ${e.message}",
+            SLSnackBarType.error);
+      }
+    } else {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser!.authentication;
 
-    try {
-      await authInstance.signInWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      CustomWidgets.buildSnackBar(
-          context,
-          e.message ?? "Error with google sign in: ${e.message}",
-          SLSnackBarType.error);
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      try {
+        await authInstance.signInWithCredential(credential);
+      } on FirebaseAuthException catch (e) {
+        CustomWidgets.buildSnackBar(
+            context,
+            e.message ?? "Error with google sign in: ${e.message}",
+            SLSnackBarType.error);
+      }
     }
   }
 
@@ -128,40 +143,59 @@ class Authentication {
     // include a nonce in the credential request. When signing in with
     // Firebase, the nonce in the id token returned by Apple, is expected to
     // match the sha256 hash of `rawNonce`.
-    final rawNonce = generateNonce();
-    final nonce = sha256ofString(rawNonce);
 
-    try {
-      // Request credential for the currently signed in Apple account.
-      final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-        nonce: nonce,
-      );
+    if (kIsWeb) {
+      try {
+        final provider = OAuthProvider("apple.com")
+          ..addScope('email')
+          ..addScope('name');
 
-      final displayName =
-          "${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}";
-
-      // Create an `OAuthCredential` from the credential returned by Apple.
-      final oauthCredential = OAuthProvider("apple.com").credential(
-        idToken: appleCredential.identityToken,
-        rawNonce: rawNonce,
-      );
-
-      UserCredential cred =
-          await authInstance.signInWithCredential(oauthCredential);
-      if (displayName != " ") {
-        await cred.user?.updateDisplayName(displayName);
+        // Sign in the user with Firebase.
+        await FirebaseAuth.instance.signInWithPopup(provider);
+      } on FirebaseAuthException catch (e) {
+        CustomWidgets.buildSnackBar(
+            context,
+            e.message ?? "Error with apple sign in: ${e.message}",
+            SLSnackBarType.error);
+      } catch (e) {
+        return;
       }
-    } on FirebaseAuthException catch (e) {
-      CustomWidgets.buildSnackBar(
-          context,
-          e.message ?? "Error with apple sign in: ${e.message}",
-          SLSnackBarType.error);
-    } catch (e) {
-      return;
+    } else {
+      final rawNonce = generateNonce();
+      final nonce = sha256ofString(rawNonce);
+
+      try {
+        // Request credential for the currently signed in Apple account.
+        final appleCredential = await SignInWithApple.getAppleIDCredential(
+          scopes: [
+            AppleIDAuthorizationScopes.email,
+            AppleIDAuthorizationScopes.fullName,
+          ],
+          nonce: nonce,
+        );
+
+        final displayName =
+            "${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}";
+
+        // Create an `OAuthCredential` from the credential returned by Apple.
+        final oauthCredential = OAuthProvider("apple.com").credential(
+          idToken: appleCredential.identityToken,
+          rawNonce: rawNonce,
+        );
+
+        UserCredential cred =
+            await authInstance.signInWithCredential(oauthCredential);
+        if (displayName != " ") {
+          await cred.user?.updateDisplayName(displayName);
+        }
+      } on FirebaseAuthException catch (e) {
+        CustomWidgets.buildSnackBar(
+            context,
+            e.message ?? "Error with apple sign in: ${e.message}",
+            SLSnackBarType.error);
+      } catch (e) {
+        return;
+      }
     }
   }
 

@@ -203,7 +203,7 @@ class PostCell extends StatelessWidget {
               vertical: 10,
               horizontal: 20,
             ),
-            constraints: const BoxConstraints(minWidth: 200, maxWidth: 600),
+            constraints: const BoxConstraints(minWidth: 200, maxWidth: 400),
             child: Column(
               children: _composeChildren(),
             )));

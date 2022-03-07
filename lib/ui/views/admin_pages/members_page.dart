@@ -163,11 +163,10 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                   scrollDirection: Axis.horizontal,
                   child: DataTable(columns: const <DataColumn>[
                     DataColumn(
-                      label: Text(
-                        'Member',
-                        style: TextStyle(fontStyle: FontStyle.italic),
-                      ),
-                    ),
+                        label: Text(
+                      'Member',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    )),
                     DataColumn(
                       label: Text(
                         'Invite Email',

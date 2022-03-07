@@ -1,4 +1,5 @@
 import 'package:any_link_preview/any_link_preview.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/ui/components/empty_result.dart';
 
@@ -15,6 +16,9 @@ class LinkPreview extends StatelessWidget {
   _buildPreview(BuildContext context) {
     return AnyLinkPreview(
       link: linkUrl!,
+      proxyUrl: kIsWeb
+          ? "https://us-central1-sagelink-community.cloudfunctions.net/proxyWithCorsAnywhere/"
+          : null,
       displayDirection: uiDirection.uiDirectionHorizontal,
       backgroundColor: Theme.of(context).cardColor,
       titleStyle: Theme.of(context).textTheme.headline6,
