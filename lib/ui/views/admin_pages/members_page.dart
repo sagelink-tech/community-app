@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/invite_model.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
@@ -40,6 +42,7 @@ query Users(\$where: UserWhere, \$options: UserOptions, \$inviteWhere: InviteWhe
   invites(where: \$inviteWhere, options: \$inviteOptions) {
     id
     verificationCode
+    customerId
     userEmail
     memberTier
     isAdmin
@@ -126,6 +129,19 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
           .toList();
     }
     return {"members": members, "invites": invites};
+  }
+
+  void saveToClipboard({bool invites = true}) {
+    if (_invites.isEmpty) {
+      return;
+    }
+    String inviteData = _invites
+        .map((e) => "${e.userEmail},${e.customerId},${e.verificationCode}")
+        .toList()
+        .join('\n');
+    Clipboard.setData(ClipboardData(text: inviteData));
+    CustomWidgets.buildSnackBar(
+        context, "Copied to clipboard", SLSnackBarType.neutral);
   }
 
   @override
@@ -222,7 +238,13 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                   child: DataTable(columns: const <DataColumn>[
                     DataColumn(
                       label: Text(
-                        'Email',
+                        'Invite Email',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Customer ID',
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                     ),
@@ -247,6 +269,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                   ], rows: <DataRow>[
                     ..._invites.map((e) => DataRow(cells: <DataCell>[
                           DataCell(Text(e.userEmail)),
+                          DataCell(Text(e.customerId ?? "")),
                           DataCell(Text(timeago.format(e.createdAt!))),
                           DataCell(Text(e.memberTier!)),
                           DataCell(Text(e.verificationCode ?? ""))
@@ -281,7 +304,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                     const Spacer(),
                     OutlinedButton.icon(
                         icon: const Icon(Icons.download_outlined),
-                        onPressed: () => {},
+                        onPressed: saveToClipboard,
                         label: const Text("Copy"))
                   ])
                 ])
@@ -309,7 +332,7 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                   children: [
                     _buildButtonRow(),
                     Container(
-                        alignment: Alignment.centerLeft,
+                        alignment: Alignment.centerRight,
                         padding: const EdgeInsets.all(20),
                         child: Text(
                           (_showingInvites ? _invites.length : _members.length)

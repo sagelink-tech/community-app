@@ -63,6 +63,8 @@ class MemberInviteModel extends InviteModel {
     return MemberInviteModel(
         id: json['id'],
         userEmail: json['userEmail'],
+        customerId:
+            json.containsKey('customerId') ? json['customerId'] ?? "" : "",
         isAdmin: json['isAdmin'],
         brandId: json['forBrand']['id'],
         verificationCode: json['verificationCode'],

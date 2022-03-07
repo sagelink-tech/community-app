@@ -66,7 +66,7 @@ class _InvitePageState extends ConsumerState<InvitePage> {
       case InviteType.teammates:
         for (int i = 0; i < rows.length; i++) {
           final data = rows[i].trim().split(',');
-          if (data.length != 3) {
+          if (data.length != 4) {
             CustomWidgets.buildSnackBar(
                 context,
                 "Error parsing input data at line $i. Expected 4 comma separated variables but got ${data.length}",
@@ -77,7 +77,7 @@ class _InvitePageState extends ConsumerState<InvitePage> {
           invites.add(EmployeeInviteModel(
               id: "id",
               userEmail: data[0].replaceAll(' ', ''),
-              isAdmin: false,
+              isAdmin: true,
               brandId: brandId,
               jobTitle: data[1].trim(),
               roles: ['admin'],
@@ -158,7 +158,9 @@ class _InvitePageState extends ConsumerState<InvitePage> {
                   onPrimary: Theme.of(context).colorScheme.onError,
                   minimumSize: const Size.fromHeight(48)),
               onPressed: inviteData != null && inviteData!.isNotEmpty
-                  ? () => inviteUsers()
+                  ? () => widget.inviteType == InviteType.members
+                      ? inviteUsers()
+                      : inviteTeammates()
                   : null,
               child: const Text("Create Invite Codes")),
           const ListSpacer(height: 20),
