@@ -28,6 +28,23 @@ extension PerkTypeManager on PerkType {
     }
     return PerkType.undefined;
   }
+
+  String displayString() {
+    switch (this) {
+      case PerkType.freeGiveaway:
+        return "FREE GIVEAWAY";
+      case PerkType.productDrop:
+        return "PRODUCT DROP";
+      case PerkType.earnedReward:
+        return "EARNED REWARD";
+      case PerkType.productTest:
+        return "PRODUCT TEST";
+      case PerkType.exclusiveProduct:
+        return "EXCLUSIVE PRODUCT";
+      default:
+        return "LOYALTY PERK";
+    }
+  }
 }
 
 enum Currencies {
@@ -83,20 +100,7 @@ class PerkModel extends ChangeNotifier {
   }
 
   String typeToString() {
-    switch (type) {
-      case PerkType.freeGiveaway:
-        return "FREE GIVEAWAY";
-      case PerkType.productDrop:
-        return "PRODUCT DROP";
-      case PerkType.earnedReward:
-        return "EARNED REWARD";
-      case PerkType.productTest:
-        return "PRODUCT TEST";
-      case PerkType.exclusiveProduct:
-        return "EXCLUSIVE PRODUCT";
-      default:
-        return "LOYALTY PERK";
-    }
+    return type.displayString();
   }
 
   String priceToString() {
