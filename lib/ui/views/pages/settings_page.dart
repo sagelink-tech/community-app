@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -144,11 +145,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text(""),
-          backgroundColor: Theme.of(context).backgroundColor,
-          elevation: 1,
-        ),
+        appBar: kIsWeb
+            ? null
+            : AppBar(
+                title: const Text(""),
+                backgroundColor: Theme.of(context).backgroundColor,
+                elevation: 1,
+              ),
         body: Stack(alignment: Alignment.bottomCenter, children: [
           _buildMainSelection(),
           Align(

@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
+import 'package:sagelink_communities/data/models/perk_model.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
+import 'package:sagelink_communities/data/services/perk_service.dart';
 import 'package:sagelink_communities/data/services/post_service.dart';
 import 'package:sagelink_communities/data/services/user_service.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 
 import 'list_spacer.dart';
 
-enum ModerationOptionSheetType { post, comment, user }
+enum ModerationOptionSheetType { post, comment, user, perk }
 
 class ModerationOption {
   String title;
@@ -41,6 +43,7 @@ class ModerationOptionsSheet extends ConsumerStatefulWidget {
   final PostModel? post;
   final CommentModel? comment;
   final UserModel? user;
+  final PerkModel? perk;
   final String? brandId;
   final VoidCallback? onComplete;
   final VoidCallback? onDelete;
@@ -50,6 +53,7 @@ class ModerationOptionsSheet extends ConsumerStatefulWidget {
       {this.brandId,
       this.onComplete,
       this.post,
+      this.perk,
       this.comment,
       this.user,
       this.onDelete,
@@ -72,12 +76,15 @@ class _ModerationOptionsSheetState
         return widget.comment!.creator;
       case ModerationOptionSheetType.user:
         return widget.user!;
+      case ModerationOptionSheetType.perk:
+        return widget.perk!.creator;
     }
   }
 
   late final LoggedInUser _user = ref.watch(loggedInUserProvider);
   late final CommentService commentService = ref.watch(commentServiceProvider);
   late final PostService postService = ref.watch(postServiceProvider);
+  late final PerkService perkService = ref.watch(perkServiceProvider);
   late final UserService userService = ref.watch(userServiceProvider);
 
   bool isConfirming = false;
@@ -91,6 +98,8 @@ class _ModerationOptionsSheetState
         return "comment";
       case ModerationOptionSheetType.user:
         return "user";
+      case ModerationOptionSheetType.perk:
+        return "perk";
     }
   }
 
@@ -102,6 +111,8 @@ class _ModerationOptionsSheetState
         return widget.comment != null;
       case ModerationOptionSheetType.user:
         return widget.user != null;
+      case ModerationOptionSheetType.perk:
+        return widget.perk != null;
     }
   }
 
@@ -203,6 +214,14 @@ class _ModerationOptionsSheetState
                       ? unblockUserOption
                       : blockUserOption
                 ];
+        }
+      case ModerationOptionSheetType.perk:
+        {
+          if (isModerator) {
+            return [editOption, removeOption];
+          } else {
+            return [];
+          }
         }
       default:
         {
@@ -330,7 +349,7 @@ class _ModerationOptionsSheetState
           onComplete: (data) => complete(),
         );
         break;
-      case ModerationOptionSheetType.user:
+      default:
         break;
     }
   }
@@ -370,6 +389,9 @@ class _ModerationOptionsSheetState
         userService.banUserFromCommunity(widget.user!, _user.adminBrandId!,
             onComplete: (data) => complete(isDeleting: true));
         break;
+      case ModerationOptionSheetType.perk:
+        perkService.removePerk(widget.perk!,
+            onComplete: (data) => complete(isDeleting: true));
     }
   }
 

@@ -1,4 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
 import 'package:sagelink_communities/ui/views/perks/perk_view.dart';
@@ -8,7 +11,7 @@ import 'package:sagelink_communities/data/models/perk_model.dart';
 
 typedef OnDetailCallback = void Function(BuildContext context, String perkId);
 
-class PerkCell extends StatelessWidget {
+class PerkCell extends ConsumerWidget {
   final int itemNo;
   final PerkModel perk;
   final OnDetailCallback onDetailClick;
@@ -32,8 +35,30 @@ class PerkCell extends StatelessWidget {
             builder: (context) => BrandHomepage(brandId: brandId)));
   }
 
+  void _showOptionsModal(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return ModerationOptionsSheet(
+            ModerationOptionSheetType.perk,
+            brandId: perk.brand.id,
+            perk: perk,
+            onEdit: () => {
+              // Navigator.of(context).push(MaterialPageRoute(
+              //     builder: (BuildContext context) => NewPostPage(
+              //         brandId: post.brand.id,
+              //         onCompleted: () => {},
+              //         post: post)))
+            },
+          );
+        });
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isViewingAdminSite =
+        ref.watch(appStateProvider.select((value) => value.isViewingAdminSite));
+
     _buildBody() {
       List<Widget> _bodyWidgets = [];
       // Add image
@@ -97,12 +122,21 @@ class PerkCell extends StatelessWidget {
             constraints: const BoxConstraints(minWidth: 200, maxWidth: 600),
             child: GestureDetector(
                 onTap: () => _handleClick(context, perk.id),
-                child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: _buildBody()))));
+                child: Stack(alignment: Alignment.topRight, children: [
+                  Card(
+                      clipBehavior: Clip.antiAlias,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: _buildBody()),
+                  CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      foregroundColor: Theme.of(context).colorScheme.onError,
+                      child: IconButton(
+                          onPressed: () => _showOptionsModal(context),
+                          icon: const Icon(Icons.more_horiz_outlined)))
+                ]))));
   }
 }

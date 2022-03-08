@@ -11,6 +11,7 @@ import 'package:sagelink_communities/data/models/brand_model.dart';
 import 'package:sagelink_communities/data/models/firebase_messaging_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
+import 'package:sagelink_communities/data/services/perk_service.dart';
 import 'package:sagelink_communities/data/services/post_service.dart';
 import 'package:sagelink_communities/data/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -47,6 +48,11 @@ final commentServiceProvider = Provider((ref) => CommentService(
     user: ref.watch(loggedInUserProvider)));
 
 final postServiceProvider = Provider((ref) => PostService(
+    analytics: ref.watch(analyticsProvider),
+    client: ref.watch(gqlClientProvider).value,
+    user: ref.watch(loggedInUserProvider)));
+
+final perkServiceProvider = Provider((ref) => PerkService(
     analytics: ref.watch(analyticsProvider),
     client: ref.watch(gqlClientProvider).value,
     user: ref.watch(loggedInUserProvider)));

@@ -233,6 +233,7 @@ class UserService {
                 "isAdmin": e.isAdmin,
                 "founder": e.founder,
                 "owner": e.owner,
+                "roles": ["admin"],
                 "jobTitle": e.jobTitle,
                 "forBrand": {
                   "connect": {

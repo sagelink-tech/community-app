@@ -154,7 +154,7 @@ class EmployeeModel extends UserModel {
     if (json.containsKey('employeeOfBrandsConnection')) {
       _employeeJson = json["employeeOfBrandsConnection"]["edges"][0];
     }
-    roles = List<String>.from(json["roles"] ?? _employeeJson?["roles"] ?? "");
+    roles = List<String>.from(json["roles"] ?? _employeeJson?["roles"] ?? [""]);
     founder = json['founder'] ?? _employeeJson?["founder"] ?? false;
     owner = json['owner'] ?? _employeeJson?["owner"] ?? "";
     jobTitle = json['jobTitle'] ?? _employeeJson?["jobTitle"] ?? "";
