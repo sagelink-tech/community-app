@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -56,6 +57,8 @@ class UniversalImagePicker {
   final List<File> _originalImages = [];
   List<String> originalUrls;
 
+  List<Uint8List> _webImageBytes = [];
+
   final ImagePicker _picker = ImagePicker();
   int maxImages = 1;
   int targetIndex = 0;
@@ -83,6 +86,7 @@ class UniversalImagePicker {
 
   void clearImages() {
     images = [];
+    _webImageBytes = [];
     if (onSelected != null) {
       onSelected!();
     }
@@ -93,6 +97,7 @@ class UniversalImagePicker {
       return;
     }
     images.removeAt(index);
+    _webImageBytes.removeAt(index);
     if (onSelected != null) {
       onSelected!();
     }
@@ -110,6 +115,8 @@ class UniversalImagePicker {
 
   void _imgFromSource(ImageSource source, int maxImages) async {
     List<File> selection = maxImages > 1 ? images : [];
+    List<Uint8List> _xselection = maxImages > 1 ? _webImageBytes : [];
+
     try {
       if (source == ImageSource.gallery && maxImages > 1) {
         List<XFile>? xfiles = await _picker.pickMultiImage(
@@ -125,6 +132,8 @@ class UniversalImagePicker {
               break;
             }
             selection.add(File(xf.path));
+            var f = await xf.readAsBytes();
+            _xselection.add(f);
           }
         }
       } else {
@@ -132,12 +141,15 @@ class UniversalImagePicker {
             source: source, maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
         if (xfile != null) {
           selection.add(File(xfile.path));
+          var f = await xfile.readAsBytes();
+          _xselection.add(f);
         }
       }
     } catch (e) {
       // log error
     } finally {
       images = selection;
+      _webImageBytes = _xselection;
       if (onSelected != null) {
         onSelected!();
       }
@@ -172,8 +184,13 @@ class UniversalImagePicker {
         });
   }
 
-  MultipartFile convertImageToMultipartFiles(File image, String newFilename) {
-    var byteData = image.readAsBytesSync();
+  Future<MultipartFile> convertImageToMultipartFiles(
+      int index, String newFilename) async {
+    if (kIsWeb) {
+      return MultipartFile.fromBytes('photo', _webImageBytes[index],
+          filename: newFilename, contentType: MediaType("image", 'jpg'));
+    }
+    var byteData = images[index].readAsBytesSync();
     var multipartFile = MultipartFile.fromBytes('photo', byteData,
         filename: newFilename,
         contentType:
@@ -249,12 +266,12 @@ class UniversalImagePicker {
       for (var i = 0; i < imagesToUpload.length; i++) {
         var filename =
             "${baseKey.replaceAll("/", "__")}${imageKeyPrefix}_${uuid.v4()}${path.extension(imagesToUpload[i].path)}";
-        files.add(convertImageToMultipartFiles(imagesToUpload[i], filename));
+        files.add(await convertImageToMultipartFiles(i, filename));
       }
     } else {
       var filename =
           "${baseKey.replaceAll("/", "__")}${imageKeyPrefix}_${uuid.v4()}${path.extension(imagesToUpload[0].path)}";
-      files.add(convertImageToMultipartFiles(imagesToUpload[0], filename));
+      files.add(await convertImageToMultipartFiles(0, filename));
     }
 
     Map<String, dynamic> variables = singleFileUpload

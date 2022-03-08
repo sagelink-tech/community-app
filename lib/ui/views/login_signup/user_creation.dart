@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:sagelink_communities/data/models/cause_model.dart';
 import 'package:sagelink_communities/ui/components/causes_chips.dart';
@@ -52,8 +53,11 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   void _updateProfileImage() {
     if (_profileImagePicker.images.isNotEmpty) {
       setState(() {
-        newProfileImage =
-            Image.file(_profileImagePicker.images.first, fit: BoxFit.fitWidth);
+        newProfileImage = kIsWeb
+            ? Image.network(_profileImagePicker.images.first.path,
+                fit: BoxFit.fitWidth)
+            : Image.file(_profileImagePicker.images.first,
+                fit: BoxFit.fitWidth);
       });
     } else {
       setState(() {

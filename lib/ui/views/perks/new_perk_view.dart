@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/data/models/perk_model.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/universal_image_picker.dart';
 import 'package:collection/collection.dart';
@@ -14,8 +16,18 @@ import 'package:collection/collection.dart';
 String createPerkMutation = """
 mutation CreatePerks(\$input: [PerkCreateInput!]!) {
   createPerks(input: \$input) {
-    info {
-      nodesCreated
+    perks {
+      id
+    }
+  }
+}
+""";
+
+String updatePerkMutation = """
+mutation UpdatePerks(\$where: PerkWhere, \$update: PerkUpdateInput) {
+  updatePerks(where: \$where, update: \$update) {
+    perks {
+      id
     }
   }
 }
@@ -44,6 +56,9 @@ class NewPerkPage extends ConsumerStatefulWidget {
 }
 
 class _NewPerkPageState extends ConsumerState<NewPerkPage> {
+  late final GraphQLClient client = ref.watch(gqlClientProvider).value;
+  late FirebaseAnalytics analytics = ref.watch(analyticsProvider);
+
   final formKey = GlobalKey<FormState>();
   PerkModel _perk = PerkModel();
 
@@ -59,6 +74,15 @@ class _NewPerkPageState extends ConsumerState<NewPerkPage> {
     isDisposed = true;
     _imagePicker.clearImages();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      analytics.setCurrentScreen(screenName: "New Perk View");
+      analytics.logScreenView(screenName: "New Perk View");
+    });
   }
 
   int maxImages = 8;
@@ -79,10 +103,108 @@ class _NewPerkPageState extends ConsumerState<NewPerkPage> {
         _perk.type != PerkType.undefined &&
         _perk.description.isNotEmpty &&
         _perk.details.isNotEmpty &&
-        _perk.imageUrls.isNotEmpty &&
+        _imagePicker.images.isNotEmpty &&
         _perk.redemptionUrl.isNotEmpty;
   }
 
+  // Save logic
+
+  void complete() {
+    CustomWidgets.buildSnackBar(
+        context, "Perk created!", SLSnackBarType.success);
+    Navigator.of(context).pop();
+    widget.onCompleted();
+  }
+
+  Future<bool> setImagesOnCreate(String perkId) async {
+    ImageUploadResult imageResults = await _imagePicker
+        .uploadImages("perk/$perkId/", context: context, client: client);
+    if (!imageResults.success) {
+      // Should delete post and/or retry
+      return false;
+    }
+    var variables = {
+      "where": {"id": perkId},
+      "update": {"imageUrls": imageResults.locations}
+    };
+    QueryResult result = await client.mutate(MutationOptions(
+        document: gql(updatePerkMutation), variables: variables));
+
+    if (result.hasException) {
+      // Should delete and/or retry
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  void createPerk() async {
+    setState(() {
+      isSaving = true;
+    });
+    bool success = true;
+
+    Map<String, dynamic> mutationVariables = {
+      "input": [
+        {
+          "title": _perk.title,
+          "details": _perk.details,
+          "description": _perk.description,
+          "price": _perk.price,
+          "productId": _perk.productId,
+          "productName": _perk.productName,
+          "type": _perk.type.toShortString(),
+          "inBrandCommunity": {
+            "connect": {
+              "where": {
+                "node": {"id": widget.brandId}
+              }
+            }
+          },
+          "createdBy": {
+            "connect": {
+              "where": {
+                "node": {"id": ref.read(loggedInUserProvider).getUser().id}
+              }
+            }
+          }
+        }
+      ]
+    };
+
+    QueryResult result = await client.mutate(MutationOptions(
+        document: gql(createPerkMutation), variables: mutationVariables));
+
+    if (result.hasException) {
+      success = false;
+      CustomWidgets.buildSnackBar(context,
+          "Error saving perk, please try again.", SLSnackBarType.error);
+    }
+    if (result.data != null) {
+      if (_imagePicker.images.isNotEmpty) {
+        bool uploadResult = await setImagesOnCreate(
+            result.data!['createPerks']['perks'][0]['id']);
+
+        if (!uploadResult) {
+          success = false;
+          CustomWidgets.buildSnackBar(context,
+              "Error saving perk, please try again.", SLSnackBarType.error);
+        }
+      }
+    }
+    setState(() {
+      isSaving = false;
+    });
+
+    analytics
+        .logEvent(name: "perk_submit_click", parameters: {"status": success});
+
+    if (success) {
+      complete();
+    }
+  }
+
+  // Build Widgets
   ExpansionPanel buildMainDetails() {
     List<Widget> optionalWidgets = [
       TextFormField(
@@ -102,7 +224,34 @@ class _NewPerkPageState extends ConsumerState<NewPerkPage> {
           hintText: "What price is this product?",
           //border: OutlineInputBorder(),
         ),
-      )
+      ),
+      TextFormField(
+        initialValue: _perk.productName,
+        maxLines: 1,
+        minLines: 1,
+        autofocus: true,
+        onChanged: (value) => setState(() {
+          _perk.productName = value;
+        }),
+        decoration: const InputDecoration(
+          labelText: 'Product Name',
+          hintText: "Product name... (e.g. on Shopify)",
+        ),
+      ),
+      TextFormField(
+        initialValue: _perk.productName,
+        maxLines: 1,
+        minLines: 1,
+        autofocus: true,
+        onChanged: (value) => setState(() {
+          _perk.productId = value;
+        }),
+        decoration: const InputDecoration(
+          labelText: 'Product ID',
+          hintText: "Product ID... (e.g. on Shopify)",
+          //border: OutlineInputBorder(),
+        ),
+      ),
     ];
 
     List<Widget> alwaysWidgets = [
@@ -155,6 +304,7 @@ class _NewPerkPageState extends ConsumerState<NewPerkPage> {
         initialValue: _perk.redemptionUrl,
         maxLines: 1,
         minLines: 1,
+        autofocus: true,
         keyboardType: TextInputType.url,
         onChanged: (value) => setState(() {
           _perk.redemptionUrl = value;
@@ -176,14 +326,23 @@ class _NewPerkPageState extends ConsumerState<NewPerkPage> {
         child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [...alwaysWidgets, ...optionalWidgets]));
+            children: alwaysWidgets));
+    Widget rightCol = Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: optionalWidgets));
     return ExpansionPanel(
       headerBuilder: (BuildContext context, bool isExpanded) {
         return const ListTile(
           title: Text('Overview'),
         );
       },
-      body: leftCol,
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [Expanded(child: leftCol), Expanded(child: rightCol)],
+      ),
       isExpanded: expansionState[0],
     );
   }
@@ -202,7 +361,7 @@ class _NewPerkPageState extends ConsumerState<NewPerkPage> {
             maxLines: 10,
             minLines: 7,
             onChanged: (value) => setState(() {
-              _perk.title = value;
+              _perk.description = value;
             }),
             decoration: const InputDecoration(
               labelText: 'Description',
@@ -228,7 +387,7 @@ class _NewPerkPageState extends ConsumerState<NewPerkPage> {
             maxLines: 10,
             minLines: 7,
             onChanged: (value) => setState(() {
-              _perk.title = value;
+              _perk.details = value;
             }),
             decoration: const InputDecoration(
               labelText: 'Details',
@@ -358,41 +517,6 @@ class _NewPerkPageState extends ConsumerState<NewPerkPage> {
               }),
           builder: (RunMutation runMutation, result) => IconButton(
                 icon: const Icon(Icons.send),
-                onPressed: enabled
-                    ? () {
-                        if (formKey.currentState == null) return;
-                        final isValid = formKey.currentState!.validate();
-
-                        if (isValid) {
-                          runMutation({
-                            "input": [
-                              {
-                                "title": _perk.title,
-                                "details": _perk.details,
-                                "inBrandCommunity": {
-                                  "connect": {
-                                    "where": {
-                                      "node": {"id": widget.brandId}
-                                    }
-                                  }
-                                },
-                                "createdBy": {
-                                  "connect": {
-                                    "where": {
-                                      "node": {
-                                        "id": ref
-                                            .read(loggedInUserProvider)
-                                            .getUser()
-                                            .id
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            ]
-                          });
-                        }
-                      }
-                    : null,
+                onPressed: enabled ? createPerk : null,
               )));
 }

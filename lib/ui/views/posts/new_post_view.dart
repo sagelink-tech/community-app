@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -502,10 +503,12 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
               SizedBox(
                   width: double.infinity,
                   height: double.infinity,
-                  child: Image.file(
-                    im,
-                    fit: BoxFit.cover,
-                  )),
+                  child: kIsWeb
+                      ? Image.network(im.path, fit: BoxFit.cover)
+                      : Image.file(
+                          im,
+                          fit: BoxFit.cover,
+                        )),
               Padding(
                   padding: const EdgeInsets.all(5),
                   child: Align(
