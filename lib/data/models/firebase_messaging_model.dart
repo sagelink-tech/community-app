@@ -50,6 +50,20 @@ class Messaging {
     }
   }
 
+  Future<void> subscribeToTopicsForBrand({String? brandId}) async {
+    List<String> topicStrings = (brandId != null)
+        ? [
+            brandId + brandAnnouncementsTopic,
+            brandId + brandDigestTopic,
+            brandId + brandNewPostsTopic,
+            brandId + brandPerksTopic,
+          ]
+        : [slAnnouncementsTopic, slDigestTopic];
+    List<Future> futures =
+        topicStrings.map((e) => messagingInstance.subscribeToTopic(e)).toList();
+    Future.wait(futures);
+  }
+
   Future<bool> setTopicSubscriptionStatus(
       bool subscribe, MessagingTopics topicType,
       {String? forBrandId}) async {
@@ -91,6 +105,7 @@ class Messaging {
     }
 
     if (topicString.isNotEmpty) {
+      print(topicString);
       subscribe
           ? (await messagingInstance.subscribeToTopic(topicString))
           : (await messagingInstance.unsubscribeFromTopic(topicString));

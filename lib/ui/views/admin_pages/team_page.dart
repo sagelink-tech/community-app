@@ -186,12 +186,12 @@ class _AdminTeamPageState extends ConsumerState<AdminTeamPage> {
                                   radius: 30,
                                 ),
                                 const ListSpacer(),
-                                Text(e.name)
+                                SelectableText(e.name)
                               ]),
                               onTap: () => {_goToAccount(e.id)}),
-                          DataCell(Text(e.inviteEmail)),
-                          DataCell(Text(e.jobTitle)),
-                          DataCell(Text(e.roles.join(", ")))
+                          DataCell(SelectableText(e.inviteEmail)),
+                          DataCell(SelectableText(e.jobTitle)),
+                          DataCell(SelectableText(e.roles.join(", ")))
                         ]))
                   ]))));
     }
@@ -230,10 +230,11 @@ class _AdminTeamPageState extends ConsumerState<AdminTeamPage> {
                     ),
                   ], rows: <DataRow>[
                     ..._invites.map((e) => DataRow(cells: <DataCell>[
-                          DataCell(Text(e.userEmail)),
-                          DataCell(Text(e.jobTitle ?? "")),
-                          DataCell(Text(timeago.format(e.createdAt!))),
-                          DataCell(Text(e.verificationCode ?? ""))
+                          DataCell(SelectableText(e.userEmail)),
+                          DataCell(SelectableText(e.jobTitle ?? "")),
+                          DataCell(
+                              SelectableText(timeago.format(e.createdAt!))),
+                          DataCell(SelectableText(e.verificationCode ?? ""))
                         ]))
                   ]))));
     }

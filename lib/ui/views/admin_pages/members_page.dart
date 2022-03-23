@@ -217,12 +217,13 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                                   radius: 30,
                                 ),
                                 const ListSpacer(),
-                                Text(e.name)
+                                SelectableText(e.name)
                               ]),
                               onTap: () => {_goToAccount(e.id)}),
-                          DataCell(Text(e.inviteEmail)),
-                          DataCell(Text(timeago.format(e.memberSince))),
-                          DataCell(Text(e.tier)),
+                          DataCell(SelectableText(e.inviteEmail)),
+                          DataCell(
+                              SelectableText(timeago.format(e.memberSince))),
+                          DataCell(SelectableText(e.tier)),
                           DataCell(_buildStatusButton(e))
                         ]))
                   ]))));
@@ -268,11 +269,12 @@ class _AdminMembersPageState extends ConsumerState<AdminMembersPage> {
                     ),
                   ], rows: <DataRow>[
                     ..._invites.map((e) => DataRow(cells: <DataCell>[
-                          DataCell(Text(e.userEmail)),
-                          DataCell(Text(e.customerId ?? "")),
-                          DataCell(Text(timeago.format(e.createdAt!))),
-                          DataCell(Text(e.memberTier!)),
-                          DataCell(Text(e.verificationCode ?? ""))
+                          DataCell(SelectableText(e.userEmail)),
+                          DataCell(SelectableText(e.customerId ?? "")),
+                          DataCell(
+                              SelectableText(timeago.format(e.createdAt!))),
+                          DataCell(SelectableText(e.memberTier!)),
+                          DataCell(SelectableText(e.verificationCode ?? ""))
                         ]))
                   ]))));
     }

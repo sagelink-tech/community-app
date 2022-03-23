@@ -108,12 +108,31 @@ class PerkCell extends ConsumerWidget {
       _bodyWidgets.add(Text(perk.title + " • " + perk.priceToString(),
           style: Theme.of(context).textTheme.headline6));
 
-      return SizedBox(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: _bodyWidgets,
-      ));
+      return Card(
+          clipBehavior: Clip.antiAlias,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: SizedBox(
+              child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _bodyWidgets,
+          )));
     }
+
+    List<Widget> widgets = isViewingAdminSite
+        ? [
+            _buildBody(),
+            CircleAvatar(
+                radius: 20,
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                foregroundColor: Theme.of(context).colorScheme.onError,
+                child: IconButton(
+                    onPressed: () => _showOptionsModal(context),
+                    icon: const Icon(Icons.more_horiz_outlined)))
+          ]
+        : [_buildBody()];
 
     return Align(
         alignment: Alignment.center,
@@ -122,21 +141,7 @@ class PerkCell extends ConsumerWidget {
             constraints: const BoxConstraints(minWidth: 200, maxWidth: 600),
             child: GestureDetector(
                 onTap: () => _handleClick(context, perk.id),
-                child: Stack(alignment: Alignment.topRight, children: [
-                  Card(
-                      clipBehavior: Clip.antiAlias,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: _buildBody()),
-                  CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Theme.of(context).colorScheme.secondary,
-                      foregroundColor: Theme.of(context).colorScheme.onError,
-                      child: IconButton(
-                          onPressed: () => _showOptionsModal(context),
-                          icon: const Icon(Icons.more_horiz_outlined)))
-                ]))));
+                child:
+                    Stack(alignment: Alignment.topRight, children: widgets))));
   }
 }

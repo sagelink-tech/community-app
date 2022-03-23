@@ -153,6 +153,7 @@ class _NewPerkPageState extends ConsumerState<NewPerkPage> {
           "price": _perk.price,
           "productId": _perk.productId,
           "productName": _perk.productName,
+          "redemptionUrl": _perk.redemptionUrl,
           "type": _perk.type.toShortString(),
           "inBrandCommunity": {
             "connect": {

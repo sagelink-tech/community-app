@@ -55,7 +55,7 @@ class _NewPostBrandSelectionState extends ConsumerState<NewPostBrandSelection> {
     List<BrandModel> _brands = [];
     QueryResult result = await client
         .query(QueryOptions(document: gql(getBrandsQuery), variables: {
-      "where": {"id_IN": brandIds}
+      //"where": {"id_IN": brandIds}
     }));
 
     if (result.data != null && (result.data!['brands'] as List).isNotEmpty) {
