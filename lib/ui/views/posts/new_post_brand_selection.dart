@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/data/models/brand_model.dart';
@@ -7,8 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 String getBrandsQuery = '''
-query Brands {
-  brands {
+query Brands(\$where: BrandWhere) {
+  brands(where: \$where) {
     name
     shopifyToken
     mainColor
@@ -24,14 +26,16 @@ query Brands {
 }
 ''';
 
-class NewPostBrandSelection extends StatefulWidget {
+class NewPostBrandSelection extends ConsumerStatefulWidget {
   const NewPostBrandSelection({Key? key}) : super(key: key);
 
   @override
   _NewPostBrandSelectionState createState() => _NewPostBrandSelectionState();
 }
 
-class _NewPostBrandSelectionState extends State<NewPostBrandSelection> {
+class _NewPostBrandSelectionState extends ConsumerState<NewPostBrandSelection> {
+  late List<String> brandIds =
+      ref.watch(brandsProvider).map((e) => e.id).toList();
   List<BrandModel> brands = [];
 
   void _handleBrandSelection(BuildContext context, String brandId) {
@@ -49,8 +53,10 @@ class _NewPostBrandSelectionState extends State<NewPostBrandSelection> {
 
   Future<List<BrandModel?>> _getBrands(GraphQLClient client) async {
     List<BrandModel> _brands = [];
-    QueryResult result =
-        await client.query(QueryOptions(document: gql(getBrandsQuery)));
+    QueryResult result = await client
+        .query(QueryOptions(document: gql(getBrandsQuery), variables: {
+      //"where": {"id_IN": brandIds}
+    }));
 
     if (result.data != null && (result.data!['brands'] as List).isNotEmpty) {
       List brandJsons = result.data!['brands'] as List;

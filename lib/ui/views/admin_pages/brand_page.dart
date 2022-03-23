@@ -25,6 +25,12 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$membersFirst: Int, 
     mainColor
     logoUrl
     backgroundImageUrl
+    communityGuidelines
+    links {
+      id
+      title
+      url
+    }
     employeesConnection(first: \$employeesFirst) {
       totalCount
       edges {
@@ -58,8 +64,8 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$membersFirst: Int, 
 """;
 
 String updateBrandMutation = """
-mutation UpdateBrands(\$where: BrandWhere, \$update: BrandUpdateInput, \$connectOrCreate: BrandConnectOrCreateInput) {
-  updateBrands(where: \$where, update: \$update, connectOrCreate: \$connectOrCreate) {
+mutation UpdateBrands(\$where: BrandWhere, \$update: BrandUpdateInput, \$connectOrCreate: BrandConnectOrCreateInput, \$disconnect: BrandDisconnectInput) {
+  updateBrands(where: \$where, update: \$update, connectOrCreate: \$connectOrCreate, disconnet: \$disconnect) {
     brands {
       id
     }
@@ -89,14 +95,19 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
   Image? newLogoImage;
   late String newDescription = _brand.description;
   late List<CauseModel> causes = _brand.causes;
+  late String newGuidelines = _brand.communityGuidelines;
+  late List<BrandLink> links = _brand.links;
 
   TextEditingController causesTextController = TextEditingController();
   // Text controller functions
   void formatAndEnterCause(String value) {
-    causes.add(
-        CauseModel("tmp_" + causes.length.toString(), value.toLowerCase()));
+    List<CauseModel> _newCauses = value.split(',').map((element) {
+      element.trim();
+      return CauseModel("tmp_" + element, element.toLowerCase().trim());
+    }).toList();
+
     setState(() {
-      causes = causes;
+      causes = _newCauses;
     });
     causesTextController.clear();
   }
@@ -112,8 +123,10 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
   void _updateBannerImage() {
     if (_bannerPicker.images.isNotEmpty) {
       setState(() {
-        newBannerImage =
-            Image.file(_bannerPicker.images.first, fit: BoxFit.fitWidth);
+        newBannerImage = kIsWeb
+            ? Image.network(_bannerPicker.images.first.path,
+                fit: BoxFit.fitWidth)
+            : Image.file(_bannerPicker.images.first, fit: BoxFit.fitWidth);
       });
     } else {
       setState(() {
@@ -125,8 +138,9 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
   void _updateLogoImage() {
     if (_logoPicker.images.isNotEmpty) {
       setState(() {
-        newLogoImage =
-            Image.file(_logoPicker.images.first, fit: BoxFit.fitWidth);
+        newLogoImage = kIsWeb
+            ? Image.network(_logoPicker.images.first.path, fit: BoxFit.fitWidth)
+            : Image.file(_logoPicker.images.first, fit: BoxFit.fitWidth);
       });
     } else {
       setState(() {
@@ -157,6 +171,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
 
     var updateData = {
       "description": newDescription,
+      "communityGuidelines": newGuidelines,
     };
 
     // parse causes
@@ -191,13 +206,8 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
       }
     };
 
-    List<Future<ImageUploadResult>> imageUploadFutures = [];
-
     if (newLogoImage != null) {
       // upload logo image
-      imageUploadFutures.add(_logoPicker.uploadImages("brands/${_brand.id}/",
-          imageKeyPrefix: "logo", context: context, client: client));
-
       var logoResult = await _logoPicker.uploadImages("brands/${_brand.id}/",
           imageKeyPrefix: "logo", context: context, client: client);
 
@@ -212,9 +222,6 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
     }
     if (newBannerImage != null) {
       // upload banner image
-      imageUploadFutures.add(_bannerPicker.uploadImages("brands/${_brand.id}/",
-          imageKeyPrefix: "banner", context: context, client: client));
-
       var bannerResult = await _bannerPicker.uploadImages(
           "brands/${_brand.id}/",
           imageKeyPrefix: "banner",
@@ -277,7 +284,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
       InkWell(
           onTap: () => _logoPicker.openImagePicker(),
           child: ClickableAvatar(
-            avatarText: previewBrand.name[0],
+            avatarText: previewBrand.initials,
             avatarImage: newLogoImage ?? previewBrand.logoImage(),
             radius: 40,
           )),
@@ -339,7 +346,7 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
             ),
             child: ClickableAvatar(
                 onTap: _logoPicker.openImagePicker,
-                avatarText: _brand.name[0],
+                avatarText: _brand.initials,
                 avatarImage: newLogoImage ?? _brand.logoImage(),
                 radius: 40)));
 
@@ -357,16 +364,15 @@ class _AdminBrandHomepageState extends ConsumerState<AdminBrandHomepage>
 
     var causeInput = TextFormField(
         decoration: const InputDecoration(
-          hintText: "Type a cause then hit enter",
+          hintText: "climate change, wellness, black-owned business, ...",
           border: OutlineInputBorder(),
         ),
         controller: causesTextController,
         inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ \n]*"))
+          FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9+ ,-]*"))
         ],
-        maxLength: 20,
         minLines: 1,
-        maxLines: 1,
+        maxLines: 2,
         textInputAction: TextInputAction.done,
         onFieldSubmitted: formatAndEnterCause,
         textCapitalization: TextCapitalization.none,

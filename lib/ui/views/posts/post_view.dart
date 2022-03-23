@@ -1,13 +1,20 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/models/comment_model.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
+import 'package:sagelink_communities/ui/components/link_preview.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
+import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:sagelink_communities/ui/views/comments/new_comment.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/ui/views/comments/comment_list.dart';
+import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 String getPostQuery = """
@@ -20,10 +27,12 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
     images
     linkUrl
     createdAt
+    isFlaggedByUser
     createdBy {
       id
       name
       accountPictureUrl
+      queryUserHasBlocked
     }
     inBrandCommunity {
       id
@@ -38,10 +47,12 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
       id
       body
       createdAt
+      isFlaggedByUser
       createdBy {
         id
         name
         accountPictureUrl
+        queryUserHasBlocked
       }
       repliesAggregate {
         count
@@ -51,7 +62,7 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
 }
 """;
 
-class PostView extends StatefulWidget {
+class PostView extends ConsumerStatefulWidget {
   const PostView(
       {Key? key, required this.postId, this.autofocusCommentField = false})
       : super(key: key);
@@ -64,10 +75,32 @@ class PostView extends StatefulWidget {
   _PostViewState createState() => _PostViewState();
 }
 
-class _PostViewState extends State<PostView> {
+class _PostViewState extends ConsumerState<PostView> {
   PostModel _post = PostModel();
   String? _threadId;
+  CommentModel? editingComment;
   bool showingThread = false;
+  late bool addingComment = widget.autofocusCommentField;
+  late final analytics = ref.watch(analyticsProvider);
+
+  @override
+  void initState() {
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Post View");
+      analytics.logScreenView(
+          screenClass: "Post View", screenName: widget.postId);
+    });
+    super.initState();
+  }
+
+  void setAddingComment(bool addCommentFlag) {
+    setState(() {
+      addingComment = addCommentFlag;
+      if (!addCommentFlag) {
+        editingComment = null;
+      }
+    });
+  }
 
   void _showCommentThread(String commentId) {
     setState(() {
@@ -83,11 +116,42 @@ class _PostViewState extends State<PostView> {
     });
   }
 
-  List<Widget> _buildBodyView() {
+  void shouldEditCommentWithID(CommentModel comment) {
+    setState(() {
+      editingComment = comment;
+    });
+  }
+
+  void _showOptionsModal(context, VoidCallback? refetch) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return ModerationOptionsSheet(ModerationOptionSheetType.post,
+              brandId: _post.brand.id,
+              post: _post,
+              onComplete: refetch,
+              onDelete: () =>
+                  {Navigator.canPop(context) ? Navigator.pop(context) : {}},
+              onEdit: () => {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) => NewPostPage(
+                            brandId: _post.brand.id,
+                            onCompleted: () => {
+                                  if (Navigator.of(context).canPop())
+                                    {Navigator.of(context).pop()}
+                                },
+                            post: _post)))
+                  });
+        });
+  }
+
+  List<Widget> _buildBodyView(VoidCallback? refetch) {
     Widget detail;
+    Widget detailText;
     switch (_post.type) {
       case PostType.text:
-        detail = Text(_post.body ?? "",
+        detail = const SizedBox();
+        detailText = Text(_post.body ?? "",
             style: Theme.of(context).textTheme.bodyText1);
         break;
       case PostType.images:
@@ -95,47 +159,76 @@ class _PostViewState extends State<PostView> {
           _post.images ?? [],
           height: 200,
         );
+        detailText = const SizedBox();
         break;
       case PostType.link:
-        detail = Text(_post.linkUrl ?? "",
-            style: Theme.of(context).textTheme.bodyText1);
+        detail = LinkPreview(_post.linkUrl ?? "");
+        detailText = const SizedBox();
         break;
     }
 
     return [
-      const ListSpacer(),
-      Text('ORIGINAL POST', style: Theme.of(context).textTheme.headline5),
-      const ListSpacer(),
-      Text(_post.title, style: Theme.of(context).textTheme.headline4),
-      const ListSpacer(),
-      detail,
-      const ListSpacer(),
       Row(children: [
         ClickableAvatar(
           radius: 30,
-          avatarText: _post.creator.name[0],
+          avatarText: _post.creator.initials,
           avatarURL: _post.creator.accountPictureUrl,
         ),
         const ListSpacer(),
-        Text(_post.creator.name + " • " + timeago.format(_post.createdAt),
-            style: Theme.of(context).textTheme.caption),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_post.creator.name,
+                style: Theme.of(context).textTheme.bodyText1),
+            Text(timeago.format(_post.createdAt),
+                style: Theme.of(context).textTheme.caption),
+          ],
+        ),
+        const Spacer(),
+        IconButton(
+            onPressed: () => _showOptionsModal(context, refetch),
+            color: Theme.of(context).colorScheme.primary,
+            icon: const Icon(Icons.more_horiz_outlined))
       ]),
+      const ListSpacer(),
+      detail,
+      const ListSpacer(),
+      Text(_post.title, style: Theme.of(context).textTheme.headline4),
+      const ListSpacer(),
+      detailText,
+      const ListSpacer(),
     ];
   }
 
-  _buildCommentField(VoidCallback? refetch) {
+  Widget _buildCommentButton() {
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+          primary: Theme.of(context).colorScheme.primary,
+          minimumSize: const Size.fromHeight(48)),
+      onPressed: () => setAddingComment(true),
+      child: const Text('Comment'),
+    );
+  }
+
+  Widget _buildCommentField(VoidCallback? refetch) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
           color: Theme.of(context).backgroundColor,
-          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
           child: NewComment(
-              focused: widget.autofocusCommentField,
-              parentId: showingThread ? _threadId! : widget.postId,
-              isReply: showingThread,
-              onCompleted: () => {
-                    if (refetch != null) {refetch()}
-                  })),
+            focused: true,
+            parentId: showingThread ? _threadId! : widget.postId,
+            isReply: showingThread,
+            comment: editingComment,
+            onCompleted: () => {
+              setAddingComment(false),
+              if (refetch != null) {refetch()},
+              CustomWidgets.buildSnackBar(
+                  context, "Comment saved!", SLSnackBarType.success)
+            },
+            onLostFocus: () => setAddingComment(false),
+          )),
     );
   }
 
@@ -160,43 +253,73 @@ class _PostViewState extends State<PostView> {
           }
           return Scaffold(
               appBar: AppBar(
-                  title: const Text(''),
+                  title: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ClickableAvatar(
+                        avatarText: _post.brand.initials,
+                        avatarImage: _post.brand.logoImage(),
+                      ),
+                      Text(_post.brand.name)
+                    ],
+                  ),
                   backgroundColor: Theme.of(context).backgroundColor,
                   elevation: 1),
               body: (result.hasException
                   ? const ErrorView()
                   : result.isLoading
                       ? const Loading()
-                      : Container(
-                          alignment: AlignmentDirectional.topStart,
-                          padding: const EdgeInsets.symmetric(horizontal: 25),
-                          child: Stack(children: [
-                            ListView(shrinkWrap: true, children: <Widget>[
-                              ..._buildBodyView(),
-                              // Responses header
-                              const ListSpacer(),
-                              Text('RESPONSES',
-                                  style: Theme.of(context).textTheme.headline5),
-                              const ListSpacer(),
-                              // Comment view
-                              CommentListView(
-                                _post.comments,
-                                onAddReply: (commentId) => {
-                                  completeReplyOnThread(commentId),
-                                  if (refetch != null) refetch()
-                                },
-                                onShowThread: _showCommentThread,
-                                onCloseThread: () => {
-                                  setState(() {
-                                    showingThread = false;
+                      : Stack(children: [
+                          Container(
+                              alignment: AlignmentDirectional.topStart,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 10),
+                              child:
+                                  ListView(shrinkWrap: true, children: <Widget>[
+                                ..._buildBodyView(refetch),
+                                _buildCommentButton(),
+                                // Responses header
+                                const ListSpacer(),
+                                Text(
+                                    "${_post.commentCount} comment${_post.commentCount != 1 ? 's' : ''}",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2!
+                                        .copyWith(fontWeight: FontWeight.bold)),
+                                const ListSpacer(),
+                                // Comment view
+                                CommentListView(
+                                  _post.comments,
+                                  brandId: _post.brand.id,
+                                  onAddReply: (commentId) => {
+                                    completeReplyOnThread(commentId),
+                                    if (refetch != null) refetch()
+                                  },
+                                  onUpdate: (commentId) => setState(() {}),
+                                  onShowThread: _showCommentThread,
+                                  onShouldReply: () => setAddingComment(true),
+                                  onCloseThread: () => {
+                                    setState(() {
+                                      showingThread = false;
+                                    }),
+                                    setAddingComment(false),
+                                    if (refetch != null) refetch()
+                                  },
+                                  onShouldEdit: (comment) => setState(() {
+                                    editingComment = comment;
+                                    addingComment = true;
                                   }),
-                                  if (refetch != null) refetch()
-                                },
-                              ),
-                              const ListSpacer(height: 60)
-                            ]),
-                            _buildCommentField(refetch)
-                          ]))));
+                                ),
+                                const ListSpacer(height: 120)
+                              ])),
+                          addingComment
+                              ? _buildCommentField(refetch)
+                              : const SizedBox(
+                                  width: 1,
+                                  height: 1,
+                                )
+                        ])));
         });
   }
 }

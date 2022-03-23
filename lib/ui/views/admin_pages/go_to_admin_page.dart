@@ -7,6 +7,7 @@ class GoToAdminPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appStateNotifier = ref.watch(appStateProvider.notifier);
     final appState = ref.watch(appStateProvider);
 
     return Container(
@@ -16,7 +17,7 @@ class GoToAdminPage extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              appState.viewingAdminSite
+              appState.isViewingAdminSite
                   ? ("Would you like to transfer to the Main Site?")
                   : ("Would you like to transfer to the Admin Site?"),
               style: Theme.of(context).textTheme.headline3,
@@ -26,8 +27,10 @@ class GoToAdminPage extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                     primary: Theme.of(context).colorScheme.secondary,
                     onPrimary: Theme.of(context).colorScheme.onError),
-                onPressed: () =>
-                    {appState.setViewingAdminSite(!appState.viewingAdminSite)},
+                onPressed: () => {
+                      appStateNotifier
+                          .setViewingAdminSite(!appState.isViewingAdminSite)
+                    },
                 child: const Text("Confirm"))
           ],
         ));

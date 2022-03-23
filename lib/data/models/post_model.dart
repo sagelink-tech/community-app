@@ -45,6 +45,7 @@ class PostModel extends ChangeNotifier {
   DateTime createdAt = DateTime(2020, 1, 1, 0, 0, 1);
   int commentCount = 0;
   PostType type = PostType.text;
+  bool isFlaggedByUser = false;
 
   BrandModel _brand = BrandModel();
 
@@ -83,6 +84,10 @@ class PostModel extends ChangeNotifier {
       for (var im in json["images"]) {
         images!.add(im as String);
       }
+    }
+
+    if (json.containsKey('isFlaggedByUser')) {
+      isFlaggedByUser = json['isFlaggedByUser'];
     }
 
     commentCount = json['commentsAggregate']['count'];

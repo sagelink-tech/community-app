@@ -1,3 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/models/comment_model.dart';
+import 'package:sagelink_communities/data/providers.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
 import 'package:sagelink_communities/ui/components/empty_result.dart';
 import 'package:sagelink_communities/ui/components/error_view.dart';
 import 'package:sagelink_communities/ui/components/image_carousel.dart';
@@ -7,6 +11,7 @@ import 'package:sagelink_communities/data/models/perk_model.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/ui/views/comments/comment_list.dart';
 import 'package:sagelink_communities/ui/views/comments/new_comment.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 String getPerkQuery = """
 query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions: CommentOptions) {
@@ -16,6 +21,7 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
     description
     details
     imageUrls
+    redemptionUrl
     productName
     productId
     price
@@ -53,17 +59,17 @@ query GetPerksQuery(\$options: PerkOptions, \$where: PerkWhere, \$commentOptions
 }
 """;
 
-class PerkView extends StatefulWidget {
+class PerkView extends ConsumerStatefulWidget {
   const PerkView({Key? key, required this.perkId}) : super(key: key);
   final String perkId;
 
-  static const routeName = '/perks';
+  static const routeName = '/shop';
 
   @override
   _PerkViewState createState() => _PerkViewState();
 }
 
-class _PerkViewState extends State<PerkView>
+class _PerkViewState extends ConsumerState<PerkView>
     with SingleTickerProviderStateMixin {
   PerkModel _perk = PerkModel();
   bool showingThread = false;
@@ -71,6 +77,10 @@ class _PerkViewState extends State<PerkView>
   bool _isCollapsed = false;
   final double _headerSize = 200.0;
   int _currentIndex = 0;
+  bool addingComment = false;
+  CommentModel? editingComment;
+
+  late final analytics = ref.watch(analyticsProvider);
 
   late ScrollController _scrollController;
   late TabController _tabController;
@@ -93,9 +103,25 @@ class _PerkViewState extends State<PerkView>
     });
   }
 
+  void setAddingComment(bool addCommentFlag) {
+    setState(() {
+      addingComment = addCommentFlag;
+      if (!addCommentFlag) {
+        editingComment = null;
+      }
+    });
+  }
+
   @override
   initState() {
     super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Perk View");
+      analytics.logScreenView(
+          screenClass: "Perk View", screenName: widget.perkId);
+      analytics.logEvent(
+          name: "perk_view_opened", parameters: {"id": widget.perkId});
+    });
     _tabController = TabController(length: 3, vsync: this);
     _scrollController = ScrollController(initialScrollOffset: 0.0);
     _scrollController.addListener(_scrollListener);
@@ -121,6 +147,21 @@ class _PerkViewState extends State<PerkView>
       showingThread = false;
       _threadId = null;
     });
+  }
+
+  Future<void> _launchURL(String url) async {
+    analytics.logEvent(
+        name: "perk_redemption_clicked",
+        parameters: {"perkId": _perk.id, "brandId": _perk.brand.id});
+    try {
+      !await launch(
+        url,
+        forceSafariVC: true,
+        forceWebView: true,
+      );
+    } catch (e) {
+      return;
+    }
   }
 
   _buildHeader(BuildContext context, bool boxIsScrolled) {
@@ -171,17 +212,25 @@ class _PerkViewState extends State<PerkView>
             _perk.comments.isNotEmpty
                 ? CommentListView(
                     _perk.comments,
+                    brandId: _perk.brand.id,
                     onAddReply: (commentId) => {
                       completeReplyOnThread(commentId),
                       if (refetch != null) refetch()
                     },
+                    onUpdate: (commentId) => setState(() {}),
                     onShowThread: _showCommentThread,
+                    onShouldReply: () => setAddingComment(true),
                     onCloseThread: () => {
                       setState(() {
                         showingThread = false;
                       }),
+                      setAddingComment(false),
                       if (refetch != null) refetch()
                     },
+                    onShouldEdit: (comment) => setState(() {
+                      editingComment = comment;
+                      addingComment = true;
+                    }),
                   )
                 : const EmptyResult(text: "No conversation started yet!")
           ],
@@ -193,20 +242,39 @@ class _PerkViewState extends State<PerkView>
       return Container(
           color: Theme.of(context).backgroundColor,
           padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-          child: NewComment(
-            parentId: showingThread ? _threadId! : _perk.id,
-            onCompleted: () => refetch != null ? refetch() : null,
-            isOnPerk: true,
-            isReply: showingThread,
-          ));
+          child: addingComment
+              ? NewComment(
+                  parentId: showingThread ? _threadId! : _perk.id,
+                  isOnPerk: true,
+                  focused: true,
+                  isReply: showingThread,
+                  comment: editingComment,
+                  onCompleted: () => {
+                    setAddingComment(false),
+                    if (refetch != null) {refetch()},
+                    CustomWidgets.buildSnackBar(
+                        context, "Comment saved!", SLSnackBarType.success)
+                  },
+                  onLostFocus: () => setAddingComment(false),
+                )
+              : OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                      primary: Theme.of(context).colorScheme.primary,
+                      minimumSize: const Size.fromHeight(48)),
+                  onPressed: () => setAddingComment(true),
+                  child: const Text('Comment')));
     } else {
-      return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+      return Container(
+          color: Theme.of(context).backgroundColor,
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
           child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                   primary: Theme.of(context).colorScheme.secondary,
-                  onPrimary: Theme.of(context).colorScheme.onError),
-              onPressed: () => {},
+                  onPrimary: Theme.of(context).colorScheme.onError,
+                  minimumSize: const Size.fromHeight(48)),
+              onPressed: () => _perk.redemptionUrl.isNotEmpty
+                  ? _launchURL(_perk.redemptionUrl)
+                  : {},
               child: const Text("Redeem")));
     }
   }

@@ -7,19 +7,23 @@ import 'package:flutter/material.dart';
 class BrandLink {
   final String id;
   final String title;
-  final String url;
+  final String? url;
   const BrandLink(this.id, this.title, this.url);
 }
 
 class BrandModel extends ChangeNotifier {
-  String id = "df487c75-7186-48ea-a507-25b80aa92c64";
-  String firebaseId = "df487c75-7186-48ea-a507-25b80aa92c64";
-  String name = "brand name";
-  String description = "brand description";
+  String id = "";
+  String name = " ";
+  String description = "";
+  String communityGuidelines = "";
   String logoUrl = "";
   String backgroundImageUrl = "";
-  String website = "www.brand.com";
+  String website = "";
   Color mainColor = Colors.blueGrey;
+
+  String get initials => name.isNotEmpty ? name[0] : "";
+
+  List<BrandLink> links = [];
 
   Image bannerImage() => backgroundImageUrl.isNotEmpty
       ? Image.network(
@@ -81,6 +85,9 @@ class BrandModel extends ChangeNotifier {
     name = json['name'];
     description =
         json.containsKey('description') ? json['description'] ?? "" : "";
+    communityGuidelines = json.containsKey('communityGuidelines')
+        ? json['communityGuidelines'] ?? ""
+        : "";
     logoUrl = json.containsKey('logoUrl') ? json['logoUrl'] ?? "" : "";
     backgroundImageUrl = json.containsKey('backgroundImageUrl')
         ? json['backgroundImageUrl'] ?? ""
@@ -122,7 +129,7 @@ class BrandModel extends ChangeNotifier {
             _json[key] = e[key];
           }
         }
-        _membs.add(MemberModel.fromJson(e['node']));
+        _membs.add(MemberModel.fromJson(e['node'], id));
       }
       members = _membs;
     }
@@ -134,12 +141,20 @@ class BrandModel extends ChangeNotifier {
       }
       causes = _c;
     }
+
+    if (json.containsKey('links')) {
+      List<BrandLink> _l = [];
+      for (var link in json['links']) {
+        _l.add(BrandLink(link['id'], link['title'], link['url']));
+      }
+    }
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'description': description,
+        'communityGuidelines': communityGuidelines,
         'logoUrl': logoUrl,
         'backgroundImageUrl': backgroundImageUrl,
         'website': website,

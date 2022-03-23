@@ -1,13 +1,21 @@
 import 'dart:io';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/data/services/post_service.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
+import 'package:sagelink_communities/ui/components/link_preview.dart';
+import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:sagelink_communities/ui/components/loading.dart';
 import 'package:sagelink_communities/ui/components/universal_image_picker.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 import 'package:sagelink_communities/data/models/post_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:collection/collection.dart';
+import 'package:sagelink_communities/ui/utils/asset_utils.dart';
+import 'package:sagelink_communities/ui/views/brands/community_guidelines.dart';
 
 String createPostMutation = """
 mutation CreatePosts(\$input: [PostCreateInput!]!) {
@@ -29,14 +37,24 @@ mutation UpdatePosts(\$where: PostWhere, \$update: PostUpdateInput) {
 }
 """;
 
+String fetchCommunityGuidelines = """
+query FetchCommunityGuidelines(\$where: BrandWhere) {
+  brands(where: \$where) {
+    id
+    communityGuidelines
+  }
+}
+""";
+
 typedef OnCompletionCallback = void Function();
 
 class NewPostPage extends ConsumerStatefulWidget {
   const NewPostPage(
-      {Key? key, required this.brandId, required this.onCompleted})
+      {Key? key, required this.brandId, required this.onCompleted, this.post})
       : super(key: key);
   final String brandId;
   final OnCompletionCallback onCompleted;
+  final PostModel? post;
 
   static const routeName = '/posts';
 
@@ -50,16 +68,138 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   String? body;
   String? linkUrl;
   PostType selectedType = PostType.text;
+  String communityGuidelines = "";
+
+  bool get isUpdating => widget.post != null;
+
+  late PostService postService = ref.watch(postServiceProvider);
   late LoggedInUser loggedInUser = ref.watch(loggedInUserProvider);
+  late GraphQLClient client = ref.watch(gqlClientProvider).value;
+  late FirebaseAnalytics analytics = ref.watch(analyticsProvider);
+
+  bool isDisposed = false;
+
+  late FocusNode _focusNode;
+  final TextEditingController _linkEditingController = TextEditingController();
+
+  Widget? preview;
+
+  @override
+  void dispose() {
+    isDisposed = true;
+    _imagePicker.clearImages();
+    _focusNode.dispose();
+    _linkEditingController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      isUpdating
+          ? {
+              analytics.setCurrentScreen(screenName: "Edit Post View"),
+              analytics.logScreenView(
+                  screenClass: "Edit Post View", screenName: widget.post!.id)
+            }
+          : {
+              analytics.setCurrentScreen(screenName: "New Post View"),
+              analytics.logScreenView(screenName: "New Post View")
+            };
+
+      _fetchCommunityGuidelines();
+    });
+
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        var _preview = (linkUrl != null && linkUrl!.isNotEmpty)
+            ? LinkPreview(
+                linkUrl,
+                key: Key(linkUrl!),
+              )
+            : null;
+        setState(() {
+          preview = _preview;
+        });
+      }
+    });
+
+    if (isUpdating) {
+      selectedType = widget.post!.type;
+      title = widget.post!.title;
+      switch (selectedType) {
+        case (PostType.text):
+          body = widget.post!.body;
+          break;
+        case (PostType.link):
+          linkUrl = widget.post!.linkUrl;
+          _linkEditingController.text = widget.post!.linkUrl!;
+          break;
+        case (PostType.images):
+          isLoading = true;
+          imageFilesFromPost();
+          break;
+      }
+    }
+  }
+
+  _fetchCommunityGuidelines() async {
+    QueryResult result = await client.query(
+        QueryOptions(document: gql(fetchCommunityGuidelines), variables: {
+      "where": {"id": widget.brandId}
+    }));
+
+    if (result.data != null && (result.data!['brands'] as List).isNotEmpty) {
+      communityGuidelines = result.data!['brands'][0]['communityGuidelines'];
+    }
+  }
+
+  _showCommunityGuidelines(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) => FractionallySizedBox(
+            heightFactor: 0.85,
+            child: CommunityGuidelines(guidelineText: communityGuidelines)));
+  }
+
+  void imageFilesFromPost() async {
+    List<File> files = [];
+    if (widget.post!.images != null) {
+      for (String url in widget.post!.images!) {
+        files.add(await AssetUtils.urlToFile(url));
+      }
+      setState(() {
+        originalImageFiles = files;
+        selectedImageFiles = files;
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        originalImageFiles = [];
+        selectedImageFiles = [];
+        isLoading = false;
+      });
+    }
+  }
 
   bool isSaving = false;
+  bool isLoading = false;
 
   int maxImages = 4;
+  List<File> originalImageFiles = [];
   List<File> selectedImageFiles = [];
-  late final UniversalImagePicker _imagePicker = UniversalImagePicker(context,
-      maxImages: maxImages,
-      onSelected: () =>
-          setState(() => selectedImageFiles = _imagePicker.images));
+  late final UniversalImagePicker _imagePicker =
+      UniversalImagePicker(context, maxImages: maxImages, onSelected: () {
+    if (!isDisposed) {
+      setState(() => selectedImageFiles = _imagePicker.images);
+    }
+  },
+          originalUrls: isUpdating && widget.post!.images != null
+              ? widget.post!.images!
+              : []);
 
   bool canSubmit() {
     bool hasTitle = title != null && title!.isNotEmpty;
@@ -74,11 +214,13 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   }
 
   void complete() {
+    CustomWidgets.buildSnackBar(
+        context, "Post submitted!", SLSnackBarType.success);
     Navigator.of(context).pop();
     widget.onCompleted();
   }
 
-  Future<bool> updateWithImages(GraphQLClient client, String postId) async {
+  Future<bool> setImagesOnCreate(String postId) async {
     ImageUploadResult imageResults = await _imagePicker
         .uploadImages("post/$postId/", context: context, client: client);
     if (!imageResults.success) {
@@ -100,33 +242,68 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     }
   }
 
-  void createPost(GraphQLClient client) async {
+  void createPost() async {
     setState(() {
       isSaving = true;
     });
+    bool success = true;
+
     QueryResult result = await client.mutate(MutationOptions(
         document: gql(createPostMutation), variables: mutationVariables()));
     if (result.hasException) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text("Error saving post, please try again."),
-          backgroundColor: Theme.of(context).colorScheme.error));
+      success = false;
+      CustomWidgets.buildSnackBar(context,
+          "Error saving post, please try again.", SLSnackBarType.error);
     }
     if (result.data != null) {
       if (selectedType == PostType.images) {
-        bool uploadResult = await updateWithImages(
-            client, result.data!['createPosts']['posts'][0]['id']);
+        bool uploadResult = await setImagesOnCreate(
+            result.data!['createPosts']['posts'][0]['id']);
 
         if (!uploadResult) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: const Text("Error saving post, please try again."),
-              backgroundColor: Theme.of(context).colorScheme.error));
+          success = false;
+          CustomWidgets.buildSnackBar(context,
+              "Error saving post, please try again.", SLSnackBarType.error);
         }
       }
     }
     setState(() {
       isSaving = false;
     });
-    complete();
+
+    analytics
+        .logEvent(name: "post_submit_click", parameters: {"status": success});
+
+    if (success) {
+      complete();
+    }
+  }
+
+  void updatePost() async {
+    Map<String, dynamic> updateData = {
+      "title": title,
+    };
+    switch (selectedType) {
+      case PostType.text:
+        updateData['body'] = body;
+        break;
+      case PostType.link:
+        updateData['linkUrl'] = linkUrl;
+        break;
+      case PostType.images:
+        ImageUploadResult imageResults = await _imagePicker.updateImages(
+            "post/${widget.post!.id}/",
+            context: context,
+            client: client);
+        if (!imageResults.success) {
+          CustomWidgets.buildSnackBar(context,
+              "Error saving post, please try again.", SLSnackBarType.error);
+        }
+        updateData["images"] = imageResults.locations;
+        break;
+    }
+    await postService.updatePost(widget.post!, updateData,
+        onComplete: (data) => complete());
   }
 
   Map<String, dynamic> mutationVariables() {
@@ -167,50 +344,50 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
   }
 
   Widget _buildPostTypeSelection(BuildContext context) {
+    Widget selector = Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: const [
+              BoxShadow(
+                  color: Colors.grey, offset: Offset(0, -1), blurRadius: 5.0)
+            ],
+            color: Theme.of(context).cardColor),
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 10),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "select post type",
+                style: Theme.of(context).textTheme.caption,
+              ),
+              Wrap(
+                  children: PostType.values
+                      .map((e) => TextButton.icon(
+                            style: ButtonStyle(
+                                foregroundColor: MaterialStateProperty.all(
+                                    selectedType == e
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .primary)),
+                            onPressed: () => setState(() {
+                              selectedType = e;
+                            }),
+                            icon: e.iconForPostType(),
+                            label: Text(e.toShortString()),
+                          ))
+                      .toList())
+            ]));
     return Align(
         alignment: Alignment.bottomCenter,
         child: Wrap(children: [
-          Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Colors.grey,
-                        offset: Offset(0, -1),
-                        blurRadius: 5.0)
-                  ],
-                  color: Theme.of(context).cardColor),
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    "select post type",
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                  Wrap(
-                      children: PostType.values
-                          .map((e) => TextButton.icon(
-                                style: ButtonStyle(
-                                    foregroundColor: MaterialStateProperty.all(
-                                        selectedType == e
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .secondary
-                                            : Theme.of(context)
-                                                .colorScheme
-                                                .primary)),
-                                onPressed: () => setState(() {
-                                  selectedType = e;
-                                }),
-                                icon: e.iconForPostType(),
-                                label: Text(e.toShortString()),
-                              ))
-                          .toList())
-                ],
-              ))
+          Column(
+              children:
+                  isUpdating ? [buildSubmit()] : [selector, buildSubmit()])
         ]));
   }
 
@@ -238,12 +415,8 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
         autofocus: true,
         decoration: const InputDecoration(
           labelText: 'Title',
+          counterText: "",
           border: OutlineInputBorder(),
-          errorBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-          focusedErrorBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-          errorStyle: TextStyle(color: Colors.purple),
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -256,43 +429,38 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
         maxLength: 200,
         minLines: 1,
         maxLines: 3,
+        initialValue: title,
         onChanged: (value) => setState(() => title = value),
         enabled: enabled,
       );
 
-  Widget buildLinkForm({bool enabled = true}) => TextFormField(
-        decoration: const InputDecoration(
-          hintText: "Enter a url...",
-          border: OutlineInputBorder(),
-          errorBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-          focusedErrorBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-          errorStyle: TextStyle(color: Colors.purple),
-        ),
-        validator: (value) {
-          if ((value != null && value.isEmpty) && Uri.parse(value).isAbsolute) {
-            return 'Please enter a valid url';
-          } else {
-            return null;
-          }
-        },
-        maxLength: 200,
-        minLines: 1,
-        maxLines: 1,
-        onChanged: (value) => setState(() => linkUrl = value),
-        enabled: enabled,
-      );
+  Widget buildLinkForm({bool enabled = true}) {
+    TextFormField form = TextFormField(
+      decoration: const InputDecoration(
+        hintText: "Enter a url...",
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.url,
+      controller: _linkEditingController,
+      focusNode: _focusNode,
+      autocorrect: false,
+      minLines: 1,
+      maxLines: 1,
+      onChanged: (value) => setState(() => linkUrl = value),
+      enabled: enabled,
+    );
+
+    return Column(
+      children: preview != null
+          ? [form, const ListSpacer(height: 20), preview!]
+          : [form],
+    );
+  }
 
   Widget buildBodyForm({bool enabled = true}) => TextFormField(
       decoration: const InputDecoration(
         hintText: "Enter (optional) body text...",
         border: OutlineInputBorder(),
-        errorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-        focusedErrorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.purple)),
-        errorStyle: TextStyle(color: Colors.purple),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -305,6 +473,7 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
       maxLength: 1000,
       minLines: 5,
       maxLines: 5,
+      initialValue: body,
       onChanged: (value) => setState(() => body = value),
       enabled: enabled);
 
@@ -334,10 +503,12 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
               SizedBox(
                   width: double.infinity,
                   height: double.infinity,
-                  child: Image.file(
-                    im,
-                    fit: BoxFit.cover,
-                  )),
+                  child: kIsWeb
+                      ? Image.network(im.path, fit: BoxFit.cover)
+                      : Image.file(
+                          im,
+                          fit: BoxFit.cover,
+                        )),
               Padding(
                   padding: const EdgeInsets.all(5),
                   child: Align(
@@ -365,25 +536,41 @@ class _NewPostPageState extends ConsumerState<NewPostPage> {
     );
   }
 
-  Widget buildSubmit({bool enabled = true}) => GraphQLConsumer(
-      builder: (client) => IconButton(
-            icon: const Icon(Icons.send),
-            onPressed: enabled ? () => createPost(client) : null,
-          ));
+  Widget buildSubmit() => ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+            primary: Theme.of(context).colorScheme.secondary,
+            // onPrimary: Theme.of(context).colorScheme.onSecondary,
+            minimumSize: const Size.fromHeight(48)),
+        onPressed:
+            canSubmit() ? () => isUpdating ? updatePost() : createPost() : null,
+        child: Text("Submit",
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16.0,
+                color: Theme.of(context).colorScheme.onError)),
+      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-            title: const Text("Create Post"),
+            title: isUpdating
+                ? const Text("Update Post")
+                : const Text("Create Post"),
             actions: [
-              buildSubmit(enabled: canSubmit()),
+              IconButton(
+                onPressed: () => _showCommunityGuidelines(context),
+                icon: const Icon(Icons.info_outline),
+              )
             ],
             backgroundColor: Theme.of(context).backgroundColor,
             elevation: 0),
         body: Container(
             alignment: AlignmentDirectional.topStart,
-            child: isSaving
+            child: isSaving || isLoading
                 ? const Loading()
                 : Stack(children: [
                     _buildBody(),

@@ -15,6 +15,38 @@ enum PerkType {
   exclusiveProduct,
 }
 
+extension PerkTypeManager on PerkType {
+  String toShortString() {
+    return toString().split('.').last;
+  }
+
+  static PerkType fromShortString(String type) {
+    for (var v in PerkType.values) {
+      if (type == v.toShortString()) {
+        return v;
+      }
+    }
+    return PerkType.undefined;
+  }
+
+  String displayString() {
+    switch (this) {
+      case PerkType.freeGiveaway:
+        return "FREE GIVEAWAY";
+      case PerkType.productDrop:
+        return "PRODUCT DROP";
+      case PerkType.earnedReward:
+        return "EARNED REWARD";
+      case PerkType.productTest:
+        return "PRODUCT TEST";
+      case PerkType.exclusiveProduct:
+        return "EXCLUSIVE PRODUCT";
+      default:
+        return "LOYALTY PERK";
+    }
+  }
+}
+
 enum Currencies {
   usd,
   euro,
@@ -29,6 +61,7 @@ class PerkModel extends ChangeNotifier {
   String id = "";
   String title = "";
   String description = "";
+  String redemptionUrl = "";
   String details = "";
   String productId = "";
   String productName = "";
@@ -67,20 +100,7 @@ class PerkModel extends ChangeNotifier {
   }
 
   String typeToString() {
-    switch (type) {
-      case PerkType.freeGiveaway:
-        return "FREE GIVEAWAY";
-      case PerkType.productDrop:
-        return "PRODUCT DROP";
-      case PerkType.earnedReward:
-        return "EARNED REWARD";
-      case PerkType.productTest:
-        return "PRODUCT TEST";
-      case PerkType.exclusiveProduct:
-        return "EXCLUSIVE PRODUCT";
-      default:
-        return "LOYALTY PERK";
-    }
+    return type.displayString();
   }
 
   String priceToString() {
@@ -97,17 +117,19 @@ class PerkModel extends ChangeNotifier {
     id = json['id'];
     title = json['title'];
     description = json['description'];
+    redemptionUrl =
+        json.containsKey('redemptionUrl') ? json['redemptionUrl'] ?? "" : "";
     details = json.containsKey('details') ? json['details'] ?? "" : "";
     productId = json["productId"];
     productName = json["productName"];
     imageUrls = List<String>.from(json["imageUrls"] ?? []);
     price = json['price'];
     currency = json['currency'] ?? Currencies.usd;
-    if (json.containsKey('type') && json['type'] != null) {
-      type = PerkType.values[json['type']];
-    } else {
-      type = json['type'] ?? PerkType.exclusiveProduct;
-    }
+
+    var pType = json.containsKey("type")
+        ? json['type']
+        : PerkType.undefined.toShortString();
+    type = PerkTypeManager.fromShortString(pType);
 
     if (json.containsKey('startDate') && json['startDate'] != null) {
       startDate =
@@ -142,29 +164,3 @@ class PerkModel extends ChangeNotifier {
     comments = commentList;
   }
 }
-
-
-
-// var perkJson = {
-//   "id": "123",
-//   "title": "Test Perk",
-//   "description":
-//       "This is a test perk for us to see what the visual aesthetic of the consumer application actually looks like. This is going to be a bit longer than necessary just so we can start testing around and whatever. Who knows what I'm actually going to end up writing - probably just some nonsense if I'm being honest. Ok I'm done.",
-//   "productId": "123",
-//   "productName": "Test Product",
-//   "price": 35.0,
-//   "imageUrls": <String>[
-//     "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQeIJLT6aYwziw15ir4UcdBj_9jGZ9j3tTjgT_BugucHZht9POENS6JZ2VbKao&usqp=CAE",
-//     "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118",
-//     "https://cdn.shopify.com/s/files/1/1009/9408/products/greentruck-front_1200x.jpg?v=1603296118"
-//   ],
-//   "currency": Currencies.usd,
-//   "type": PerkType.productDrop,
-//   "startDate": DateTime(2022, 1, 1, 0, 0, 0).toString(),
-//   "endDate": DateTime(2022, 1, 2, 0, 0, 0).toString(),
-//   "commentsAggregate": {"count": 0},
-//   "inBrandCommunity": BrandModel().toJson(),
-//   "createdBy": UserModel().toJson(),
-// };
-
-// _perk = PerkModel.fromJson(perkJson);

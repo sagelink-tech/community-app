@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/ui/components/stacked_avatars.dart';
 import 'package:sagelink_communities/data/models/perk_model.dart';
 import 'package:sagelink_communities/ui/utils/asset_utils.dart';
@@ -10,9 +12,10 @@ import 'package:sagelink_communities/ui/views/brands/brand_overview.dart';
 import 'package:sagelink_communities/ui/views/perks/perk_list.dart';
 import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/ui/views/posts/post_list.dart';
+import 'package:sagelink_communities/ui/views/users/user_list.dart';
 
 String getBrandQuery = """
-query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions, \$perksOptions: PerkOptions, \$membersFirst: Int, \$employeesFirst: Int) {
+query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostOptions, \$perksOptions: PerkOptions, \$memberSort: [BrandMembersConnectionSort!], \$employeeSort: [BrandEmployeesConnectionSort!]) {
   brands(where: \$where, options: \$options) {
     id
     name
@@ -21,6 +24,12 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
     mainColor
     logoUrl
     backgroundImageUrl
+    communityGuidelines
+    links {
+      id
+      title
+      url
+    }
     posts(options: \$postsOptions) {
       commentsAggregate {
         count
@@ -29,16 +38,18 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
         id
         name
         accountPictureUrl
+        queryUserHasBlocked
       }
       title
       body
+      isFlaggedByUser
       id
       linkUrl
       images
       type
       createdAt
     }
-    employeesConnection(first: \$employeesFirst) {
+    employeesConnection (sort: \$employeeSort) {
       totalCount
       edges {
         node {
@@ -52,7 +63,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
         jobTitle
       }
     }
-    membersConnection(first: \$membersFirst) {
+    membersConnection (sort: \$memberSort) {
       totalCount
       edges {
         node {
@@ -65,6 +76,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
     perks(options: \$perksOptions) {
       id
       title
+      type
       description
       imageUrls
       productName
@@ -82,7 +94,7 @@ query Brands(\$where: BrandWhere, \$options: BrandOptions, \$postsOptions: PostO
 }
 """;
 
-class BrandHomepage extends StatefulWidget {
+class BrandHomepage extends ConsumerStatefulWidget {
   const BrandHomepage({Key? key, required this.brandId}) : super(key: key);
   final String brandId;
 
@@ -92,8 +104,9 @@ class BrandHomepage extends StatefulWidget {
   _BrandHomepageState createState() => _BrandHomepageState();
 }
 
-class _BrandHomepageState extends State<BrandHomepage>
+class _BrandHomepageState extends ConsumerState<BrandHomepage>
     with SingleTickerProviderStateMixin {
+  late final analytics = ref.watch(analyticsProvider);
   BrandModel _brand = BrandModel();
   List<PostModel> _posts = [];
   List<PerkModel> _perks = [];
@@ -122,6 +135,11 @@ class _BrandHomepageState extends State<BrandHomepage>
   initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      analytics.setCurrentScreen(screenName: "Brand Home View");
+      analytics.logScreenView(
+          screenName: "Brand Home View", screenClass: widget.brandId);
+    });
   }
 
   @override
@@ -137,7 +155,7 @@ class _BrandHomepageState extends State<BrandHomepage>
       SliverList(
         delegate: SliverChildListDelegate([
           SizedBox(
-              height: 200.0,
+              height: 290.0,
               width: double.infinity,
               child: _brand.backgroundImageUrl.isEmpty
                   ? AssetUtils.defaultImage()
@@ -152,15 +170,34 @@ class _BrandHomepageState extends State<BrandHomepage>
                           ),
                       fit: BoxFit.fitWidth)),
           Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Column(children: [
-                Text(_brand.name, style: Theme.of(context).textTheme.headline3),
-                StackedAvatars(
-                  [..._brand.employees, ..._brand.members],
-                  showOverflow: (_brand.totalCommunityCount > 3),
-                ),
-                const Text("VIP Community"),
-              ])),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_brand.name,
+                        style: Theme.of(context).textTheme.headline2),
+                    InkWell(
+                        onTap: () => {
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: (BuildContext bc) {
+                                    return UserListView([
+                                      ..._brand.employees,
+                                      ..._brand.members
+                                    ]);
+                                  })
+                            },
+                        child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: StackedAvatars(
+                              [..._brand.employees, ..._brand.members],
+                              height: 44,
+                              showOverflow: (_brand.totalCommunityCount > 5),
+                              overflowText:
+                                  ("${_brand.totalCommunityCount} members"),
+                            ))),
+                  ])),
         ]),
       ),
       SliverAppBar(
@@ -175,9 +212,9 @@ class _BrandHomepageState extends State<BrandHomepage>
               labelColor: Theme.of(context).colorScheme.onBackground,
               controller: _tabController,
               tabs: const [
-                Tab(text: "Conversations"),
-                Tab(text: "My Perks"),
-                Tab(text: "Overview")
+                Tab(text: "Convos"),
+                Tab(text: "Shop"),
+                Tab(text: "About"),
               ])),
     ];
   }
@@ -209,14 +246,22 @@ class _BrandHomepageState extends State<BrandHomepage>
                 {"createdAt": "DESC"}
               ]
             },
-            "membersFirst": 5,
-            "employeesFirst": 5,
             "perksOptions": {
               "limit": 10,
               "sort": [
                 {"createdAt": "DESC"}
               ]
-            }
+            },
+            "memberSort": [
+              {
+                "node": {"name": "ASC"}
+              }
+            ],
+            "employeeSort": [
+              {
+                "node": {"name": "ASC"}
+              }
+            ]
           },
         ),
         builder: (QueryResult result,
@@ -229,7 +274,9 @@ class _BrandHomepageState extends State<BrandHomepage>
             for (var p in result.data?['brands'][0]['posts']) {
               PostModel post = PostModel.fromJson(p);
               post.brand = _brand;
-              posts.add(post);
+              if (!post.isFlaggedByUser && !post.creator.queryUserHasBlocked) {
+                posts.add(post);
+              }
             }
             _posts = posts;
             List<PerkModel> perks = [];
@@ -263,6 +310,9 @@ class _BrandHomepageState extends State<BrandHomepage>
   Widget buildNewPostButton(OnCompletionCallback onCompleted) => IconButton(
       icon: const Icon(Icons.add),
       onPressed: () => {
+            analytics.logEvent(
+                name: "new_post_initiated",
+                parameters: {"origin": "brand_home_view"}),
             Navigator.push(
                 context,
                 MaterialPageRoute(

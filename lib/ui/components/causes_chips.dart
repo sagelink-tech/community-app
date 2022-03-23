@@ -33,7 +33,9 @@ class CausesChips extends StatelessWidget {
     return Wrap(
       spacing: 6.0,
       runSpacing: 6.0,
-      children: causes.map((c) => _buildChip(c)).toList(),
+      children: causes.isNotEmpty
+          ? causes.map((c) => _buildChip(c)).toList()
+          : [const Text("No causes selected")],
     );
   }
 }

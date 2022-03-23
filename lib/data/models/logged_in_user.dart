@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sagelink_communities/data/models/app_state_model.dart';
 import 'package:sagelink_communities/data/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 
 String getUserQuery = """
 query Users(\$where: UserWhere) {
@@ -10,29 +13,45 @@ query Users(\$where: UserWhere) {
     email
     name
     accountPictureUrl
-    employeeOfBrandsConnection {
-      edges {
-        roles
-        node {
-          id
-        }
-      }
+    deviceTokens
+    lastDeviceTokenUpdate
+    firebaseId
+    memberOfBrands{
+      id
+      logoUrl
+      name
+      mainColor
+    }
+    employeeOfBrands{
+      id
+      logoUrl
+      name
+      mainColor
     }
   }
 }
 """;
 
-enum LoginState {
-  isLoggedOut,
-  isLoggingIn,
-  isLoggedIn,
+//ignore: constant_identifier_names
+const String CREATE_USER_MUTATION = """
+mutation CreateUsers(\$input: [UserCreateInput!]!) {
+  createUsers(input: \$input) {
+    users {
+      id
+    }
+  }
 }
+""";
+
+enum LoginState { isLoggedOut, isLoggingIn, isLoggedIn, needToCreateUser }
 
 class LoggedInUser {
   UserModel? user;
   LoginState status = LoginState.isLoggedOut;
   bool isAdmin = false;
   String? adminBrandId;
+  List<String> deviceTokens = [];
+  DateTime? lastDeviceTokenUpdate;
 
   // Main use case interfaces
   UserModel getUser() {
@@ -43,34 +62,56 @@ class LoggedInUser {
       {this.user,
       this.status = LoginState.isLoggedOut,
       this.isAdmin = false,
-      this.adminBrandId});
+      this.adminBrandId,
+      this.deviceTokens = const [],
+      this.lastDeviceTokenUpdate});
 }
 
 class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
-  LoggedInUserStateNotifier(state, {required this.client})
+  LoggedInUserStateNotifier(state,
+      {required this.client, required this.appState})
       : super(state ?? LoggedInUser());
 
   final GraphQLClient client;
+  final AppState appState;
 
   void updateUserWithState(User? user) {
-    if (user == null && state.status != LoginState.isLoggedOut) {
+    setIsLoading();
+    if (user == null &&
+        (state.status != LoginState.isLoggedOut ||
+            state.status != LoginState.isLoggingIn)) {
       LoggedInUser _loggedInUser =
           LoggedInUser(user: UserModel(), status: LoginState.isLoggedOut);
-      state = _loggedInUser;
+      if (mounted) {
+        state = _loggedInUser;
+      }
     } else if (user != null && state.status != LoginState.isLoggedIn) {
-      fetchUserData(email: user.email!);
+      fetchUserData(firebaseUser: user);
+    }
+  }
+
+  void refreshUser() {
+    if (state.status == LoginState.isLoggedIn) {
+      fetchUserData(userId: state.getUser().id);
+    }
+  }
+
+  void setIsLoading() {
+    if (mounted) {
+      state = LoggedInUser(user: UserModel(), status: LoginState.isLoggingIn);
     }
   }
 
   // Fetch logged in user's data from the SL backend
-  Future<Object?> fetchUserData(
-      {String userId = "", String email = "", String firebaseId = ""}) async {
-    if (userId.isEmpty && email.isEmpty && firebaseId.isEmpty) {
-      return Exception(
-          "missing required uid fields [email, userId, firebaseId]");
+  Future<void> fetchUserData(
+      {String userId = "", String email = "", User? firebaseUser}) async {
+    if (userId.isEmpty && email.isEmpty && firebaseUser == null) {
+      throw Exception(
+          "missing required uid fields [email, userId, firebaseUser]");
     }
-
-    state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
+    if (mounted) {
+      state = LoggedInUser(user: null, status: LoginState.isLoggingIn);
+    }
     final QueryResult result = await client.query(QueryOptions(
       document: gql(getUserQuery),
       variables: {
@@ -78,7 +119,7 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
             ? {"id": userId}
             : email.isNotEmpty
                 ? {"email": email}
-                : {"firebaesId": firebaseId},
+                : {"firebaseId": firebaseUser!.uid},
         "options": {"limit": 1}
       },
     ));
@@ -87,28 +128,103 @@ class LoggedInUserStateNotifier extends StateNotifier<LoggedInUser> {
     }
 
     if (result.data != null && (result.data!['users'] as List).isNotEmpty) {
-      var _userData = result.data?['users'][0];
+      // RETURNED A USER, setup logged in user
+      Map<String, dynamic> _userData = result.data?['users'][0];
       UserModel _user = UserModel.fromJson(_userData);
       String? brandId;
       bool isAdmin = false;
+      List<String> deviceTokens = (_userData.containsKey('deviceTokens') &&
+              _userData['deviceTokens'] != null)
+          ? List<String>.from(_userData['deviceTokens'])
+          : [];
+      DateTime? lastDeviceTokenUpdate;
 
-      if ((_userData['employeeOfBrandsConnection']['edges'] as List)
-          .isNotEmpty) {
+      if (_userData.containsKey('lastDeviceTokenUpdate') &&
+          _userData['startDate'] != null) {
+        lastDeviceTokenUpdate =
+            DateTime.tryParse(_userData["lastDeviceTokenUpdate"]);
+      }
+      if ((_userData['employeeOfBrands'] as List).isNotEmpty) {
         isAdmin = true;
-        brandId =
-            _userData['employeeOfBrandsConnection']['edges'][0]['node']['id'];
+        brandId = _userData['employeeOfBrands'][0]['id'];
       }
       LoggedInUser _loggedInUser = LoggedInUser(
           user: _user,
           status: LoginState.isLoggedIn,
           isAdmin: isAdmin,
-          adminBrandId: brandId);
-      state = _loggedInUser;
+          adminBrandId: brandId,
+          deviceTokens: deviceTokens,
+          lastDeviceTokenUpdate: lastDeviceTokenUpdate);
+      // update app state that the user has successfully logged in
+      appState.didSignIn();
+      if (mounted) {
+        state = _loggedInUser;
+      }
+    } else if (result.data != null && firebaseUser != null) {
+      // Logged in on firebase but not on SL
+      if (firebaseUser.displayName != null &&
+          firebaseUser.displayName!.isNotEmpty) {
+        // create a user since there is at least a display name
+        await createNewUser(UserModel.fromFirebaseUser(firebaseUser));
+        fetchUserData(firebaseUser: firebaseUser);
+      } else {
+        // need to create a user since there is no display name
+        if (mounted) {
+          state = LoggedInUser(
+              user: UserModel.fromFirebaseUser(firebaseUser),
+              status: LoginState.needToCreateUser);
+        }
+      }
+    } else {
+      if (mounted) {
+        state = LoggedInUser();
+      }
     }
   }
 
-  // Create a new user on the SL backend
-  UserModel? createUserWithData() {
-    return null;
+  void updateWithUserId(String userId) {
+    setIsLoading();
+    fetchUserData(userId: userId);
+  }
+
+  Future<void> createNewUser(UserModel user,
+      {OnMutationCompleted? onComplete}) async {
+    // initialize mutation variables
+    Map<String, dynamic> mutationVariables = user.toJson();
+    mutationVariables.remove('id');
+    mutationVariables["causes"] = {
+      "connectOrCreate": user.causes
+          .map((e) => {
+                "where": {
+                  "node": {"title": e.title}
+                },
+                "onCreate": {
+                  "node": {"title": e.title}
+                }
+              })
+          .toList()
+    };
+
+    // Update
+    MutationOptions options =
+        MutationOptions(document: gql(CREATE_USER_MUTATION), variables: {
+      "input": [mutationVariables]
+    });
+
+    QueryResult result = await client.mutate(options);
+
+    bool success = (result.data != null &&
+        (result.data!['createUsers']['users'] as List).length == 1);
+    if (onComplete != null) {
+      await onComplete(result.data);
+    }
+    if (success) {
+      await FirebaseChatCore.instance.createUserInFirestore(
+        types.User(
+          id: user.firebaseId,
+        ),
+      );
+      updateWithUserId(result.data!['createUsers']['users'][0]['id']);
+    }
   }
 }

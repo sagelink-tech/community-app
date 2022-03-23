@@ -1,14 +1,21 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/go_to_admin_page.dart';
-import 'package:sagelink_communities/ui/views/pages/account_page.dart';
+import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
+import 'package:sagelink_communities/ui/views/messages/rooms_page.dart';
+import 'package:sagelink_communities/ui/views/messages/users_page.dart';
 import 'package:sagelink_communities/ui/views/pages/brands_page.dart';
 import 'package:sagelink_communities/ui/views/pages/home_page.dart';
 import 'package:sagelink_communities/ui/views/pages/perks_page.dart';
 import 'package:sagelink_communities/ui/views/pages/settings_page.dart';
+import 'package:sagelink_communities/ui/views/perks/perk_view.dart';
 import 'package:sagelink_communities/ui/views/posts/new_post_brand_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sagelink_communities/data/providers.dart';
+import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
+import 'package:sagelink_communities/ui/views/posts/post_view.dart';
 import 'package:sagelink_communities/ui/views/scaffold/nav_bar.dart';
 import 'package:sagelink_communities/ui/views/scaffold/nav_bar_mobile.dart';
 
@@ -43,38 +50,94 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   late List<TabItem> pages;
 
   late final loggedInUser = ref.watch(loggedInUserProvider);
+  late final analytics = ref.watch(analyticsProvider);
 
   @override
   void initState() {
     super.initState();
+
+    // Run code required to handle interacted messages in an async function
+    // as initState() must not be async
+    setupInteractedMessage();
   }
 
-  List<TabItem> consumerPageOptions = [
-    TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
-    TabItem("My Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
-        const PerksPage()),
-    TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
-        const BrandsPage(),
-        showFloatingAction: false),
-    TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
-        const SettingsPage(),
-        showFloatingAction: false)
-  ];
+  Future<void> setupInteractedMessage() async {
+    // Get any messages which caused the application to open from
+    // a terminated state.
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    // If the message also contains a data property with a "type" of "chat",
+    // navigate to a chat screen
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+
+    // Also handle any interaction when the app is in the background via a
+    // Stream listener
+    FirebaseMessaging.onMessageOpenedApp
+        .listen((RemoteMessage message) => _handleMessage(message));
+  }
+
+  void createPostAction(BuildContext context) {
+    analytics
+        .logEvent(name: "new_post_initiated", parameters: {"origin": "home"});
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => loggedInUser.getUser().brands.length == 1
+                ? NewPostPage(
+                    brandId: loggedInUser.getUser().brands[0].id,
+                    onCompleted: () => {})
+                : const NewPostBrandSelection()));
+  }
+
+  void createMessageAction(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const UsersPage()));
+  }
+
+  void _handleMessage(RemoteMessage message) {
+    if (message.data['type'] == 'post') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  PostView(postId: message.data['postId'])));
+    }
+    if (message.data['type'] == 'perk') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  PerkView(perkId: message.data['perkId'])));
+    }
+    if (message.data['type'] == 'brand') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  BrandHomepage(brandId: message.data['brandId'])));
+    }
+  }
 
   List<TabItem> _pageOptions() {
     var _pages = [
-      TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage()),
-      TabItem("My Perks", "Perks", const Icon(Icons.shopping_cart_outlined),
-          const PerksPage()),
-      TabItem("My Brands", "Brands", const Icon(Icons.casino_outlined),
+      TabItem("", "Home", const Icon(Icons.home_outlined), const HomePage(),
+          onAction: createPostAction, showFloatingAction: true),
+      TabItem("Shop", "Shop", const Icon(Icons.shopping_cart_outlined),
+          const PerksPage(),
+          onAction: createPostAction, showFloatingAction: true),
+      TabItem("My Brands", "Brands", const Icon(Icons.group_work_outlined),
           const BrandsPage(),
           showFloatingAction: false),
-      TabItem("My Settings", "Settings", const Icon(Icons.settings_outlined),
-          const SettingsPage(),
-          showFloatingAction: false)
+      TabItem("Messages", "Messages", const Icon(Icons.mail_outline),
+          const RoomsPage(),
+          onAction: createMessageAction, showFloatingAction: true)
     ];
 
-    if (loggedInUser.isAdmin) {
+    if (loggedInUser.isAdmin && kIsWeb) {
       _pages.add(TabItem(
           "",
           "Admin",
@@ -96,9 +159,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       });
     }
 
-    void _goToAccount(String userId) async {
+    void _goToSettings() {
       Navigator.push(context,
-          MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
+          MaterialPageRoute(builder: (context) => const SettingsPage()));
     }
 
     return Scaffold(
@@ -107,28 +170,23 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.search),
-          //   onPressed: () {},
-          // ),
           ClickableAvatar(
-            avatarText: loggedInUser.getUser().name[0],
+            avatarText: loggedInUser.getUser().initials,
             avatarURL: loggedInUser.getUser().accountPictureUrl,
             radius: 20,
             padding: const EdgeInsets.all(10),
-            onTap: () => _goToAccount(loggedInUser.getUser().id),
+            onTap: _goToSettings,
+            showBadge: loggedInUser.getUser().accountPictureUrl.isEmpty ||
+                loggedInUser.getUser().name.isEmpty,
           )
         ],
       ),
       body: _pageOptions()[_selectedIndex].body,
       floatingActionButton: _pageOptions()[_selectedIndex].showFloatingAction
           ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const NewPostBrandSelection()));
-              },
+              onPressed: () => _pageOptions()[_selectedIndex].onAction != null
+                  ? _pageOptions()[_selectedIndex].onAction!(context)
+                  : createPostAction(context),
               child: Icon(Icons.add,
                   color: Theme.of(context).colorScheme.background),
               backgroundColor: Theme.of(context).colorScheme.secondary,

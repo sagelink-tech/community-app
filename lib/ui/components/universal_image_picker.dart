@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
+import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,6 +10,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 
 // NOTE:
 // Images use a __ in the filename as a replacement
@@ -49,16 +54,39 @@ class ImageUploadResult {
 
 class UniversalImagePicker {
   List<File> images = [];
-  dynamic picker;
+  final List<File> _originalImages = [];
+  List<String> originalUrls;
+
+  List<Uint8List> _webImageBytes = [];
+
+  final ImagePicker _picker = ImagePicker();
   int maxImages = 1;
   int targetIndex = 0;
   BuildContext context;
   VoidCallback? onSelected;
 
-  UniversalImagePicker(this.context, {this.maxImages = 1, this.onSelected});
+  UniversalImagePicker(this.context,
+      {this.maxImages = 1, this.onSelected, this.originalUrls = const []}) {
+    if (originalUrls.isNotEmpty) {
+      initWithOriginalUrls();
+    }
+  }
+
+  void initWithOriginalUrls() async {
+    if (originalUrls.isNotEmpty) {
+      for (var url in originalUrls) {
+        _originalImages.add(await AssetUtils.urlToFile(url));
+      }
+    }
+    images = List<File>.from(_originalImages);
+    if (onSelected != null) {
+      onSelected!();
+    }
+  }
 
   void clearImages() {
     images = [];
+    _webImageBytes = [];
     if (onSelected != null) {
       onSelected!();
     }
@@ -69,6 +97,7 @@ class UniversalImagePicker {
       return;
     }
     images.removeAt(index);
+    _webImageBytes.removeAt(index);
     if (onSelected != null) {
       onSelected!();
     }
@@ -86,31 +115,44 @@ class UniversalImagePicker {
 
   void _imgFromSource(ImageSource source, int maxImages) async {
     List<File> selection = maxImages > 1 ? images : [];
-    if (source == ImageSource.gallery && maxImages > 1) {
-      List<XFile>? xfiles = await ImagePicker()
-          .pickMultiImage(maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
-      if (xfiles != null) {
-        for (var xf in xfiles) {
-          if (selection.length >= maxImages) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(
-                    "Selected too many photos. Adding the first $maxImages."),
-                backgroundColor: Theme.of(context).colorScheme.error));
-            break;
+    List<Uint8List> _xselection = maxImages > 1 ? _webImageBytes : [];
+
+    try {
+      if (source == ImageSource.gallery && maxImages > 1) {
+        List<XFile>? xfiles = await _picker.pickMultiImage(
+            maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
+        if (xfiles != null) {
+          for (var xf in xfiles) {
+            if (selection.length >= maxImages) {
+              CustomWidgets.buildSnackBar(
+                  context,
+                  "Selected too many photos. Adding the first $maxImages.",
+                  SLSnackBarType.neutral);
+
+              break;
+            }
+            selection.add(File(xf.path));
+            var f = await xf.readAsBytes();
+            _xselection.add(f);
           }
-          selection.add(File(xf.path));
+        }
+      } else {
+        XFile? xfile = await _picker.pickImage(
+            source: source, maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
+        if (xfile != null) {
+          selection.add(File(xfile.path));
+          var f = await xfile.readAsBytes();
+          _xselection.add(f);
         }
       }
-    } else {
-      XFile? xfile = await ImagePicker().pickImage(
-          source: source, maxHeight: 1024, maxWidth: 1024, imageQuality: 80);
-      if (xfile != null) {
-        selection.add(File(xfile.path));
+    } catch (e) {
+      // log error
+    } finally {
+      images = selection;
+      _webImageBytes = _xselection;
+      if (onSelected != null) {
+        onSelected!();
       }
-    }
-    images = selection;
-    if (onSelected != null) {
-      onSelected!();
     }
   }
 
@@ -142,8 +184,13 @@ class UniversalImagePicker {
         });
   }
 
-  MultipartFile convertImageToMultipartFiles(File image, String newFilename) {
-    var byteData = image.readAsBytesSync();
+  Future<MultipartFile> convertImageToMultipartFiles(
+      int index, String newFilename) async {
+    if (kIsWeb) {
+      return MultipartFile.fromBytes('photo', _webImageBytes[index],
+          filename: newFilename, contentType: MediaType("image", 'jpg'));
+    }
+    var byteData = images[index].readAsBytesSync();
     var multipartFile = MultipartFile.fromBytes('photo', byteData,
         filename: newFilename,
         contentType:
@@ -151,28 +198,80 @@ class UniversalImagePicker {
     return multipartFile;
   }
 
-  Future<ImageUploadResult> uploadImages(String baseKey,
+  Future<ImageUploadResult> updateImages(String baseKey,
       {String imageKeyPrefix = "image",
       required BuildContext context,
       required GraphQLClient client}) async {
-    // if (images.isEmpty) {
-    //   return null;
-    // }
+    // Iterate over the new post images:
+    //   IF IN ORIGINAL, add URL to new list
+    //   ELSE, add to upload queue and save index to be inserted when complete
+    List<String> origCachePaths = _originalImages.map((e) => e.path).toList();
+    List<int> updateIndices = [];
+    List<String> newUrls = [];
+    List<File> imagesToBeUploaded = [];
 
+    for (int i = 0; i < min(maxImages, images.length); i++) {
+      int origIndex = origCachePaths.indexOf(images[i].path);
+      if (origIndex != -1) {
+        // is an existing image
+        newUrls.add(originalUrls[origIndex]);
+      } else {
+        // is not an existing image
+        // save a null object to be replaced upon completion
+        newUrls.add("TMP_HOLDER");
+        // add the index to be replaced at
+        updateIndices.add(i);
+        // add to the images to be uploaded
+        imagesToBeUploaded.add(images[i]);
+      }
+    }
+
+    // TODO Find images to be deleted
+
+    // Upload images
+    ImageUploadResult result = await uploadImages(baseKey,
+        imageKeyPrefix: imageKeyPrefix,
+        context: context,
+        client: client,
+        imagesToUpload: imagesToBeUploaded);
+
+    // Replace URLs with new URLs
+    if (!result.success) {
+      return result;
+    } else {
+      if (updateIndices.length != result.locations.length) {
+        throw ErrorDescription(
+            "Expected image updates does not equal resulting image updates");
+      }
+      for (int i = 0; i < result.locations.length; i++) {
+        newUrls[updateIndices[i]] = result.locations[i];
+      }
+      result.locations = newUrls;
+      return result;
+    }
+  }
+
+  Future<ImageUploadResult> uploadImages(String baseKey,
+      {String imageKeyPrefix = "image",
+      required BuildContext context,
+      required GraphQLClient client,
+      List<File>? imagesToUpload}) async {
+    imagesToUpload ??= images;
     List<MultipartFile> files = [];
+    var uuid = const Uuid();
 
-    bool singleFileUpload = maxImages == 1 || images.length == 1;
+    bool singleFileUpload = maxImages == 1 || imagesToUpload.length == 1;
 
     if (!singleFileUpload) {
-      for (var i = 0; i < images.length; i++) {
+      for (var i = 0; i < imagesToUpload.length; i++) {
         var filename =
-            "${baseKey.replaceAll("/", "__")}${imageKeyPrefix}_$i${path.extension(images[i].path)}";
-        files.add(convertImageToMultipartFiles(images[i], filename));
+            "${baseKey.replaceAll("/", "__")}${imageKeyPrefix}_${uuid.v4()}${path.extension(imagesToUpload[i].path)}";
+        files.add(await convertImageToMultipartFiles(i, filename));
       }
     } else {
       var filename =
-          "${baseKey.replaceAll("/", "__")}$imageKeyPrefix${path.extension(images[0].path)}";
-      files.add(convertImageToMultipartFiles(images[0], filename));
+          "${baseKey.replaceAll("/", "__")}${imageKeyPrefix}_${uuid.v4()}${path.extension(imagesToUpload[0].path)}";
+      files.add(await convertImageToMultipartFiles(0, filename));
     }
 
     Map<String, dynamic> variables = singleFileUpload
@@ -187,9 +286,9 @@ class UniversalImagePicker {
 
     QueryResult result = await client.mutate(options);
     if (result.hasException) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text("Error uploading images"),
-          backgroundColor: Theme.of(context).colorScheme.error));
+      CustomWidgets.buildSnackBar(
+          context, "Error uploading images", SLSnackBarType.error);
+
       return ImageUploadResult(false, []);
     }
 
@@ -198,12 +297,12 @@ class UniversalImagePicker {
       return ImageUploadResult(!(result.hasException || result.data == null),
           [result.data!['singleUpload']['location']]);
     } else {
-      ImageUploadResult results = ImageUploadResult(true, []);
+      ImageUploadResult tmpResult = ImageUploadResult(true, []);
       for (var el in (result.data!['multipleUpload'] as List)) {
-        results.success == (results.success && el['success'] == "true");
-        results.locations.add(el['location']);
+        tmpResult.success == (tmpResult.success && el['success'] == "true");
+        tmpResult.locations.add(el['location']);
       }
-      return results;
+      return tmpResult;
     }
   }
 }

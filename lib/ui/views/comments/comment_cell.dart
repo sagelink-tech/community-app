@@ -2,29 +2,35 @@ import 'package:expandable_text/expandable_text.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:flutter/material.dart';
+import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:sagelink_communities/data/models/comment_model.dart';
-import 'package:sagelink_communities/ui/views/pages/account_page.dart';
+import 'package:sagelink_communities/ui/views/users/account_page.dart';
 
-typedef ShowThreadCallback = void Function(String commentId);
-
-typedef AddReplyCallback = void Function(String commentId);
-
-typedef AddReactionCallback = void Function(String commentId);
+typedef VoidCommentIDCallback = void Function(String commentId);
+typedef VoidCommentCallback = void Function(CommentModel comment);
 
 class CommentCell extends StatelessWidget {
   final int itemNo;
   final CommentModel comment;
-  final ShowThreadCallback? onShowThread;
-  final AddReplyCallback? onAddReply;
-  final AddReactionCallback? onAddReaction;
+  final String brandId;
+  final VoidCommentIDCallback? onShowThread;
+  final VoidCallback? onShouldReply;
+  final VoidCommentIDCallback? onAddReply;
+  final VoidCommentIDCallback? onUpdate;
+  final VoidCommentCallback? onShouldEdit;
   final bool inThreadView;
+  final bool canReply;
 
   const CommentCell(this.itemNo, this.comment,
-      {this.onAddReply,
+      {required this.brandId,
+      required this.onShouldReply,
+      this.onAddReply,
       this.onShowThread,
-      this.onAddReaction,
+      this.onUpdate,
+      this.onShouldEdit,
       this.inThreadView = false,
+      this.canReply = true,
       Key? key})
       : super(key: key);
 
@@ -33,9 +39,25 @@ class CommentCell extends StatelessWidget {
         MaterialPageRoute(builder: (context) => AccountPage(userId: userId)));
   }
 
+  void _showOptionsModal(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return ModerationOptionsSheet(
+            ModerationOptionSheetType.comment,
+            brandId: brandId,
+            comment: comment,
+            onDelete: () => onUpdate != null ? onUpdate!(comment.id) : {},
+            onComplete: () => onUpdate != null ? onUpdate!(comment.id) : {},
+            onEdit: () => onShouldEdit != null ? onShouldEdit!(comment) : {},
+          );
+        });
+  }
+
   Widget _buildBody(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10),
+      width: double.infinity,
       decoration: BoxDecoration(
           color: Theme.of(context).selectedRowColor,
           borderRadius: const BorderRadius.only(
@@ -44,8 +66,15 @@ class CommentCell extends StatelessWidget {
             topRight: Radius.circular(10.0),
           )),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(comment.creator.name,
-            style: Theme.of(context).textTheme.headline3),
+        Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+          Text(comment.creator.name,
+              style: Theme.of(context).textTheme.bodyText1),
+          const Spacer(),
+          IconButton(
+              onPressed: () => _showOptionsModal(context),
+              color: Theme.of(context).colorScheme.primary,
+              icon: const Icon(Icons.more_horiz_outlined)),
+        ]),
         const ListSpacer(),
         ExpandableText(
           comment.body,
@@ -53,9 +82,9 @@ class CommentCell extends StatelessWidget {
           collapseText: "show less",
           animation: true,
           linkEllipsis: true,
-          linkColor: Theme.of(context).colorScheme.secondaryVariant,
+          linkColor: Theme.of(context).colorScheme.secondary,
           collapseOnTextTap: true,
-          style: Theme.of(context).textTheme.bodyText1,
+          style: Theme.of(context).textTheme.bodyText2,
           maxLines: 3,
         )
       ]),
@@ -66,32 +95,33 @@ class CommentCell extends StatelessWidget {
     List<Widget> _buttons = [
       Text(timeago.format(comment.createdAt, locale: "en_short"),
           style: Theme.of(context).textTheme.caption),
+      // TextButton(
+      //     onPressed: () => {
+      //           if (onUpdate != null) {onUpdate!(comment.id)}
+      //         },
+      //     style: TextButton.styleFrom(
+      //       primary: Theme.of(context).colorScheme.secondary,
+      //     ),
+      //     child: const Text("React")),
       TextButton(
           onPressed: () => {
-                if (onAddReaction != null) {onAddReaction!(comment.id)}
-              },
-          style: TextButton.styleFrom(
-            primary: Theme.of(context).colorScheme.secondary,
-          ),
-          child: const Text("React")),
-      TextButton(
-          onPressed: () => {
-                if (onShowThread != null) {onShowThread!(comment.id)}
+                if (onShowThread != null) {onShowThread!(comment.id)},
+                if (onShouldReply != null) {onShouldReply!()}
               },
           style: TextButton.styleFrom(
             primary: Theme.of(context).colorScheme.secondary,
           ),
           child: const Text("Reply")),
       const Spacer(),
-      Text(
-        "reactions",
-        style: Theme.of(context).textTheme.caption,
-      )
+      // Text(
+      //   "reactions",
+      //   style: Theme.of(context).textTheme.caption,
+      // )
     ];
 
     // If in thread view, remove the "reply" button option
-    if (inThreadView) {
-      _buttons.removeAt(2);
+    if (!canReply) {
+      _buttons.removeAt(1);
     }
 
     return Row(children: _buttons);
@@ -117,30 +147,13 @@ class CommentCell extends StatelessWidget {
       Align(
           alignment: Alignment.topCenter,
           child: ClickableAvatar(
-            avatarText: comment.creator.name[0],
+            avatarText: comment.creator.initials,
             avatarURL: comment.creator.accountPictureUrl,
             radius: 20,
             onTap: () => _goToAccount(context, comment.creator.id),
           ))
     ];
 
-    // if (comment.replyCount == 0) {
-    //   _widgets.add(
-    //     Container(
-    //       constraints: const BoxConstraints(
-    //           minWidth: 20, maxWidth: 30, minHeight: 25, maxHeight: 120),
-    //       margin: const EdgeInsets.only(left: 20, bottom: 20),
-    //       decoration: const BoxDecoration(
-    //           color: Colors.transparent,
-    //           borderRadius:
-    //               BorderRadius.only(bottomLeft: Radius.circular(10.0)),
-    //           border: Border(
-    //             left: BorderSide(color: Colors.black),
-    //             bottom: BorderSide(color: Colors.black),
-    //           )),
-    //     ),
-    //   );
-    // }
     return Column(
         children: _widgets, crossAxisAlignment: CrossAxisAlignment.start);
   }

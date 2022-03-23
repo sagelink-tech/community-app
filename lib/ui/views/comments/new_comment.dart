@@ -1,32 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
-
-String createCommentMutation = """
-mutation CreateComments(\$input: [CommentCreateInput!]!) {
-  createComments(input: \$input) {
-    info {
-      nodesCreated
-    }
-  }
-}
-""";
-
-typedef OnCompletionCallback = void Function();
+import 'package:sagelink_communities/data/services/comment_service.dart';
 
 class NewComment extends ConsumerStatefulWidget {
   const NewComment(
       {Key? key,
       required this.parentId,
       required this.onCompleted,
+      required this.onLostFocus,
       this.focused = false,
       this.isOnPerk = false,
-      this.isReply = false})
+      this.isReply = false,
+      this.comment})
       : super(key: key);
 
+  // If a comment is set, then this will be an update module, else it's a new comment
+  final CommentModel? comment;
   final String parentId;
-  final OnCompletionCallback onCompleted;
+  final VoidCallback onCompleted;
+  final VoidCallback? onLostFocus;
   final bool focused;
   final bool isReply;
   final bool isOnPerk;
@@ -39,99 +33,149 @@ class NewComment extends ConsumerStatefulWidget {
 
 class _NewCommentState extends ConsumerState<NewComment> {
   final formKey = GlobalKey<FormState>();
+  bool get isUpdate => widget.comment != null;
   String? body;
+  late CommentService commentService = ref.watch(commentServiceProvider);
+  final TextEditingController _editingController = TextEditingController();
+
+  late FocusNode _focusNode;
+  bool isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus && _editingController.text.isEmpty) {
+        if (widget.onLostFocus != null) {
+          widget.onLostFocus!();
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Clean up the focus node when the Form is disposed.
+    _focusNode.dispose();
+    _editingController.dispose();
+    super.dispose();
+  }
+
+  void refresh() {
+    setState(() {
+      body = isUpdate ? widget.comment!.body : "";
+      _editingController.value = TextEditingValue(
+        text: body!,
+        selection: TextSelection.fromPosition(
+          TextPosition(offset: body!.length),
+        ),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isUpdate && body == null) {
+      refresh();
+    }
     return Form(
         key: formKey,
         //autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(child: buildBodyForm(context)),
-            buildSubmit(enabled: body != null && body!.isNotEmpty)
+            buildBodyForm(context),
+            buildSubmit(enabled: !isSaving && body != null && body!.isNotEmpty)
           ],
         ));
   }
 
-  Widget buildBodyForm(BuildContext context, {bool enabled = true}) =>
-      Container(
-          padding: const EdgeInsets.symmetric(vertical: 10.0),
-          color: Theme.of(context).canvasColor,
-          child: TextFormField(
-              autofocus: widget.focused,
-              decoration: InputDecoration(
-                labelText: widget.isReply ? 'Reply' : 'Comment',
-                border: const OutlineInputBorder(),
-                errorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Theme.of(context).errorColor)),
-                focusedErrorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Theme.of(context).errorColor)),
-                errorStyle: TextStyle(color: Theme.of(context).errorColor),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter body text';
-                } else {
-                  return null;
-                }
-              },
-              minLines: 1,
-              maxLines: 1,
-              onChanged: (value) => setState(() => body = value),
-              enabled: enabled));
-
-  _getCommentVariables() {
-    var input = {
-      "body": body,
-      "createdBy": {
-        "connect": {
-          "where": {
-            "node": {"id": ref.read(loggedInUserProvider).getUser().id}
-          }
-        }
-      }
-    };
-    var connectionData = {
-      "connect": {
-        "where": {
-          "node": {"id": widget.parentId}
-        }
-      }
-    };
-
-    if (widget.isReply) {
-      input["onComment"] = connectionData;
-    } else if (widget.isOnPerk) {
-      input["onPerk"] = connectionData;
-    } else {
-      input["onPost"] = connectionData;
+  Widget buildBodyForm(BuildContext context, {bool enabled = true}) {
+    if (isUpdate && body != widget.comment!.body) {
+      setState(() {});
     }
-    return {
-      "input": [input]
-    };
+    return Container(
+        padding: const EdgeInsets.all(10.0),
+        color: Theme.of(context).canvasColor,
+        child: TextFormField(
+            focusNode: _focusNode,
+            controller: _editingController,
+            autofocus: widget.focused || isUpdate,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+            ),
+            minLines: widget.isReply ? 1 : 2,
+            maxLines: 3,
+            onChanged: (value) => setState(() => body = value),
+            enabled: enabled));
   }
 
-  Widget buildSubmit({bool enabled = true}) => Builder(
-      builder: (context) => Mutation(
-          options: MutationOptions(
-              document: gql(createCommentMutation),
-              onCompleted: (dynamic resultData) {
-                widget.onCompleted();
-              }),
-          builder: (RunMutation runMutation, result) => IconButton(
-                icon: const Icon(Icons.send),
-                onPressed: enabled
-                    ? () {
-                        if (formKey.currentState == null) return;
-                        final isValid = formKey.currentState!.validate();
+  Future<void> updateComment() async {
+    setState(() {
+      isSaving = true;
+    });
 
-                        if (isValid) {
-                          runMutation(_getCommentVariables());
-                        }
-                      }
-                    : null,
-              )));
+    await commentService.updateComment(widget.comment!, body!,
+        onComplete: (data) => {
+              if (widget.onLostFocus != null) {widget.onLostFocus!()},
+              widget.onCompleted()
+            });
+    setState(() {
+      isSaving = false;
+    });
+  }
+
+  Future<void> createComment() async {
+    if (body != null) {
+      setState(() {
+        isSaving = true;
+      });
+      if (widget.isReply) {
+        await commentService.replyToCommentWithID(widget.parentId, body!,
+            onComplete: (data) => widget.onCompleted());
+      } else if (widget.isOnPerk) {
+        await commentService.commentOnPerkWithID(widget.parentId, body!,
+            onComplete: (data) => widget.onCompleted());
+      } else {
+        await commentService.commentOnPostWithID(widget.parentId, body!,
+            onComplete: (data) => widget.onCompleted());
+      }
+      setState(() {
+        isSaving = false;
+      });
+    }
+  }
+
+  Widget buildSubmit({bool enabled = true}) => ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+            primary: Theme.of(context).colorScheme.secondary,
+            // onPrimary: Theme.of(context).colorScheme.onSecondary,
+            minimumSize: const Size.fromHeight(48)),
+        onPressed: enabled
+            ? () {
+                if (formKey.currentState == null) return;
+                final isValid = formKey.currentState!.validate();
+
+                if (isValid) {
+                  isUpdate ? updateComment() : createComment();
+                }
+              }
+            : null,
+        child: Text(
+            isSaving
+                ? "Saving..."
+                : isUpdate
+                    ? "Save Changes"
+                    : widget.isReply
+                        ? 'Reply'
+                        : 'Comment',
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16.0,
+                color: Theme.of(context).colorScheme.onError)),
+      );
 }

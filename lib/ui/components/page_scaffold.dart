@@ -23,6 +23,7 @@ class PageScaffold extends StatelessWidget {
     // 2. check if it has a drawer
     final hasDrawer = ancestorScaffold != null && ancestorScaffold.hasDrawer;
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
       appBar: AppBar(
         // 3. add a non-null leading argument if we have a drawer
         leading: hasDrawer
