@@ -55,8 +55,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   late List<String> selectedBrandIds =
       brands.where((e) => e != null).map((e) => e!.id).toList();
   List<PostModel> posts = [];
-  late List<BrandModel?> brands =
-      userBrands.length > 1 ? [null, ...userBrands] : userBrands;
+  late List<BrandModel?> brands = [null, ...userBrands];
+  //userBrands.length > 1 ? [null, ...userBrands] : userBrands;
   bool _isFetching = false;
 
   bool _disposed = false;
@@ -173,13 +173,10 @@ class _HomePageState extends ConsumerState<HomePage> {
       );
     }
 
-    return Column(
-        children: brands.length > 1
-            ? [
-                _buildBrandChips(),
-                const SizedBox(height: 10),
-                Expanded(child: _buildPostCells())
-              ]
-            : [Expanded(child: _buildPostCells())]);
+    return Column(children: [
+      _buildBrandChips(),
+      const SizedBox(height: 10),
+      Expanded(child: _buildPostCells())
+    ]);
   }
 }
