@@ -24,7 +24,7 @@ class FlutterAppConfig {
   static const isProduction =
       bool.fromEnvironment('SL_PRODUCTION_FLAG', defaultValue: true);
   static const useEmulator =
-      bool.fromEnvironment('SL_EMULATOR_FLAG', defaultValue: true);
+      bool.fromEnvironment('SL_EMULATOR_FLAG', defaultValue: false);
 
   static get environment {
     return isProduction

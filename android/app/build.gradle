@@ -24,11 +24,11 @@ if (flutterVersionName == null) {
 def dartEnvironmentVariables = [
     SL_APP_NAME: 'communityApp',
     SL_APP_SUFFIX: null,
-    SL_USES_HTTPS: false,
-    SL_API_URL: "localhost/graphql",
+    SL_USES_HTTPS: true,
+    SL_API_URL: "sl-gql-staging.herokuapp.com/graphql",
     SL_CRASHLYTICS_FLAG: false,
     SL_CONNECTIVITY_MONITOR_FLAG: false,
-    SL_PRODUCTION_FLAG: false
+    SL_PRODUCTION_FLAG: false,
     SL_EMULATOR_FLAG: false
 ];
 if (project.hasProperty('dart-defines')) {
@@ -45,7 +45,7 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -64,8 +64,9 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.sagelink.community_app"
         applicationIdSuffix dartEnvironmentVariables.SL_APP_SUFFIX
-        minSdkVersion 16
-        targetSdkVersion 30
+        minSdkVersion 19
+        targetSdkVersion 31
+        multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         resValue "string", "app_name", dartEnvironmentVariables.SL_APP_NAME
@@ -86,4 +87,5 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.android.support:multidex:1.0.3'
 }
