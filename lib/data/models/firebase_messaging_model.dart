@@ -30,8 +30,8 @@ class Messaging {
   Future<void> addNewToken() async {
     String? token = await messagingInstance.getToken();
     if (token != null) {
-      userService.addNewDeviceToken(token);
-      syncSubscriptions();
+      await userService.addNewDeviceToken(token);
+      await syncSubscriptions();
     }
   }
 
@@ -41,7 +41,6 @@ class Messaging {
     if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
       settings = await messagingInstance.requestPermission();
     }
-
     if (settings.authorizationStatus != AuthorizationStatus.denied) {
       if (lastTokenUpdate == null ||
           lastTokenUpdate!
@@ -54,7 +53,7 @@ class Messaging {
   Future<void> syncSubscriptions() async {
     var settingsResult = await userService.fetchNotificationSettings();
 
-    settingsResult.map((settingsForBrand) {
+    for (var settingsForBrand in settingsResult) {
       if (settingsForBrand.keys.first == 'Sagelink App') {
         // sl settings
         for (var element in settingsForBrand.values.first) {
@@ -92,7 +91,7 @@ class Messaging {
           }
         }
       }
-    });
+    }
   }
 
   Future<void> subscribeToTopicsForBrand({String? brandId}) async {
@@ -157,7 +156,6 @@ class Messaging {
     }
 
     if (topicString.isNotEmpty) {
-      print(topicString);
       subscribe
           ? (await messagingInstance.subscribeToTopic(topicString))
           : (await messagingInstance.unsubscribeFromTopic(topicString));
