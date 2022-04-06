@@ -31,6 +31,7 @@ class Messaging {
     String? token = await messagingInstance.getToken();
     if (token != null) {
       userService.addNewDeviceToken(token);
+      syncSubscriptions();
     }
   }
 
@@ -50,6 +51,50 @@ class Messaging {
     }
   }
 
+  Future<void> syncSubscriptions() async {
+    var settingsResult = await userService.fetchNotificationSettings();
+
+    settingsResult.map((settingsForBrand) {
+      if (settingsForBrand.keys.first == 'Sagelink App') {
+        // sl settings
+        for (var element in settingsForBrand.values.first) {
+          if (element.status == true) {
+            messagingInstance.subscribeToTopic(
+                element.topic == MessagingTopics.slAnnouncments
+                    ? slAnnouncementsTopic
+                    : slDigestTopic);
+          }
+        }
+      } else {
+        // all other brand settings
+        for (var element in settingsForBrand.values.first) {
+          if (element.status == true) {
+            switch (element.topic) {
+              case MessagingTopics.brandAnnouncments:
+                messagingInstance.subscribeToTopic(
+                    element.brand!.id + brandAnnouncementsTopic);
+                break;
+              case MessagingTopics.brandDigest:
+                messagingInstance
+                    .subscribeToTopic(element.brand!.id + brandDigestTopic);
+                break;
+              case MessagingTopics.brandNewPosts:
+                messagingInstance
+                    .subscribeToTopic(element.brand!.id + brandNewPostsTopic);
+                break;
+              case MessagingTopics.brandPerks:
+                messagingInstance
+                    .subscribeToTopic(element.brand!.id + brandPerksTopic);
+                break;
+              default:
+                break;
+            }
+          }
+        }
+      }
+    });
+  }
+
   Future<void> subscribeToTopicsForBrand({String? brandId}) async {
     List<String> topicStrings = (brandId != null)
         ? [
@@ -59,6 +104,13 @@ class Messaging {
             brandId + brandPerksTopic,
           ]
         : [slAnnouncementsTopic, slDigestTopic];
+    List<Future> futures =
+        topicStrings.map((e) => messagingInstance.subscribeToTopic(e)).toList();
+    Future.wait(futures);
+  }
+
+  Future<void> subscribeToSLTopics() async {
+    List<String> topicStrings = [slAnnouncementsTopic, slDigestTopic];
     List<Future> futures =
         topicStrings.map((e) => messagingInstance.subscribeToTopic(e)).toList();
     Future.wait(futures);
