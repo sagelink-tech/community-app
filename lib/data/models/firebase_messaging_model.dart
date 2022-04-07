@@ -27,14 +27,6 @@ class Messaging {
 
   Messaging({required this.userService, required this.lastTokenUpdate});
 
-  Future<void> addNewToken() async {
-    String? token = await messagingInstance.getToken();
-    if (token != null) {
-      await userService.addNewDeviceToken(token);
-      await syncSubscriptions();
-    }
-  }
-
   Future<void> requestPermissionAndUpdateToken() async {
     NotificationSettings settings =
         await messagingInstance.getNotificationSettings();
@@ -42,10 +34,10 @@ class Messaging {
       settings = await messagingInstance.requestPermission();
     }
     if (settings.authorizationStatus != AuthorizationStatus.denied) {
-      if (lastTokenUpdate == null ||
-          lastTokenUpdate!
-              .isBefore(DateTime.now().subtract(const Duration(days: 10)))) {
-        await addNewToken();
+      String? token = await messagingInstance.getToken();
+      if (token != null) {
+        await userService.addNewDeviceToken(token);
+        await syncSubscriptions();
       }
     }
   }
