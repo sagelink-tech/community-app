@@ -54,8 +54,7 @@ class _PerksPageState extends ConsumerState<PerksPage> {
   late final client = ref.watch(gqlClientProvider).value;
   late final analytics = ref.watch(analyticsProvider);
 
-  late List<String> selectedBrandIds =
-      brands.where((e) => e != null).map((e) => e!.id).toList();
+  late List<String> selectedBrandIds = [];
   late List<BrandModel?> brands =
       userBrands.length > 1 ? [null, ...userBrands] : userBrands;
   List<PerkModel> perks = [];
@@ -108,11 +107,13 @@ class _PerksPageState extends ConsumerState<PerksPage> {
           {"createdAt": "DESC"}
         ],
       },
-      "where": {}
+      "where": {
+        "inBrandCommunity": selectedBrandIds.isNotEmpty
+            ? {"id_IN": selectedBrandIds}
+            : {"id_IN": userBrands.map((e) => e.id).toList()}
+      }
     };
-    if (selectedBrandIds.isNotEmpty) {
-      variables['where']['inBrandCommunity'] = {"id_IN": selectedBrandIds};
-    }
+
     return QueryOptions(
       document: gql(getPerksQuery),
       variables: variables,
