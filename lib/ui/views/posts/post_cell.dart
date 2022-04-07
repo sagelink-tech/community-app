@@ -179,6 +179,20 @@ class PostCell extends StatelessWidget {
           ]));
     }
 
+    _emojiBuild() {
+      return InkWell(
+        onTap: () => _handleClick(context, post.id),
+        child: Row(children: [
+          Text(
+            "Be the first to rect",
+            style: Theme.of(context).textTheme.caption,
+          ),
+          const Spacer(),
+          const Icon(Icons.emoji_emotions_outlined)
+        ]),
+      );
+    }
+
     List<Widget> _composeChildren() {
       return [
         _buildTitle(),
@@ -186,6 +200,7 @@ class PostCell extends StatelessWidget {
           height: 10,
         ),
         _buildBody(),
+        _emojiBuild(),
         const ListSpacer(
           height: 10,
         ),
