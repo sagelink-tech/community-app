@@ -1,8 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:sagelink_communities/ui/views/admin_pages/go_to_admin_page.dart';
 import 'package:sagelink_communities/ui/views/brands/brand_home_page.dart';
+import 'package:sagelink_communities/ui/views/messages/chat_page.dart';
 import 'package:sagelink_communities/ui/views/messages/rooms_page.dart';
 import 'package:sagelink_communities/ui/views/messages/users_page.dart';
 import 'package:sagelink_communities/ui/views/pages/brands_page.dart';
@@ -18,6 +20,7 @@ import 'package:sagelink_communities/ui/views/posts/new_post_view.dart';
 import 'package:sagelink_communities/ui/views/posts/post_view.dart';
 import 'package:sagelink_communities/ui/views/scaffold/nav_bar.dart';
 import 'package:sagelink_communities/ui/views/scaffold/nav_bar_mobile.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 typedef OnAction = void Function(BuildContext context);
 
@@ -98,7 +101,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         .push(MaterialPageRoute(builder: (context) => const UsersPage()));
   }
 
-  void _handleMessage(RemoteMessage message) {
+  void _handleMessage(RemoteMessage message) async {
     if (message.data['type'] == 'post') {
       Navigator.push(
           context,
@@ -119,6 +122,14 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           MaterialPageRoute(
               builder: (BuildContext context) =>
                   BrandHomepage(brandId: message.data['brandId'])));
+    }
+    if (message.data['type'] == 'message') {
+      types.Room room =
+          await FirebaseChatCore.instance.room(message.data['roomId']).first;
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) => ChatPage(room: room)));
     }
   }
 
