@@ -52,8 +52,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   late final client = ref.watch(gqlClientProvider).value;
   late final analytics = ref.watch(analyticsProvider);
 
-  late List<String> selectedBrandIds =
-      brands.where((e) => e != null).map((e) => e!.id).toList();
+  late List<String> selectedBrandIds = [];
   List<PostModel> posts = [];
   late List<BrandModel?> brands =
       userBrands.length > 1 ? [null, ...userBrands] : userBrands;
@@ -107,11 +106,13 @@ class _HomePageState extends ConsumerState<HomePage> {
           {"createdAt": "DESC"}
         ],
       },
-      "where": {}
+      "where": {
+        "inBrandCommunity": selectedBrandIds.isNotEmpty
+            ? {"id_IN": selectedBrandIds}
+            : {"id_IN": userBrands.map((e) => e.id).toList()}
+      }
     };
-    if (selectedBrandIds.isNotEmpty) {
-      variables['where']['inBrandCommunity'] = {"id_IN": selectedBrandIds};
-    }
+
     return QueryOptions(
       document: gql(getPostsQuery),
       variables: variables,
