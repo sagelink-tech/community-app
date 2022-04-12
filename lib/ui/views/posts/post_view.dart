@@ -46,6 +46,7 @@ query Posts(\$where: PostWhere, \$options: CommentOptions) {
     comments(options: \$options) {
       id
       body
+      images
       createdAt
       isFlaggedByUser
       createdBy {
@@ -227,7 +228,9 @@ class _PostViewState extends ConsumerState<PostView> {
               CustomWidgets.buildSnackBar(
                   context, "Comment saved!", SLSnackBarType.success)
             },
-            onLostFocus: () => setAddingComment(false),
+            onLostFocus: () {
+              //setAddingComment(false);
+            },
           )),
     );
   }

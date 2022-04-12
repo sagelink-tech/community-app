@@ -1,7 +1,11 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
+
+import '../../ui/components/custom_widgets.dart';
+import '../../ui/components/universal_image_picker.dart';
 
 // ignore: constant_identifier_names
 const String REMOVE_COMMENT_MUTATION = '''
@@ -167,7 +171,7 @@ class CommentService {
   /////////////////////////////////////////////////////////////
 
   // Reply to a comment
-  Future<bool> replyToCommentWithID(String commentId, String replyBody,
+  Future<bool> replyToCommentWithID(String commentId, String replyBody, UniversalImagePicker imagePicker, BuildContext context,
       {OnMutationCompleted? onComplete}) async {
     Map<String, dynamic> variables = {
       "input": [
@@ -199,6 +203,16 @@ class CommentService {
         result.data != null &&
         (result.data!['createComments']['comments'] as List).length == 1);
 
+    if(success) {
+      bool uploadResult = await setImagesOnComment(result.data!['createComments']['comments'][0]['id'], imagePicker, context);
+
+      if (!uploadResult) {
+        success = false;
+        CustomWidgets.buildSnackBar(context,
+            "Error saving comment, please try again.", SLSnackBarType.error);
+      }
+    }
+
     analytics.logEvent(name: "comment_created", parameters: {
       "status": success,
       "type": "reply",
@@ -211,8 +225,30 @@ class CommentService {
     return success;
   }
 
+  Future<bool> setImagesOnComment(String commentId, UniversalImagePicker imagePicker, BuildContext context) async {
+    ImageUploadResult imageResults = await imagePicker
+        .uploadImages("comment/$commentId/", context: context, client: client);
+    if (!imageResults.success) {
+      // Should delete post and/or retry
+      return false;
+    }
+    var variables = {
+      "where": {"id": commentId},
+      "update": {"images": imageResults.locations}
+    };
+    QueryResult result = await client.mutate(MutationOptions(
+        document: gql(UPDATE_COMMENT_MUTATION), variables: variables));
+
+    if (result.hasException) {
+      // Should delete and/or retry
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   // Comment on a post
-  Future<bool> commentOnPostWithID(String postId, String commentBody,
+  Future<bool> commentOnPostWithID(String postId, String commentBody, UniversalImagePicker imagePicker, BuildContext context,
       {OnMutationCompleted? onComplete}) async {
     Map<String, dynamic> variables = {
       "input": [
@@ -243,6 +279,15 @@ class CommentService {
     bool success = (!result.hasException &&
         result.data != null &&
         (result.data!['createComments']['comments'] as List).length == 1);
+    if(success) {
+      bool uploadResult = await setImagesOnComment(result.data!['createComments']['comments'][0]['id'], imagePicker, context);
+
+      if (!uploadResult) {
+        success = false;
+        CustomWidgets.buildSnackBar(context,
+            "Error saving comment, please try again.", SLSnackBarType.error);
+      }
+    }
 
     analytics.logEvent(
         name: "comment_created",
@@ -255,7 +300,7 @@ class CommentService {
   }
 
   // Comment on a perk
-  Future<bool> commentOnPerkWithID(String perkId, String commentBody,
+  Future<bool> commentOnPerkWithID(String perkId, String commentBody, UniversalImagePicker imagePicker, BuildContext context,
       {OnMutationCompleted? onComplete}) async {
     Map<String, dynamic> variables = {
       "input": [
@@ -286,6 +331,17 @@ class CommentService {
     bool success = (!result.hasException &&
         result.data != null &&
         (result.data!['createComments']['comments'] as List).length == 1);
+
+    if(success) {
+      bool uploadResult = await setImagesOnComment(result.data!['createComments']['comments'][0]['id'], imagePicker, context);
+
+      if (!uploadResult) {
+        success = false;
+        CustomWidgets.buildSnackBar(context,
+            "Error saving comment, please try again.", SLSnackBarType.error);
+      }
+    }
+
     analytics.logEvent(
         name: "comment_created",
         parameters: {"status": success, "type": "perk", "parentId": perkId});

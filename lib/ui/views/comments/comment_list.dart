@@ -10,6 +10,7 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
     replies {
       id
       body
+      images
       createdAt
       isFlaggedByUser
       createdBy {
@@ -24,6 +25,7 @@ query GetCommentThreadQuery(\$where: CommentWhere, \$options: CommentOptions) {
     }
     id
     body
+    images
     createdAt
     isFlaggedByUser
     createdBy {

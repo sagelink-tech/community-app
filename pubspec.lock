@@ -218,6 +218,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.3"
+  expandable:
+    dependency: "direct main"
+    description:
+      name: expandable
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.0.1"
   expandable_text:
     dependency: "direct main"
     description:
@@ -392,7 +399,7 @@ packages:
     source: hosted
     version: "2.6.3"
   flutter_linkify:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_linkify
       url: "https://pub.dartlang.org"
@@ -625,6 +632,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.4.0"
+  linkable:
+    dependency: "direct main"
+    description:
+      name: linkable
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.1"
   linkify:
     dependency: transitive
     description:

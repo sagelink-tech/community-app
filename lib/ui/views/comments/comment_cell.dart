@@ -1,16 +1,27 @@
-import 'package:expandable_text/expandable_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:linkable/linkable.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
+import 'package:expandable/expandable.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
+import 'package:collection/collection.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../utils/asset_utils.dart';
 
 typedef VoidCommentIDCallback = void Function(String commentId);
 typedef VoidCommentCallback = void Function(CommentModel comment);
 
 class CommentCell extends StatelessWidget {
+
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   final int itemNo;
   final CommentModel comment;
   final String brandId;
@@ -22,7 +33,7 @@ class CommentCell extends StatelessWidget {
   final bool inThreadView;
   final bool canReply;
 
-  const CommentCell(this.itemNo, this.comment,
+  CommentCell(this.itemNo, this.comment,
       {required this.brandId,
       required this.onShouldReply,
       this.onAddReply,
@@ -65,29 +76,90 @@ class CommentCell extends StatelessWidget {
             bottomRight: Radius.circular(10.0),
             topRight: Radius.circular(10.0),
           )),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-          Text(comment.creator.name,
-              style: Theme.of(context).textTheme.bodyText1),
-          const Spacer(),
-          IconButton(
-              onPressed: () => _showOptionsModal(context),
-              color: Theme.of(context).colorScheme.primary,
-              icon: const Icon(Icons.more_horiz_outlined)),
+      child: ExpandableNotifier(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+            Text(comment.creator.name,
+                style: Theme.of(context).textTheme.bodyText1),
+            const Spacer(),
+            IconButton(
+                onPressed: () => _showOptionsModal(context),
+                color: Theme.of(context).colorScheme.primary,
+                icon: const Icon(Icons.more_horiz_outlined)),
+          ]),
+          const ListSpacer(),
+
+          Expandable(
+            collapsed: Column(
+              children: [
+                Linkable(
+                  text: comment.body,
+                  maxLines: 2,
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ExpandableButton(       // <-- Collapses when tapped on
+                    child: Text(
+                      "Show More",
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            expanded: Column(
+                children: [
+                  Linkable(
+                      text: comment.body
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ExpandableButton(       // <-- Collapses when tapped on
+                      child: Text(
+                        "Show Less",
+                        style: TextStyle(
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ),
+                ]
+            ),
+          ),
+
+          Wrap(
+            children: comment.images.mapIndexed((index, im) => Container(
+                width: 150,
+                height: 150,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(color: Theme.of(context).dividerColor)),
+                child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: InkWell(
+                      onTap: () async {
+                        ImageViewer imageViewer = ImageViewer(imageURL: comment.images[index]);
+                        await Navigator.of(context).push(MaterialPageRoute(builder: (context) => imageViewer));
+                      },
+                      child: CachedNetworkImage(
+                        imageUrl: comment.images[index],
+                        placeholderFadeInDuration: const Duration(milliseconds: 10),
+                        placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      ),
+                    )
+                )
+            )).toList(),
+          ),
         ]),
-        const ListSpacer(),
-        ExpandableText(
-          comment.body,
-          expandText: "show more",
-          collapseText: "show less",
-          animation: true,
-          linkEllipsis: true,
-          linkColor: Theme.of(context).colorScheme.secondary,
-          collapseOnTextTap: true,
-          style: Theme.of(context).textTheme.bodyText2,
-          maxLines: 3,
-        )
-      ]),
+      ),
     );
   }
 
@@ -172,5 +244,41 @@ class CommentCell extends StatelessWidget {
             _buildReplies(context),
           ]))
     ]);
+  }
+}
+
+class ImageViewer extends StatelessWidget {
+  final String imageURL;
+  const ImageViewer({Key? key, required this.imageURL}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          Center(
+            child: CachedNetworkImage(
+              imageUrl: imageURL,
+              placeholderFadeInDuration: const Duration(milliseconds: 10),
+              placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
+                fit: BoxFit.cover,
+                width: double.infinity,
+              ),
+            ),
+          ),
+          Positioned(
+              top: 20,
+              right: 10,
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Icon(Icons.close, color: Colors.white, size: 30,),
+              )
+          )
+        ],
+      ),
+    );
   }
 }
