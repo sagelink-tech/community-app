@@ -6,6 +6,7 @@ class CommentModel extends ChangeNotifier {
   String id = "";
   String body = "";
   DateTime createdAt = DateTime(2020, 1, 1, 0, 0, 1);
+  List<String> images = <String>[];
   int replyCount = 0;
   bool isFlaggedByUser = false;
 
@@ -38,6 +39,7 @@ class CommentModel extends ChangeNotifier {
     replyCount = json.containsKey('repliesAggregate')
         ? replyCount = json['repliesAggregate']['count']
         : 0;
+    images = json['images'] == null ? <String>[] : (json['images'] as List).map((e) => e.toString()).toList();
     if (json.containsKey('isFlaggedByUser')) {
       isFlaggedByUser = json['isFlaggedByUser'];
     }

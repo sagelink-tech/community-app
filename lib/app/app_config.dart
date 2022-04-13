@@ -15,14 +15,18 @@ class FlutterAppConfig {
   static const appName =
       String.fromEnvironment('SL_APP_NAME', defaultValue: 'communityApp');
   static const appSuffix = String.fromEnvironment('SL_APP_SUFFIX');
+  /*static const usesHttps =
+    bool.fromEnvironment('SL_USES_HTTPS', defaultValue: true);
+  static const apiBaseUrl = String.fromEnvironment('SL_API_URL',
+      defaultValue: 'sl-gql-staging.herokuapp.com/graphql');*/
   static const usesHttps =
       bool.fromEnvironment('SL_USES_HTTPS', defaultValue: false);
   static const apiBaseUrl =
-      String.fromEnvironment('SL_API_URL', defaultValue: 'localhost/graphql');
+      String.fromEnvironment('SL_API_URL', defaultValue: '10.0.2.2:9000/graphql');
   static const initializeCrashlytics =
       bool.fromEnvironment('SL_CRASHLYTICS_FLAG', defaultValue: true);
   static const isProduction =
-      bool.fromEnvironment('SL_PRODUCTION_FLAG', defaultValue: true);
+      bool.fromEnvironment('SL_PRODUCTION_FLAG', defaultValue: false);
   static const useEmulator =
       bool.fromEnvironment('SL_EMULATOR_FLAG', defaultValue: false);
 
@@ -63,9 +67,9 @@ class FlutterAppConfig {
       //name: isProduction ? "prod" : "dev",
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    if (FlutterAppConfig.useEmulator) {
+    /*if (FlutterAppConfig.useEmulator) {
       await FirebaseAuth.instance.useAuthEmulator("localhost", 9099);
-    }
+    }*/
     runApp(createApp());
   }
 }

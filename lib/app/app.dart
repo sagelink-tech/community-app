@@ -106,6 +106,7 @@ class BaseApp extends ConsumerWidget {
     }
 
     return MaterialApp(
-        theme: _theme(), navigatorObservers: [observer], home: _home());
+      debugShowCheckedModeBanner: false,
+      theme: _theme(), navigatorObservers: [observer], home: _home());
   }
 }
