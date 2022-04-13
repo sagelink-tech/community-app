@@ -11,9 +11,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/ui/views/users/account_page.dart';
 import 'package:collection/collection.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../../utils/asset_utils.dart';
+import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 
 typedef VoidCommentIDCallback = void Function(String commentId);
 typedef VoidCommentCallback = void Function(CommentModel comment);
