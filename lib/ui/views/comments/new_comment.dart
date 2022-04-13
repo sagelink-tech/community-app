@@ -1,8 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/data/providers.dart';
 import 'package:sagelink_communities/data/services/comment_service.dart';
+import 'dart:io';
+import '../../components/universal_image_picker.dart';
+import 'package:sagelink_communities/ui/components/universal_image_picker.dart';
+import 'package:collection/collection.dart';
 
 class NewComment extends ConsumerStatefulWidget {
   const NewComment(
@@ -40,6 +46,22 @@ class _NewCommentState extends ConsumerState<NewComment> {
 
   late FocusNode _focusNode;
   bool isSaving = false;
+  bool isLoading = false;
+  bool isDisposed = false;
+
+  int maxImages = 4;
+  List<File> originalImageFiles = [];
+  List<File> selectedImageFiles = [];
+  late final UniversalImagePicker imagePicker = UniversalImagePicker(
+      context,
+      maxImages: maxImages,
+      onSelected: () {
+        if (!isDisposed) {
+          setState(() => selectedImageFiles = imagePicker.images);
+        }
+      },
+      originalUrls: []
+  );
 
   @override
   void initState() {
@@ -57,6 +79,7 @@ class _NewCommentState extends ConsumerState<NewComment> {
   @override
   void dispose() {
     // Clean up the focus node when the Form is disposed.
+    isDisposed = true;
     _focusNode.dispose();
     _editingController.dispose();
     super.dispose();
@@ -82,12 +105,14 @@ class _NewCommentState extends ConsumerState<NewComment> {
     return Form(
         key: formKey,
         //autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            buildBodyForm(context),
-            buildSubmit(enabled: !isSaving && body != null && body!.isNotEmpty)
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildBodyForm(context),
+              buildSubmit(enabled: !isSaving && body != null && body!.isNotEmpty)
+            ],
+          ),
         ));
   }
 
@@ -97,18 +122,73 @@ class _NewCommentState extends ConsumerState<NewComment> {
     }
     return Container(
         padding: const EdgeInsets.all(10.0),
-        color: Theme.of(context).canvasColor,
-        child: TextFormField(
-            focusNode: _focusNode,
-            controller: _editingController,
-            autofocus: widget.focused || isUpdate,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
+        margin: const EdgeInsets.all(15.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).canvasColor,
+          border: Border.all(color: Colors.black, width: 1),
+          borderRadius: BorderRadius.circular(5)
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+                focusNode: _focusNode,
+                controller: _editingController,
+                autofocus: widget.focused || isUpdate,
+                decoration: const InputDecoration(
+                    border: InputBorder.none,//OutlineInputBorder(),
+                    hintText: 'Type response'
+                ),
+                minLines: widget.isReply ? 1 : 2,
+                maxLines: 3,
+                onChanged: (value) => setState(() => body = value),
+                enabled: enabled
             ),
-            minLines: widget.isReply ? 1 : 2,
-            maxLines: 3,
-            onChanged: (value) => setState(() => body = value),
-            enabled: enabled));
+            Wrap(
+              children: selectedImageFiles.mapIndexed((index, im) => Container(
+                  width: 150,
+                  height: 150,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      border: Border.all(color: Theme.of(context).dividerColor)),
+                  child: Stack(alignment: Alignment.topLeft, children: [
+                    SizedBox(
+                        width: double.infinity,
+                        height: double.infinity,
+                        child: kIsWeb
+                            ? Image.network(im.path, fit: BoxFit.cover)
+                            : Image.file(
+                          im,
+                          fit: BoxFit.cover,
+                        )),
+                    Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Align(
+                            alignment: Alignment.topRight,
+                            child: CircleAvatar(
+                                radius: 17,
+                                backgroundColor: Theme.of(context).cardColor,
+                                foregroundColor:
+                                Theme.of(context).colorScheme.onSurface,
+                                child: IconButton(
+                                    iconSize: 18,
+                                    onPressed: () =>
+                                        imagePicker.removeImageAtIndex(index),
+                                    icon: const Icon(Icons.close)))))
+                  ])))
+                  .toList(),
+            ),
+            SizedBox(height: 10,),
+            InkWell(
+              onTap: () {
+                imagePicker.openImagePicker();
+              },
+              child: Image.asset('assets/image_icon.png'),
+            )
+          ],
+        )
+    );
   }
 
   Future<void> updateComment() async {
@@ -132,13 +212,13 @@ class _NewCommentState extends ConsumerState<NewComment> {
         isSaving = true;
       });
       if (widget.isReply) {
-        await commentService.replyToCommentWithID(widget.parentId, body!,
+        await commentService.replyToCommentWithID(widget.parentId, body!, imagePicker, context,
             onComplete: (data) => widget.onCompleted());
       } else if (widget.isOnPerk) {
-        await commentService.commentOnPerkWithID(widget.parentId, body!,
+        await commentService.commentOnPerkWithID(widget.parentId, body!, imagePicker, context,
             onComplete: (data) => widget.onCompleted());
       } else {
-        await commentService.commentOnPostWithID(widget.parentId, body!,
+        await commentService.commentOnPostWithID(widget.parentId, body!, imagePicker, context,
             onComplete: (data) => widget.onCompleted());
       }
       setState(() {

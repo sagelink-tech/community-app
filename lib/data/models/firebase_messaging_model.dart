@@ -27,25 +27,61 @@ class Messaging {
 
   Messaging({required this.userService, required this.lastTokenUpdate});
 
-  Future<void> addNewToken() async {
-    String? token = await messagingInstance.getToken();
-    if (token != null) {
-      userService.addNewDeviceToken(token);
-    }
-  }
-
   Future<void> requestPermissionAndUpdateToken() async {
     NotificationSettings settings =
         await messagingInstance.getNotificationSettings();
     if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
       settings = await messagingInstance.requestPermission();
     }
-
     if (settings.authorizationStatus != AuthorizationStatus.denied) {
-      if (lastTokenUpdate == null ||
-          lastTokenUpdate!
-              .isBefore(DateTime.now().subtract(const Duration(days: 10)))) {
-        await addNewToken();
+      String? token = await messagingInstance.getToken();
+      if (token != null) {
+        await userService.addNewDeviceToken(token);
+        await syncSubscriptions();
+      }
+    }
+  }
+
+  Future<void> syncSubscriptions() async {
+    var settingsResult = await userService.fetchNotificationSettings();
+
+    for (var settingsForBrand in settingsResult) {
+      if (settingsForBrand.keys.first == 'Sagelink App') {
+        // sl settings
+        for (var element in settingsForBrand.values.first) {
+          if (element.status == true) {
+            messagingInstance.subscribeToTopic(
+                element.topic == MessagingTopics.slAnnouncments
+                    ? slAnnouncementsTopic
+                    : slDigestTopic);
+          }
+        }
+      } else {
+        // all other brand settings
+        for (var element in settingsForBrand.values.first) {
+          if (element.status == true) {
+            switch (element.topic) {
+              case MessagingTopics.brandAnnouncments:
+                messagingInstance.subscribeToTopic(
+                    element.brand!.id + brandAnnouncementsTopic);
+                break;
+              case MessagingTopics.brandDigest:
+                messagingInstance
+                    .subscribeToTopic(element.brand!.id + brandDigestTopic);
+                break;
+              case MessagingTopics.brandNewPosts:
+                messagingInstance
+                    .subscribeToTopic(element.brand!.id + brandNewPostsTopic);
+                break;
+              case MessagingTopics.brandPerks:
+                messagingInstance
+                    .subscribeToTopic(element.brand!.id + brandPerksTopic);
+                break;
+              default:
+                break;
+            }
+          }
+        }
       }
     }
   }
@@ -59,6 +95,13 @@ class Messaging {
             brandId + brandPerksTopic,
           ]
         : [slAnnouncementsTopic, slDigestTopic];
+    List<Future> futures =
+        topicStrings.map((e) => messagingInstance.subscribeToTopic(e)).toList();
+    Future.wait(futures);
+  }
+
+  Future<void> subscribeToSLTopics() async {
+    List<String> topicStrings = [slAnnouncementsTopic, slDigestTopic];
     List<Future> futures =
         topicStrings.map((e) => messagingInstance.subscribeToTopic(e)).toList();
     Future.wait(futures);
@@ -105,7 +148,6 @@ class Messaging {
     }
 
     if (topicString.isNotEmpty) {
-      print(topicString);
       subscribe
           ? (await messagingInstance.subscribeToTopic(topicString))
           : (await messagingInstance.unsubscribeFromTopic(topicString));
