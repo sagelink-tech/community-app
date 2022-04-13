@@ -4,8 +4,8 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sagelink_communities/data/models/comment_model.dart';
 import 'package:sagelink_communities/data/models/logged_in_user.dart';
 
-import '../../ui/components/custom_widgets.dart';
-import '../../ui/components/universal_image_picker.dart';
+import 'package:sagelink_communities/ui/components/custom_widgets.dart';
+import 'package:sagelink_communities/ui/components/universal_image_picker.dart';
 
 // ignore: constant_identifier_names
 const String REMOVE_COMMENT_MUTATION = '''

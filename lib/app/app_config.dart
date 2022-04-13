@@ -22,7 +22,7 @@ class FlutterAppConfig {
   static const usesHttps =
       bool.fromEnvironment('SL_USES_HTTPS', defaultValue: false);
   static const apiBaseUrl =
-      String.fromEnvironment('SL_API_URL', defaultValue: '10.0.2.2:9000/graphql');
+      String.fromEnvironment('SL_API_URL', defaultValue: 'localhost/graphql');
   static const initializeCrashlytics =
       bool.fromEnvironment('SL_CRASHLYTICS_FLAG', defaultValue: true);
   static const isProduction =
