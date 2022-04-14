@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:sagelink_communities/ui/components/image_viewer/image_detail_page.dart';
 import 'package:sagelink_communities/ui/utils/asset_utils.dart';
 import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
@@ -36,21 +37,27 @@ class _EmbeddedImageCarouselState extends State<EmbeddedImageCarousel> {
   List<Widget> _buildImages() {
     return widget.imageUrls.isNotEmpty
         ? widget.imageUrls
-            .map((imageUrl) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  placeholderFadeInDuration: const Duration(milliseconds: 10),
-                  placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
+            .map((imageUrl) => InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute( builder: (context) => ImageDetailPage(imageUrls: widget.imageUrls, currentIndex: 0)));
+              },
+              child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    placeholderFadeInDuration: const Duration(milliseconds: 10),
+                    placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: widget.height,
+                    ),
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: widget.height,
-                  ),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: widget.height,
-                )))
-            .toList()
+                  )
+              ),
+            )
+          ).toList()
         : [
             Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5),

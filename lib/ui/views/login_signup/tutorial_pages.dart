@@ -59,18 +59,20 @@ class _TutorialPagesState extends State<TutorialPages>
                       p.image,
                       const ListSpacer(height: 15),
                       Center(
-                          child: Text(p.title,
+                          child: Container(
+                            child: Text(p.title,
                               style: Theme.of(context)
                                   .textTheme
                                   .headline1!
-                                  .copyWith(fontSize: 24))),
+                                  .copyWith(fontSize: 24,), textAlign: TextAlign.center,),
+                          )),
                       const ListSpacer(height: 15),
                       Center(
                           child: Text(p.subtitle,
                               style: Theme.of(context)
                                   .textTheme
                                   .caption!
-                                  .copyWith(fontSize: 18.0))),
+                                  .copyWith(fontSize: 18.0), textAlign: TextAlign.center,)),
                     ]))
             .toList();
       });
@@ -116,7 +118,7 @@ class _TutorialPagesState extends State<TutorialPages>
                 child: Container(
                     alignment: Alignment.center,
                     padding: const EdgeInsets.all(25),
-                    child: Stack(alignment: Alignment.topRight, children: [
+                    child: Stack(alignment: Alignment.topCenter, children: [
                       CarouselSlider(
                         items: _pageWidgets,
                         carouselController: _controller,
@@ -136,8 +138,6 @@ class _TutorialPagesState extends State<TutorialPages>
                       Align(
                           alignment: Alignment.bottomCenter,
                           child: Container(
-                              padding:
-                                  const EdgeInsets.only(top: 40, right: 25),
                               child: _buildButton())),
                       // Align(
                       //     alignment: Alignment.bottomCenter,

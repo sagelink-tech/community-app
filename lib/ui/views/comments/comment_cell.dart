@@ -4,6 +4,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:linkable/linkable.dart';
 import 'package:sagelink_communities/ui/components/clickable_avatar.dart';
 import 'package:expandable/expandable.dart';
+import 'package:sagelink_communities/ui/components/image_viewer/image_detail_page.dart';
 import 'package:sagelink_communities/ui/components/list_spacer.dart';
 import 'package:flutter/material.dart';
 import 'package:sagelink_communities/ui/components/moderation_options_sheet.dart';
@@ -256,25 +257,8 @@ class ImageViewer extends StatelessWidget {
       body: Stack(
         children: [
           Center(
-            child: CachedNetworkImage(
-              imageUrl: imageURL,
-              placeholderFadeInDuration: const Duration(milliseconds: 10),
-              placeholder: (context, url) => AssetUtils.wrappedDefaultImage(
-                fit: BoxFit.cover,
-                width: double.infinity,
-              ),
-            ),
+            child: ImageDetailPage(imageUrls: [imageURL], currentIndex: 0,),
           ),
-          Positioned(
-              top: 20,
-              right: 10,
-              child: InkWell(
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Icon(Icons.close, color: Colors.white, size: 30,),
-              )
-          )
         ],
       ),
     );

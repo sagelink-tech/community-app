@@ -369,14 +369,14 @@ packages:
       name: flutter_chat_types
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.3.1"
+    version: "3.3.4"
   flutter_chat_ui:
     dependency: "direct main"
     description:
-      name: flutter_chat_ui
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.5.5"
+      path: "lib/flutter_chat_ui-1.5.7"
+      relative: true
+    source: path
+    version: "1.5.7"
   flutter_firebase_chat_core:
     dependency: "direct main"
     description:
@@ -397,7 +397,7 @@ packages:
       name: flutter_link_previewer
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.6.3"
+    version: "2.6.6"
   flutter_linkify:
     dependency: "direct main"
     description:
@@ -426,6 +426,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
+  flutter_parsed_text:
+    dependency: transitive
+    description:
+      name: flutter_parsed_text
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.2.1"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -789,9 +796,11 @@ packages:
   photo_view:
     dependency: "direct main"
     description:
-      name: photo_view
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: "23063d535909027b8e198c2cffa83bf8f0480c96"
+      url: "https://github.com/bluefireteam/photo_view"
+    source: git
     version: "0.13.0"
   platform:
     dependency: transitive
@@ -1085,6 +1094,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.1"
+  visibility_detector:
+    dependency: transitive
+    description:
+      name: visibility_detector
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.2"
   web_socket_channel:
     dependency: transitive
     description:
